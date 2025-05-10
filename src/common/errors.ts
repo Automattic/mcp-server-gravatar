@@ -1,4 +1,4 @@
-import { McpError } from '@modelcontextprotocol/sdk';
+// No need to import McpError, we'll return formatted error objects directly
 
 /**
  * Base class for all Gravatar API errors
@@ -61,43 +61,24 @@ export class GravatarRateLimitError extends GravatarError {
 }
 
 /**
- * Maps a Gravatar API error to an MCP error
+ * Maps a Gravatar API error to a formatted error message
  */
-export function mapGravatarErrorToMcpError(error: GravatarError): McpError {
+export function formatGravatarError(error: GravatarError): string {
+  let message = `Gravatar API Error: ${error.message}`;
+  
   if (error instanceof GravatarValidationError) {
-    return new McpError({
-      code: 'invalid_request',
-      message: error.message
-    });
+    message = `Validation Error: ${error.message}`;
   } else if (error instanceof GravatarResourceNotFoundError) {
-    return new McpError({
-      code: 'not_found',
-      message: error.message
-    });
+    message = `Not Found: ${error.message}`;
   } else if (error instanceof GravatarAuthenticationError) {
-    return new McpError({
-      code: 'authentication_error',
-      message: error.message
-    });
+    message = `Authentication Failed: ${error.message}`;
   } else if (error instanceof GravatarPermissionError) {
-    return new McpError({
-      code: 'permission_denied',
-      message: error.message
-    });
+    message = `Permission Denied: ${error.message}`;
   } else if (error instanceof GravatarRateLimitError) {
-    return new McpError({
-      code: 'rate_limit_exceeded',
-      message: error.message,
-      details: {
-        resetAt: error.resetAt.toISOString()
-      }
-    });
-  } else {
-    return new McpError({
-      code: 'internal_error',
-      message: error.message || 'An unexpected error occurred'
-    });
+    message = `Rate Limit Exceeded: ${error.message}\nResets at: ${error.resetAt.toISOString()}`;
   }
+
+  return message;
 }
 
 /**
