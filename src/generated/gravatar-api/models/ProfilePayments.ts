@@ -12,21 +12,21 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
-import type { CryptoWalletAddress } from './CryptoWalletAddress';
+import { mapValues } from '../runtime.js';
+import type { CryptoWalletAddress } from './CryptoWalletAddress.js';
 import {
     CryptoWalletAddressFromJSON,
     CryptoWalletAddressFromJSONTyped,
     CryptoWalletAddressToJSON,
     CryptoWalletAddressToJSONTyped,
-} from './CryptoWalletAddress';
-import type { Link } from './Link';
+} from './CryptoWalletAddress.js';
+import type { Link } from './Link.js';
 import {
     LinkFromJSON,
     LinkFromJSONTyped,
     LinkToJSON,
     LinkToJSONTyped,
-} from './Link';
+} from './Link.js';
 
 /**
  * The user's public payment information. This is only provided in authenticated API requests.

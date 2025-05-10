@@ -13,23 +13,48 @@
  */
 
 
-import * as runtime from '../runtime';
+import * as runtime from '../runtime.js';
 import type {
   Interest,
-} from '../models/index';
+} from '../models/index.js';
 import {
     InterestFromJSON,
     InterestToJSON,
-} from '../models/index';
+} from '../models/index.js';
 
 export interface GetProfileInferredInterestsByIdRequest {
     profileIdentifier: string;
 }
 
 /**
+ * ExperimentalApi - interface
+ * 
+ * @export
+ * @interface ExperimentalApiInterface
+ */
+export interface ExperimentalApiInterface {
+    /**
+     * Returns a list of inferred interests based on known and public information about the profile.
+     * @summary Get inferred interests for a profile given their identifier
+     * @param {string} profileIdentifier This can either be an SHA256 hash of an email address or profile URL slug.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ExperimentalApiInterface
+     */
+    getProfileInferredInterestsByIdRaw(requestParameters: GetProfileInferredInterestsByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<Interest>>>;
+
+    /**
+     * Returns a list of inferred interests based on known and public information about the profile.
+     * Get inferred interests for a profile given their identifier
+     */
+    getProfileInferredInterestsById(requestParameters: GetProfileInferredInterestsByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Interest>>;
+
+}
+
+/**
  * 
  */
-export class ExperimentalApi extends runtime.BaseAPI {
+export class ExperimentalApi extends runtime.BaseAPI implements ExperimentalApiInterface {
 
     /**
      * Returns a list of inferred interests based on known and public information about the profile.

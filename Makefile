@@ -20,9 +20,5 @@ download-spec:
 # Generate OpenAPI client
 generate-client:
 	@echo "Generating Gravatar API client from local OpenAPI spec..."
-	@docker run --rm -v "${PWD}:/local" -w /local openapitools/openapi-generator-cli:v$(OPENAPI_GENERATOR_VERSION) generate \
-		-i openapi.json \
-		-g typescript-fetch \
-		-o src/generated/gravatar-api \
-		-c openapitools.json
+	@npx @openapitools/openapi-generator-cli generate
 	@echo "API client generated."

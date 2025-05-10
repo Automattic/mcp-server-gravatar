@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
+import { mapValues } from '../runtime.js';
 /**
  * The user's contact information. This is only available if the user has chosen to make it public. This is only provided in authenticated API requests.
  * @export

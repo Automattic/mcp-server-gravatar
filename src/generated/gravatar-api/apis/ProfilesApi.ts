@@ -13,12 +13,12 @@
  */
 
 
-import * as runtime from '../runtime';
+import * as runtime from '../runtime.js';
 import type {
   AssociatedResponse,
   Profile,
   UpdateProfileRequest,
-} from '../models/index';
+} from '../models/index.js';
 import {
     AssociatedResponseFromJSON,
     AssociatedResponseToJSON,
@@ -26,7 +26,7 @@ import {
     ProfileToJSON,
     UpdateProfileRequestFromJSON,
     UpdateProfileRequestToJSON,
-} from '../models/index';
+} from '../models/index.js';
 
 export interface AssociatedEmailRequest {
     emailHash: string;
@@ -41,9 +41,81 @@ export interface UpdateProfileOperationRequest {
 }
 
 /**
+ * ProfilesApi - interface
+ * 
+ * @export
+ * @interface ProfilesApiInterface
+ */
+export interface ProfilesApiInterface {
+    /**
+     * Checks if the provided email address is associated with the authenticated user.
+     * @summary Check if the email is associated with the authenticated user
+     * @param {string} emailHash The hash of the email address to check.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProfilesApiInterface
+     */
+    associatedEmailRaw(requestParameters: AssociatedEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AssociatedResponse>>;
+
+    /**
+     * Checks if the provided email address is associated with the authenticated user.
+     * Check if the email is associated with the authenticated user
+     */
+    associatedEmail(requestParameters: AssociatedEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AssociatedResponse>;
+
+    /**
+     * Returns the information available for the authenticated user. It\'s equivalent to the full profile information available in the `/profiles/{profileIdentifier}` endpoint.
+     * @summary Get profile information for the authenticated user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProfilesApiInterface
+     */
+    getProfileRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>>;
+
+    /**
+     * Returns the information available for the authenticated user. It\'s equivalent to the full profile information available in the `/profiles/{profileIdentifier}` endpoint.
+     * Get profile information for the authenticated user
+     */
+    getProfile(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile>;
+
+    /**
+     * Returns a profile by the given identifier.
+     * @summary Get profile by identifier
+     * @param {string} profileIdentifier This can either be an SHA256 hash of an email address or profile URL slug.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProfilesApiInterface
+     */
+    getProfileByIdRaw(requestParameters: GetProfileByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>>;
+
+    /**
+     * Returns a profile by the given identifier.
+     * Get profile by identifier
+     */
+    getProfileById(requestParameters: GetProfileByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile>;
+
+    /**
+     * Updates the profile information for the authenticated user. Only a subset of `Profile` fields are available for update. Partial updates are supported, so only the provided fields will be updated. To unset a field, set it explicitly to an empty string.
+     * @summary Update profile information for the authenticated user
+     * @param {UpdateProfileRequest} updateProfileRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProfilesApiInterface
+     */
+    updateProfileRaw(requestParameters: UpdateProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>>;
+
+    /**
+     * Updates the profile information for the authenticated user. Only a subset of `Profile` fields are available for update. Partial updates are supported, so only the provided fields will be updated. To unset a field, set it explicitly to an empty string.
+     * Update profile information for the authenticated user
+     */
+    updateProfile(requestParameters: UpdateProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile>;
+
+}
+
+/**
  * 
  */
-export class ProfilesApi extends runtime.BaseAPI {
+export class ProfilesApi extends runtime.BaseAPI implements ProfilesApiInterface {
 
     /**
      * Checks if the provided email address is associated with the authenticated user.

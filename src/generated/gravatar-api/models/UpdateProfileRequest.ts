@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
+import { mapValues } from '../runtime.js';
 /**
  * The subset of data available for update. Field names match the ones in `Profile`. Only the provided fields will be updated.
  * @export

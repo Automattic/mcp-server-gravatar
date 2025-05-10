@@ -12,7 +12,8 @@
         "additionalProperties": {
           "supportsES6": true,
           "typescriptThreePlus": true,
-          "withInterfaces": true
+          "withInterfaces": true,
+          "importFileExtension": ".js"
         }
       }
     }

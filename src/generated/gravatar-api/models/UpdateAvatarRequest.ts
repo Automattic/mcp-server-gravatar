@@ -12,14 +12,14 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
-import type { Rating } from './Rating';
+import { mapValues } from '../runtime.js';
+import type { Rating } from './Rating.js';
 import {
     RatingFromJSON,
     RatingFromJSONTyped,
     RatingToJSON,
     RatingToJSONTyped,
-} from './Rating';
+} from './Rating.js';
 
 /**
  * The avatar data to update. Partial updates are supported, so only the provided fields will be updated.

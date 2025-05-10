@@ -13,12 +13,12 @@
  */
 
 
-import * as runtime from '../runtime';
+import * as runtime from '../runtime.js';
 import type {
   Avatar,
   SetEmailAvatarRequest,
   UpdateAvatarRequest,
-} from '../models/index';
+} from '../models/index.js';
 import {
     AvatarFromJSON,
     AvatarToJSON,
@@ -26,7 +26,7 @@ import {
     SetEmailAvatarRequestToJSON,
     UpdateAvatarRequestFromJSON,
     UpdateAvatarRequestToJSON,
-} from '../models/index';
+} from '../models/index.js';
 
 export interface DeleteAvatarRequest {
     imageHash: string;
@@ -53,9 +53,102 @@ export interface UploadAvatarRequest {
 }
 
 /**
+ * AvatarsApi - interface
+ * 
+ * @export
+ * @interface AvatarsApiInterface
+ */
+export interface AvatarsApiInterface {
+    /**
+     * Deletes a specific avatar for the authenticated user.
+     * @summary Delete avatar
+     * @param {string} imageHash The hash of the avatar to delete.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AvatarsApiInterface
+     */
+    deleteAvatarRaw(requestParameters: DeleteAvatarRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Deletes a specific avatar for the authenticated user.
+     * Delete avatar
+     */
+    deleteAvatar(requestParameters: DeleteAvatarRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Retrieves a list of available avatars for the authenticated user.
+     * @summary List avatars
+     * @param {string} [selectedEmailHash] The SHA256 hash of the email address used to determine which avatar is selected. The \&#39;selected\&#39; attribute in the avatar list will be set to \&#39;true\&#39; for the avatar associated with this email.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AvatarsApiInterface
+     */
+    getAvatarsRaw(requestParameters: GetAvatarsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<Avatar>>>;
+
+    /**
+     * Retrieves a list of available avatars for the authenticated user.
+     * List avatars
+     */
+    getAvatars(requestParameters: GetAvatarsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Avatar>>;
+
+    /**
+     * Sets the avatar for the provided email hash.
+     * @summary Set avatar for the hashed email
+     * @param {string} imageId Image ID of the avatar to set as the provided hashed email avatar.
+     * @param {SetEmailAvatarRequest} setEmailAvatarRequest Avatar selection details
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AvatarsApiInterface
+     */
+    setEmailAvatarRaw(requestParameters: SetEmailAvatarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Sets the avatar for the provided email hash.
+     * Set avatar for the hashed email
+     */
+    setEmailAvatar(requestParameters: SetEmailAvatarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Updates the avatar data for a given avatar for the authenticated user.
+     * @summary Update avatar data
+     * @param {string} imageHash The hash of the avatar to update.
+     * @param {UpdateAvatarRequest} updateAvatarRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AvatarsApiInterface
+     */
+    updateAvatarRaw(requestParameters: UpdateAvatarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Avatar>>;
+
+    /**
+     * Updates the avatar data for a given avatar for the authenticated user.
+     * Update avatar data
+     */
+    updateAvatar(requestParameters: UpdateAvatarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Avatar>;
+
+    /**
+     * Uploads a new avatar image for the authenticated user.
+     * @summary Upload new avatar image
+     * @param {Blob} image The avatar image file
+     * @param {string} [selectedEmailHash] The SHA256 hash of email. If provided, the uploaded image will be selected as the avatar for this email.
+     * @param {boolean} [selectAvatar] Determines if the uploaded image should be set as the avatar for the email. If not passed, the image is only selected as the email\&#39;s avatar if no previous avatar has been set. Accepts \&#39;1\&#39;/\&#39;true\&#39; to always set the avatar or \&#39;0\&#39;/\&#39;false\&#39; to never set the avatar.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AvatarsApiInterface
+     */
+    uploadAvatarRaw(requestParameters: UploadAvatarRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Avatar>>;
+
+    /**
+     * Uploads a new avatar image for the authenticated user.
+     * Upload new avatar image
+     */
+    uploadAvatar(requestParameters: UploadAvatarRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Avatar>;
+
+}
+
+/**
  * 
  */
-export class AvatarsApi extends runtime.BaseAPI {
+export class AvatarsApi extends runtime.BaseAPI implements AvatarsApiInterface {
 
     /**
      * Deletes a specific avatar for the authenticated user.

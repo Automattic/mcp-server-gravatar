@@ -12,56 +12,56 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
-import type { Interest } from './Interest';
+import { mapValues } from '../runtime.js';
+import type { Interest } from './Interest.js';
 import {
     InterestFromJSON,
     InterestFromJSONTyped,
     InterestToJSON,
     InterestToJSONTyped,
-} from './Interest';
-import type { Language } from './Language';
+} from './Interest.js';
+import type { Language } from './Language.js';
 import {
     LanguageFromJSON,
     LanguageFromJSONTyped,
     LanguageToJSON,
     LanguageToJSONTyped,
-} from './Language';
-import type { ProfileContactInfo } from './ProfileContactInfo';
+} from './Language.js';
+import type { ProfileContactInfo } from './ProfileContactInfo.js';
 import {
     ProfileContactInfoFromJSON,
     ProfileContactInfoFromJSONTyped,
     ProfileContactInfoToJSON,
     ProfileContactInfoToJSONTyped,
-} from './ProfileContactInfo';
-import type { VerifiedAccount } from './VerifiedAccount';
+} from './ProfileContactInfo.js';
+import type { VerifiedAccount } from './VerifiedAccount.js';
 import {
     VerifiedAccountFromJSON,
     VerifiedAccountFromJSONTyped,
     VerifiedAccountToJSON,
     VerifiedAccountToJSONTyped,
-} from './VerifiedAccount';
-import type { Link } from './Link';
+} from './VerifiedAccount.js';
+import type { Link } from './Link.js';
 import {
     LinkFromJSON,
     LinkFromJSONTyped,
     LinkToJSON,
     LinkToJSONTyped,
-} from './Link';
-import type { GalleryImage } from './GalleryImage';
+} from './Link.js';
+import type { GalleryImage } from './GalleryImage.js';
 import {
     GalleryImageFromJSON,
     GalleryImageFromJSONTyped,
     GalleryImageToJSON,
     GalleryImageToJSONTyped,
-} from './GalleryImage';
-import type { ProfilePayments } from './ProfilePayments';
+} from './GalleryImage.js';
+import type { ProfilePayments } from './ProfilePayments.js';
 import {
     ProfilePaymentsFromJSON,
     ProfilePaymentsFromJSONTyped,
     ProfilePaymentsToJSON,
     ProfilePaymentsToJSONTyped,
-} from './ProfilePayments';
+} from './ProfilePayments.js';
 
 /**
  * A user's profile information.

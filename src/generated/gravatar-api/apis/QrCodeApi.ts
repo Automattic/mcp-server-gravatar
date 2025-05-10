@@ -13,7 +13,7 @@
  */
 
 
-import * as runtime from '../runtime';
+import * as runtime from '../runtime.js';
 
 export interface GetQrCodeBySha256HashRequest {
     sha256Hash: string;
@@ -25,9 +25,39 @@ export interface GetQrCodeBySha256HashRequest {
 }
 
 /**
+ * QrCodeApi - interface
+ * 
+ * @export
+ * @interface QrCodeApiInterface
+ */
+export interface QrCodeApiInterface {
+    /**
+     * Returns a QR code for an email address by the given SHA256 hash.
+     * @summary Get QR code for an email address\' profile
+     * @param {string} sha256Hash The SHA256 hash of the email address or profile URL slug.
+     * @param {number} [size] The size of the QR code.
+     * @param {string} [version] The version of the QR code.
+     * @param {string} [utmMedium] The medium of the UTM parameters. Appended to the URL in the QR code.
+     * @param {string} [utmCampaign] The campaign of the UTM parameters. Appended to the URL in the QR code.
+     * @param {string} [type] The type of center icon to display (\&#39;user\&#39; for avatar, \&#39;gravatar\&#39; for logo, \&#39;none\&#39; for no icon).
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof QrCodeApiInterface
+     */
+    getQrCodeBySha256HashRaw(requestParameters: GetQrCodeBySha256HashRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>>;
+
+    /**
+     * Returns a QR code for an email address by the given SHA256 hash.
+     * Get QR code for an email address\' profile
+     */
+    getQrCodeBySha256Hash(requestParameters: GetQrCodeBySha256HashRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob>;
+
+}
+
+/**
  * 
  */
-export class QrCodeApi extends runtime.BaseAPI {
+export class QrCodeApi extends runtime.BaseAPI implements QrCodeApiInterface {
 
     /**
      * Returns a QR code for an email address by the given SHA256 hash.
