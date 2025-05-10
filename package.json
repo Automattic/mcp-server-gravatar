@@ -2,15 +2,41 @@
   "name": "mcp-server-gravatar",
   "version": "1.0.0",
   "description": "Gravatar's official MCP Server",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-server-gravatar": "dist/index.js"
   },
-  "keywords": [],
-  "author": "",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "generate-client": "make generate-client"
+  },
+  "keywords": [
+    "gravatar",
+    "mcp",
+    "server",
+    "ai"
+  ],
+  "author": "Automattic",
   "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.1",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.22.3"
+  },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^22.15.17",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
