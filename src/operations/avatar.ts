@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import fetch from 'node-fetch';
-import { validateEmail, validateHash, generateIdentifierFromEmail, getApiKey, mapHttpStatusToError } from '../common/utils.js';
+import { validateEmail, validateHash, generateIdentifierFromEmail, getUserAgent, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating, AvatarParams } from '../common/types.js';
 
@@ -78,8 +78,12 @@ export async function getAvatarById(
       url += `?${queryString}`;
     }
     
-    // Fetch the image from the URL
-    const response = await fetch(url);
+    // Fetch the image from the URL with User-Agent header
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': getUserAgent()
+      }
+    });
     if (!response.ok) {
       throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
     }

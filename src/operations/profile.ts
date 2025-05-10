@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { DefaultConfig, Configuration } from '../generated/gravatar-api/runtime.js';
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
-import { validateEmail, validateHash, generateIdentifierFromEmail, getApiKey, mapHttpStatusToError } from '../common/utils.js';
+import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 
 // Schema for getProfileById
@@ -21,21 +21,8 @@ export const getProfileByEmailSchema = z.object({
 
 // Create API client
 function createProfilesApi(): ProfilesApi {
-  // Get API key from environment variable
-  const apiKey = getApiKey();
-  
-  // Create a configuration with the API key if available
-  if (apiKey) {
-    const config = new Configuration({
-      accessToken: apiKey
-    });
-    
-    // Create a new ProfilesApi instance with the configuration
-    return new ProfilesApi(config);
-  }
-  
-  // Fall back to default configuration if no API key is available
-  return new ProfilesApi();
+  // Create a new ProfilesApi instance with the configuration
+  return new ProfilesApi(createApiConfiguration());
 }
 
 /**

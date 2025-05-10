@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
-import { validateEmail, validateHash, generateIdentifierFromEmail, getApiKey, mapHttpStatusToError } from '../common/utils.js';
+import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 
 // Schema for getInferredInterestsById
@@ -21,21 +21,8 @@ export const getInferredInterestsByEmailSchema = z.object({
 
 // Create API client
 function createExperimentalApi(): ExperimentalApi {
-  // Get API key from environment variable
-  const apiKey = getApiKey();
-  
-  // Create a configuration with the API key if available
-  if (apiKey) {
-    const config = new Configuration({
-      accessToken: apiKey
-    });
-    
-    // Create a new ExperimentalApi instance with the configuration
-    return new ExperimentalApi(config);
-  }
-  
-  // Fall back to default configuration if no API key is available
-  return new ExperimentalApi();
+  // Create a new ExperimentalApi instance with the configuration
+  return new ExperimentalApi(createApiConfiguration());
 }
 
 /**
