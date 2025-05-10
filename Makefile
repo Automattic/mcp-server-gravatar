@@ -11,6 +11,8 @@ help:
 	@echo "  download-spec     - Download Gravatar OpenAPI spec"
 	@echo "  generate-client   - Generate Gravatar API client from OpenAPI spec"
 	@echo "  build             - Build the TypeScript project"
+	@echo "  inspector         - Run MCP inspector to validate tools"
+	@echo "  clean             - Clean build artifacts"
 
 # Download OpenAPI spec
 download-spec:
