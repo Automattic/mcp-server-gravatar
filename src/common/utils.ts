@@ -122,25 +122,18 @@ export function createApiConfiguration(): Configuration {
 export async function mapHttpStatusToError(status: number, message: string): Promise<Error> {
   // Import error types from errors.js
   const { 
-    GravatarValidationError, 
     GravatarResourceNotFoundError, 
-    GravatarAuthenticationError, 
-    GravatarPermissionError, 
     GravatarRateLimitError, 
     GravatarError 
   } = await import('./errors.js');
 
   switch (status) {
-    case 400:
-      return new GravatarValidationError(message);
-    case 401:
-      return new GravatarAuthenticationError(message);
-    case 403:
-      return new GravatarPermissionError(message);
     case 404:
       return new GravatarResourceNotFoundError(message);
     case 429:
       return new GravatarRateLimitError(message, new Date(Date.now() + 60000)); // Assume 1 minute rate limit
+    case 500:
+      return new GravatarError(`Internal Server Error: ${message}`);
     default:
       return new GravatarError(`HTTP Error ${status}: ${message}`);
   }
