@@ -159,13 +159,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         throw new Error(`Unknown tool: ${request.params.name}`);
     }
   } catch (error) {
+    // Format the error message based on error type
+    let errorMessage = "An unknown error occurred";
+    
     if (error instanceof z.ZodError) {
-      throw new Error(`Invalid input: ${JSON.stringify(error.errors)}`);
+      errorMessage = `Invalid input: ${JSON.stringify(error.errors)}`;
+    } else if (isGravatarError(error)) {
+      errorMessage = formatGravatarError(error);
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
     }
-    if (isGravatarError(error)) {
-      throw new Error(formatGravatarError(error));
-    }
-    throw error;
+    
+    // Return error result
+    return {
+      isError: true,
+      content: [{ type: "text", text: errorMessage }],
+    };
   }
 });
 
