@@ -6,9 +6,6 @@ import { fileURLToPath } from 'url';
 import { 
   defaultProfileService,
   defaultExperimentalService,
-  defaultAvatarService,
-  createProfileService,
-  createExperimentalService,
   createAvatarService
 } from '../../src/services/index.js';
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';

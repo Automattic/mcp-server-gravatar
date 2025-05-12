@@ -1,4 +1,4 @@
-import { DefaultAvatarOption, Rating } from '../common/types.js';
+import type { DefaultAvatarOption, Rating } from '../common/types.js';
 
 // Profile client interface
 export interface IProfileClient {

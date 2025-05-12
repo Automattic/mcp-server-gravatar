@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ProfileService, createProfileService } from '../../src/services/profile-service.js';
-import { IProfileClient, IProfileService } from '../../src/services/interfaces.js';
+import { createProfileService } from '../../src/services/profile-service.js';
+import type { IProfileClient, IProfileService } from '../../src/services/interfaces.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
 

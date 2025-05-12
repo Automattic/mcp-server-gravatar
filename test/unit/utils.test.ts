@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as utils from '../../src/common/utils.js';
 import { 
   normalizeEmail, 
   validateEmail, 

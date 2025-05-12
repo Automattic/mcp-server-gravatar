@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import { validateEmail, validateHash, generateIdentifierFromEmail, getUserAgent } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
-import { IAvatarService } from './interfaces.js';
+import type { IAvatarService } from './interfaces.js';
 
 // Schema for getAvatarById
 export const getAvatarByIdSchema = z.object({

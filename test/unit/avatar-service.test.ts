@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AvatarService, createAvatarService } from '../../src/services/avatar-service.js';
-import { IAvatarService } from '../../src/services/interfaces.js';
+import { createAvatarService } from '../../src/services/avatar-service.js';
+import type { IAvatarService } from '../../src/services/interfaces.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
-import fetch from 'node-fetch';
+import type fetch from 'node-fetch';
 
 // Mock node-fetch
 vi.mock('node-fetch', () => {

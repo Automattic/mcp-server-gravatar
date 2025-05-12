@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as utils from '../../src/common/utils.js';
-import { AvatarService, createAvatarService } from '../../src/services/avatar-service.js';
-import { GravatarValidationError } from '../../src/common/errors.js';
+import { createAvatarService } from '../../src/services/avatar-service.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
 import fetch from 'node-fetch';
 

@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { Configuration } from '../generated/gravatar-api/runtime.js';
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import { IProfileClient, IProfileService } from './interfaces.js';
+import type { IProfileClient, IProfileService } from './interfaces.js';
 
 // Schema for getProfileById
 export const getProfileByIdSchema = z.object({

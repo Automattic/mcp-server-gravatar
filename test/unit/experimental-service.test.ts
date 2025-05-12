@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ExperimentalService, createExperimentalService } from '../../src/services/experimental-service.js';
-import { IExperimentalClient, IExperimentalService } from '../../src/services/interfaces.js';
+import { createExperimentalService } from '../../src/services/experimental-service.js';
+import type { IExperimentalClient, IExperimentalService } from '../../src/services/interfaces.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
 

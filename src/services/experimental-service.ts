@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { Configuration } from '../generated/gravatar-api/runtime.js';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
 import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import { IExperimentalClient, IExperimentalService } from './interfaces.js';
+import type { IExperimentalClient, IExperimentalService } from './interfaces.js';
 
 // Schema for getInferredInterestsById
 export const getInferredInterestsByIdSchema = z.object({

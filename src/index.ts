@@ -8,22 +8,12 @@ import {
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-import { 
-  allTools,
-  profileTools, getProfileByIdSchema, getProfileByEmailSchema,
-  experimentalTools, getInferredInterestsByIdSchema, getInferredInterestsByEmailSchema,
-  avatarTools, getAvatarByIdSchema, getAvatarByEmailSchema,
+import { getProfileByIdSchema, getProfileByEmailSchema, getInferredInterestsByIdSchema, getInferredInterestsByEmailSchema, getAvatarByIdSchema, getAvatarByEmailSchema,
   defaultProfileService,
   defaultExperimentalService,
   defaultAvatarService
 } from './services/index.js';
 import {
-  GravatarError,
-  GravatarValidationError,
-  GravatarResourceNotFoundError,
-  GravatarAuthenticationError,
-  GravatarPermissionError,
-  GravatarRateLimitError,
   isGravatarError,
   formatGravatarError,
 } from './common/errors.js';
