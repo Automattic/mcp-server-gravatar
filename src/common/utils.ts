@@ -31,13 +31,15 @@ export function validateEmail(email: string): boolean {
  * @throws GravatarValidationError if the email is invalid
  */
 export function generateIdentifierFromEmail(email: string): string {
-  // Validate email first
-  if (!validateEmail(email)) {
+  // Normalize the email first
+  const normalizedEmail = normalizeEmail(email);
+  
+  // Validate the normalized email
+  if (!validateEmail(normalizedEmail)) {
     throw new GravatarValidationError('Invalid email format');
   }
   
-  // Normalize and hash the email
-  const normalizedEmail = normalizeEmail(email);
+  // Hash the normalized email
   return generateSha256Hash(normalizedEmail);
 }
 
