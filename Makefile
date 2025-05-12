@@ -17,7 +17,7 @@ help:
 	@echo "  format            - Format code with Prettier"
 	@echo "  format-check      - Check code formatting"
 	@echo "  quality-check     - Run linting and format checking"
-	@echo "  dev               - Start development server"
+	@echo "  dev               - Start TypeScript compiler in watch mode"
 	@echo "  inspector         - Run MCP inspector to validate tools"
 	@echo "  clean             - Clean build artifacts"
 
@@ -70,10 +70,11 @@ format-check:
 quality-check: lint format-check
 	@echo "Quality check completed."
 
-# Start development server
+# Start development mode (watch for changes)
 dev:
-	@echo "Starting development server..."
+	@echo "Starting TypeScript compiler in watch mode..."
 	npm run dev
+	@echo "To run the server, use: npm start"
 
 # Run MCP inspector
 inspector:
