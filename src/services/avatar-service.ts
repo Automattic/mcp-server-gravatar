@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import fetch from 'node-fetch';
-import { validateEmail, validateHash, generateIdentifierFromEmail, getUserAgent } from '../common/utils.js';
+import {
+  validateEmail,
+  validateHash,
+  generateIdentifierFromEmail,
+  getUserAgent,
+} from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
 import type { IAvatarService } from './interfaces.js';
@@ -9,57 +14,40 @@ import type { IAvatarService } from './interfaces.js';
 // Schema for getAvatarById
 export const getAvatarByIdSchema = z.object({
   hash: z.string().refine(validateHash, {
-    message: 'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.'
+    message:
+      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
   }),
-  size: z.preprocess(
-    val => val === '' ? undefined : val, 
-    z.number().min(1).max(2048).optional()
-  ),
+  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
   defaultOption: z.preprocess(
-    val => val === '' ? undefined : val,
-    z.nativeEnum(DefaultAvatarOption).optional()
+    val => (val === '' ? undefined : val),
+    z.nativeEnum(DefaultAvatarOption).optional(),
   ),
-  forceDefault: z.preprocess(
-    val => {
-      if (val === '') return undefined;
-      if (val === 'true') return true;
-      if (val === 'false') return false;
-      return val;
-    },
-    z.boolean().optional()
-  ),
-  rating: z.preprocess(
-    val => val === '' ? undefined : val,
-    z.nativeEnum(Rating).optional()
-  )
+  forceDefault: z.preprocess(val => {
+    if (val === '') return undefined;
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    return val;
+  }, z.boolean().optional()),
+  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
 });
 
 // Schema for getAvatarByEmail
 export const getAvatarByEmailSchema = z.object({
   email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.'
+    message: 'Invalid email format.',
   }),
-  size: z.preprocess(
-    val => val === '' ? undefined : val, 
-    z.number().min(1).max(2048).optional()
-  ),
+  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
   defaultOption: z.preprocess(
-    val => val === '' ? undefined : val,
-    z.nativeEnum(DefaultAvatarOption).optional()
+    val => (val === '' ? undefined : val),
+    z.nativeEnum(DefaultAvatarOption).optional(),
   ),
-  forceDefault: z.preprocess(
-    val => {
-      if (val === '') return undefined;
-      if (val === 'true') return true;
-      if (val === 'false') return false;
-      return val;
-    },
-    z.boolean().optional()
-  ),
-  rating: z.preprocess(
-    val => val === '' ? undefined : val,
-    z.nativeEnum(Rating).optional()
-  )
+  forceDefault: z.preprocess(val => {
+    if (val === '') return undefined;
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    return val;
+  }, z.boolean().optional()),
+  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
 });
 
 // Implement the AvatarService
@@ -71,61 +59,63 @@ export class AvatarService implements IAvatarService {
     size?: number,
     defaultOption?: DefaultAvatarOption,
     forceDefault?: boolean,
-    rating?: Rating
+    rating?: Rating,
   ): Promise<Buffer> {
     try {
-      console.log(`AvatarService.getAvatarById called with hash: ${hash}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`);
-      
+      console.log(
+        `AvatarService.getAvatarById called with hash: ${hash}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
+      );
+
       // Validate hash
       if (!validateHash(hash)) {
         console.error(`Invalid hash format: ${hash}`);
         throw new GravatarValidationError('Invalid hash format');
       }
-      
+
       // Build avatar URL
       let url = `https://secure.gravatar.com/avatar/${hash}`;
-      
+
       // Add query parameters
       const queryParams = new URLSearchParams();
-      
+
       if (size) {
         queryParams.append('s', size.toString());
       }
-      
+
       if (defaultOption) {
         queryParams.append('d', defaultOption);
       }
-      
+
       if (forceDefault) {
         queryParams.append('f', 'y');
       }
-      
+
       if (rating) {
         queryParams.append('r', rating);
       }
-      
+
       // Add query string to URL if there are any parameters
       const queryString = queryParams.toString();
       if (queryString) {
         url += `?${queryString}`;
       }
-      
+
       console.log(`Making request to URL: ${url}`);
-      
+
       // Fetch the image from the URL with User-Agent header
       const response = await this.fetchFn(url, {
         headers: {
-          'User-Agent': getUserAgent()
-        }
+          'User-Agent': getUserAgent(),
+        },
       });
-      
+
       console.log(`Received response with status: ${response.status} ${response.statusText}`);
-      
+
       if (!response.ok) {
         console.error(`Failed to fetch avatar: ${response.statusText}`);
         throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
       }
-      
+
       // Convert the response to a buffer
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
@@ -142,11 +132,13 @@ export class AvatarService implements IAvatarService {
     size?: number,
     defaultOption?: DefaultAvatarOption,
     forceDefault?: boolean,
-    rating?: Rating
+    rating?: Rating,
   ): Promise<Buffer> {
     try {
-      console.log(`AvatarService.getAvatarByEmail called with email: ${email}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`);
-      
+      console.log(
+        `AvatarService.getAvatarByEmail called with email: ${email}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
+      );
+
       // Validate email
       if (!validateEmail(email)) {
         console.error(`Invalid email format: ${email}`);
@@ -156,7 +148,7 @@ export class AvatarService implements IAvatarService {
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
       console.log(`Generated identifier from email: ${identifier}`);
-      
+
       // Use getAvatarById to get the avatar
       return await this.getAvatarById(identifier, size, defaultOption, forceDefault, rating);
     } catch (error) {
@@ -178,7 +170,8 @@ export const defaultAvatarService = createAvatarService();
 export const avatarTools = [
   {
     name: 'getAvatarById',
-    description: 'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
+    description:
+      'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getAvatarByIdSchema),
     handler: async (params: z.infer<typeof getAvatarByIdSchema>) => {
       return await defaultAvatarService.getAvatarById(
@@ -186,9 +179,9 @@ export const avatarTools = [
         params.size,
         params.defaultOption,
         params.forceDefault,
-        params.rating
+        params.rating,
       );
-    }
+    },
   },
   {
     name: 'getAvatarByEmail',
@@ -200,8 +193,8 @@ export const avatarTools = [
         params.size,
         params.defaultOption,
         params.forceDefault,
-        params.rating
+        params.rating,
       );
-    }
-  }
+    },
+  },
 ];

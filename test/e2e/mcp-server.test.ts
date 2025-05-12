@@ -7,7 +7,7 @@ import type { ApiErrorResponse } from '../../src/common/types.js';
 import {
   defaultProfileService,
   defaultExperimentalService,
-  createAvatarService
+  createAvatarService,
 } from '../../src/services/index.js';
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi.js';
@@ -26,8 +26,12 @@ describe('MCP Server End-to-End', () => {
   const email = 'test@example.com';
 
   // Load the fixtures
-  const profileFixture = JSON.parse(readFileSync(path.join(__dirname, '../fixtures/profile.json'), 'utf8'));
-  const interestsFixture = JSON.parse(readFileSync(path.join(__dirname, '../fixtures/interests.json'), 'utf8'));
+  const profileFixture = JSON.parse(
+    readFileSync(path.join(__dirname, '../fixtures/profile.json'), 'utf8'),
+  );
+  const interestsFixture = JSON.parse(
+    readFileSync(path.join(__dirname, '../fixtures/interests.json'), 'utf8'),
+  );
 
   // Ensure the hash in the profile fixture matches our test hash
   profileFixture.hash = hash;
@@ -60,7 +64,9 @@ describe('MCP Server End-to-End', () => {
     vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockResolvedValue(profileFixture);
 
     // Mock the ExperimentalApi
-    vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockResolvedValue(interestsFixture);
+    vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockResolvedValue(
+      interestsFixture,
+    );
 
     // Mock the fetch function for avatars
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,7 +87,9 @@ describe('MCP Server End-to-End', () => {
     it('getProfileById should return profile data', async () => {
       const result = await profileService.getProfileById(hash);
 
-      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
       expect(result).toBeDefined();
       expect(result.hash).toBe(hash);
       // The property names in the fixture might be different from what we expect
@@ -96,7 +104,9 @@ describe('MCP Server End-to-End', () => {
       const result = await profileService.getProfileByEmail(email);
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
       expect(result).toBeDefined();
       expect(result.hash).toBe(hash);
       // The property names in the fixture might be different from what we expect
@@ -109,7 +119,9 @@ describe('MCP Server End-to-End', () => {
     it('getInferredInterestsById should return interests data', async () => {
       const result = await experimentalService.getInferredInterestsById(hash);
 
-      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
@@ -127,7 +139,9 @@ describe('MCP Server End-to-End', () => {
       const result = await experimentalService.getInferredInterestsByEmail(email);
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
@@ -147,9 +161,9 @@ describe('MCP Server End-to-End', () => {
         `https://secure.gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(Buffer);
@@ -167,9 +181,9 @@ describe('MCP Server End-to-End', () => {
         `https://secure.gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(Buffer);
@@ -197,7 +211,7 @@ describe('MCP Server End-to-End', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockRejectedValue({
         response: { status: 404 },
-        message: 'Response returned an error code'
+        message: 'Response returned an error code',
       } as ApiErrorResponse);
 
       await expect(profileService.getProfileById(hash)).rejects.toThrow();

@@ -54,7 +54,10 @@ export class GravatarPermissionError extends GravatarError {
  * Error thrown when the Gravatar API returns a 429 Too Many Requests response
  */
 export class GravatarRateLimitError extends GravatarError {
-  constructor(message: string, public resetAt: Date) {
+  constructor(
+    message: string,
+    public resetAt: Date,
+  ) {
     super(`Rate Limit Exceeded: ${message}`);
     this.name = 'GravatarRateLimitError';
   }
@@ -91,7 +94,10 @@ export function isGravatarError(error: unknown): error is GravatarError {
 /**
  * Maps an HTTP status code to the appropriate Gravatar error
  */
-export async function mapHttpStatusToError(status: number, message: string): Promise<GravatarError> {
+export async function mapHttpStatusToError(
+  status: number,
+  message: string,
+): Promise<GravatarError> {
   switch (status) {
     case 400:
       return new GravatarValidationError(message);

@@ -33,7 +33,7 @@ export enum DefaultAvatarOption {
   WAVATAR = 'wavatar',
   RETRO = 'retro',
   ROBOHASH = 'robohash',
-  BLANK = 'blank'
+  BLANK = 'blank',
 }
 
 /**
@@ -43,7 +43,7 @@ export enum Rating {
   G = 'g',
   PG = 'pg',
   R = 'r',
-  X = 'x'
+  X = 'x',
 }
 
 /**

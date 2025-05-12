@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
-import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
+import {
+  validateEmail,
+  validateHash,
+  generateIdentifierFromEmail,
+  createApiConfiguration,
+  mapHttpStatusToError,
+} from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { isApiErrorResponse } from '../common/types.js';
 import type { IExperimentalClient, IExperimentalService } from './interfaces.js';
@@ -10,20 +16,21 @@ import type { Interest } from '../generated/gravatar-api/models/Interest.js';
 // Schema for getInferredInterestsById
 export const getInferredInterestsByIdSchema = z.object({
   hash: z.string().refine(validateHash, {
-    message: 'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.'
-  })
+    message:
+      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+  }),
 });
 
 // Schema for getInferredInterestsByEmail
 export const getInferredInterestsByEmailSchema = z.object({
   email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.'
-  })
+    message: 'Invalid email format.',
+  }),
 });
 
 // Implement the ExperimentalService
 export class ExperimentalService implements IExperimentalService {
-  constructor(private readonly client: IExperimentalClient) { }
+  constructor(private readonly client: IExperimentalClient) {}
 
   async getInferredInterestsById(hash: string): Promise<Interest[]> {
     try {
@@ -37,7 +44,9 @@ export class ExperimentalService implements IExperimentalService {
 
       // Make API call
       console.log(`Making API call to get inferred interests for hash: ${hash}`);
-      const response = await this.client.getProfileInferredInterestsById({ profileIdentifier: hash });
+      const response = await this.client.getProfileInferredInterestsById({
+        profileIdentifier: hash,
+      });
       console.log(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
@@ -45,7 +54,7 @@ export class ExperimentalService implements IExperimentalService {
       if (isApiErrorResponse(error)) {
         const mappedError = await mapHttpStatusToError(
           error.response?.status || 500,
-          error.message || 'Failed to fetch inferred interests'
+          error.message || 'Failed to fetch inferred interests',
         );
         console.error(`Mapped error:`, mappedError);
         throw mappedError;
@@ -94,11 +103,12 @@ export const defaultExperimentalService = createExperimentalService();
 export const experimentalTools = [
   {
     name: 'getInferredInterestsById',
-    description: 'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
+    description:
+      'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
     handler: async (params: z.infer<typeof getInferredInterestsByIdSchema>) => {
       return await defaultExperimentalService.getInferredInterestsById(params.hash);
-    }
+    },
   },
   {
     name: 'getInferredInterestsByEmail',
@@ -106,6 +116,6 @@ export const experimentalTools = [
     inputSchema: zodToJsonSchema(getInferredInterestsByEmailSchema),
     handler: async (params: z.infer<typeof getInferredInterestsByEmailSchema>) => {
       return await defaultExperimentalService.getInferredInterestsByEmail(params.email);
-    }
-  }
+    },
+  },
 ];

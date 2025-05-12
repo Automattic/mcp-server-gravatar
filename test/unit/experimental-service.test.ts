@@ -12,7 +12,7 @@ vi.mock('../../src/common/utils.js', () => {
     validateEmail: vi.fn(),
     generateIdentifierFromEmail: vi.fn(),
     createApiConfiguration: vi.fn(),
-    mapHttpStatusToError: vi.fn()
+    mapHttpStatusToError: vi.fn(),
   };
 });
 
@@ -34,8 +34,8 @@ describe('ExperimentalService', () => {
       getProfileInferredInterestsById: vi.fn().mockResolvedValue([
         { id: 1, name: 'programming' },
         { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' }
-      ])
+        { id: 3, name: 'typescript' },
+      ]),
     };
 
     // Create the service with the mock client
@@ -54,13 +54,19 @@ describe('ExperimentalService', () => {
 
     it('should throw GravatarValidationError for invalid hash', async () => {
       vi.mocked(utils.validateHash).mockReturnValue(false);
-      await expect(service.getInferredInterestsById('invalid-hash')).rejects.toThrow(GravatarValidationError);
-      await expect(service.getInferredInterestsById('invalid-hash')).rejects.toThrow('Invalid hash format');
+      await expect(service.getInferredInterestsById('invalid-hash')).rejects.toThrow(
+        GravatarValidationError,
+      );
+      await expect(service.getInferredInterestsById('invalid-hash')).rejects.toThrow(
+        'Invalid hash format',
+      );
     });
 
     it('should call the client with correct parameters', async () => {
       await service.getInferredInterestsById('test-hash');
-      expect(mockClient.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: 'test-hash' });
+      expect(mockClient.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: 'test-hash',
+      });
     });
 
     it('should return the inferred interests data', async () => {
@@ -68,7 +74,7 @@ describe('ExperimentalService', () => {
       expect(result).toEqual([
         { id: 1, name: 'programming' },
         { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' }
+        { id: 3, name: 'typescript' },
       ]);
     });
 
@@ -81,8 +87,12 @@ describe('ExperimentalService', () => {
         return Promise.resolve(new GravatarResourceNotFoundError('Interests not found'));
       });
 
-      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(GravatarResourceNotFoundError);
-      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow('Interests not found');
+      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(
+        'Interests not found',
+      );
     });
   });
 
@@ -94,8 +104,12 @@ describe('ExperimentalService', () => {
 
     it('should throw GravatarValidationError for invalid email', async () => {
       vi.mocked(utils.validateEmail).mockReturnValue(false);
-      await expect(service.getInferredInterestsByEmail('invalid-email')).rejects.toThrow(GravatarValidationError);
-      await expect(service.getInferredInterestsByEmail('invalid-email')).rejects.toThrow('Invalid email format');
+      await expect(service.getInferredInterestsByEmail('invalid-email')).rejects.toThrow(
+        GravatarValidationError,
+      );
+      await expect(service.getInferredInterestsByEmail('invalid-email')).rejects.toThrow(
+        'Invalid email format',
+      );
     });
 
     it('should generate identifier from email', async () => {
@@ -118,7 +132,7 @@ describe('ExperimentalService', () => {
       expect(result).toEqual([
         { id: 1, name: 'programming' },
         { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' }
+        { id: 3, name: 'typescript' },
       ]);
     });
   });

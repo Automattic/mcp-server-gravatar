@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
-import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
+import {
+  validateEmail,
+  validateHash,
+  generateIdentifierFromEmail,
+  createApiConfiguration,
+  mapHttpStatusToError,
+} from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { isApiErrorResponse } from '../common/types.js';
 import type { IProfileClient, IProfileService } from './interfaces.js';
@@ -10,20 +16,21 @@ import type { Profile } from '../generated/gravatar-api/models/Profile.js';
 // Schema for getProfileById
 export const getProfileByIdSchema = z.object({
   hash: z.string().refine(validateHash, {
-    message: 'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.'
-  })
+    message:
+      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+  }),
 });
 
 // Schema for getProfileByEmail
 export const getProfileByEmailSchema = z.object({
   email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.'
-  })
+    message: 'Invalid email format.',
+  }),
 });
 
 // Implement the ProfileService
 export class ProfileService implements IProfileService {
-  constructor(private readonly client: IProfileClient) { }
+  constructor(private readonly client: IProfileClient) {}
 
   async getProfileById(hash: string): Promise<Profile> {
     try {
@@ -45,7 +52,7 @@ export class ProfileService implements IProfileService {
       if (isApiErrorResponse(error)) {
         const mappedError = await mapHttpStatusToError(
           error.response?.status || 500,
-          error.message || 'Failed to fetch profile'
+          error.message || 'Failed to fetch profile',
         );
         console.error(`Mapped error:`, mappedError);
         throw mappedError;
@@ -98,7 +105,7 @@ export const profileTools = [
     inputSchema: zodToJsonSchema(getProfileByIdSchema),
     handler: async (params: z.infer<typeof getProfileByIdSchema>) => {
       return await defaultProfileService.getProfileById(params.hash);
-    }
+    },
   },
   {
     name: 'getProfileByEmail',
@@ -106,6 +113,6 @@ export const profileTools = [
     inputSchema: zodToJsonSchema(getProfileByEmailSchema),
     handler: async (params: z.infer<typeof getProfileByEmailSchema>) => {
       return await defaultProfileService.getProfileByEmail(params.email);
-    }
-  }
+    },
+  },
 ];

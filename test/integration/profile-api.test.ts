@@ -18,7 +18,9 @@ describe('Profile API Integration', () => {
   const email = 'test@example.com';
 
   // Load the profile fixture and convert it to the proper type
-  const profileJson = JSON.parse(readFileSync(path.join(__dirname, '../fixtures/profile.json'), 'utf8'));
+  const profileJson = JSON.parse(
+    readFileSync(path.join(__dirname, '../fixtures/profile.json'), 'utf8'),
+  );
 
   // Ensure the hash in the fixture matches our test hash
   profileJson.hash = hash;
@@ -45,7 +47,9 @@ describe('Profile API Integration', () => {
       const result = await defaultProfileService.getProfileById(hash);
 
       // Verify the mock was called
-      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
 
       // Verify the result
       expect(result).toBeDefined();
@@ -60,15 +64,21 @@ describe('Profile API Integration', () => {
       // Mock the ProfilesApi.getProfileById method to throw a 404 error
       vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockRejectedValue({
         response: { status: 404 },
-        message: 'Response returned an error code'
+        message: 'Response returned an error code',
       });
 
       // Call the function and expect it to throw
-      await expect(defaultProfileService.getProfileById(hash)).rejects.toThrow(GravatarResourceNotFoundError);
-      await expect(defaultProfileService.getProfileById(hash)).rejects.toThrow(/Resource Not Found/);
+      await expect(defaultProfileService.getProfileById(hash)).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(defaultProfileService.getProfileById(hash)).rejects.toThrow(
+        /Resource Not Found/,
+      );
 
       // Verify the mock was called
-      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
     });
   });
 
@@ -85,7 +95,9 @@ describe('Profile API Integration', () => {
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
 
       // Verify the result
       expect(result).toBeDefined();
@@ -103,16 +115,22 @@ describe('Profile API Integration', () => {
       // Mock the ProfilesApi.getProfileById method to throw a 404 error
       vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockRejectedValue({
         response: { status: 404 },
-        message: 'Response returned an error code'
+        message: 'Response returned an error code',
       });
 
       // Call the function and expect it to throw
-      await expect(defaultProfileService.getProfileByEmail(email)).rejects.toThrow(GravatarResourceNotFoundError);
-      await expect(defaultProfileService.getProfileByEmail(email)).rejects.toThrow(/Resource Not Found/);
+      await expect(defaultProfileService.getProfileByEmail(email)).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(defaultProfileService.getProfileByEmail(email)).rejects.toThrow(
+        /Resource Not Found/,
+      );
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
     });
   });
 });

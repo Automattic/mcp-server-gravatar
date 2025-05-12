@@ -12,9 +12,9 @@ export default defineConfig({
         branches: 80,
         functions: 80,
         lines: 80,
-        statements: 80
-      }
+        statements: 80,
+      },
     },
-    setupFiles: ['test/setup.ts']
-  }
+    setupFiles: ['test/setup.ts'],
+  },
 });

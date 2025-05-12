@@ -15,8 +15,4 @@ import { profileTools } from './profile-service.js';
 import { experimentalTools } from './experimental-service.js';
 import { avatarTools } from './avatar-service.js';
 
-export const allTools = [
-  ...profileTools,
-  ...experimentalTools,
-  ...avatarTools
-];
+export const allTools = [...profileTools, ...experimentalTools, ...avatarTools];

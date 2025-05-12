@@ -18,7 +18,9 @@ describe('Experimental API Integration', () => {
   const email = 'test@example.com';
 
   // Load the interests fixture and convert it to the proper type
-  const interestsJson = JSON.parse(readFileSync(path.join(__dirname, '../fixtures/interests.json'), 'utf8'));
+  const interestsJson = JSON.parse(
+    readFileSync(path.join(__dirname, '../fixtures/interests.json'), 'utf8'),
+  );
   const interestsFixture = interestsJson.map(interest => InterestFromJSON(interest));
 
   beforeEach(() => {
@@ -33,13 +35,17 @@ describe('Experimental API Integration', () => {
   describe('getInferredInterestsById', () => {
     it('should fetch and return inferred interests data', async () => {
       // Mock the ExperimentalApi.getProfileInferredInterestsById method
-      vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockResolvedValue(interestsFixture);
+      vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockResolvedValue(
+        interestsFixture,
+      );
 
       // Call the function
       const result = await defaultExperimentalService.getInferredInterestsById(hash);
 
       // Verify the mock was called
-      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
 
       // Verify the result
       expect(result).toBeDefined();
@@ -58,15 +64,21 @@ describe('Experimental API Integration', () => {
       // Mock the ExperimentalApi.getProfileInferredInterestsById method to throw a 404 error
       vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockRejectedValue({
         response: { status: 404 },
-        message: 'Response returned an error code'
+        message: 'Response returned an error code',
       });
 
       // Call the function and expect it to throw
-      await expect(defaultExperimentalService.getInferredInterestsById(hash)).rejects.toThrow(GravatarResourceNotFoundError);
-      await expect(defaultExperimentalService.getInferredInterestsById(hash)).rejects.toThrow(/Resource Not Found/);
+      await expect(defaultExperimentalService.getInferredInterestsById(hash)).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(defaultExperimentalService.getInferredInterestsById(hash)).rejects.toThrow(
+        /Resource Not Found/,
+      );
 
       // Verify the mock was called
-      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
     });
   });
 
@@ -76,14 +88,18 @@ describe('Experimental API Integration', () => {
       vi.spyOn(utils, 'generateIdentifierFromEmail').mockReturnValue(hash);
 
       // Mock the ExperimentalApi.getProfileInferredInterestsById method
-      vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockResolvedValue(interestsFixture);
+      vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockResolvedValue(
+        interestsFixture,
+      );
 
       // Call the function
       const result = await defaultExperimentalService.getInferredInterestsByEmail(email);
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
 
       // Verify the result
       expect(result).toBeDefined();
@@ -105,16 +121,22 @@ describe('Experimental API Integration', () => {
       // Mock the ExperimentalApi.getProfileInferredInterestsById method to throw a 404 error
       vi.spyOn(ExperimentalApi.prototype, 'getProfileInferredInterestsById').mockRejectedValue({
         response: { status: 404 },
-        message: 'Response returned an error code'
+        message: 'Response returned an error code',
       });
 
       // Call the function and expect it to throw
-      await expect(defaultExperimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(GravatarResourceNotFoundError);
-      await expect(defaultExperimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(/Resource Not Found/);
+      await expect(defaultExperimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(defaultExperimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(
+        /Resource Not Found/,
+      );
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({ profileIdentifier: hash });
+      expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: hash,
+      });
     });
   });
 });

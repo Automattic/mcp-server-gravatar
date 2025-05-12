@@ -31,7 +31,7 @@ export interface IAvatarService {
     size?: number,
     defaultOption?: DefaultAvatarOption,
     forceDefault?: boolean,
-    rating?: Rating
+    rating?: Rating,
   ): Promise<Buffer>;
 
   getAvatarByEmail(
@@ -39,6 +39,6 @@ export interface IAvatarService {
     size?: number,
     defaultOption?: DefaultAvatarOption,
     forceDefault?: boolean,
-    rating?: Rating
+    rating?: Rating,
   ): Promise<Buffer>;
 }

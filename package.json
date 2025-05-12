@@ -21,8 +21,8 @@
     "generate-client": "make generate-client",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\""
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "gravatar",

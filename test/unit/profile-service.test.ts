@@ -12,7 +12,7 @@ vi.mock('../../src/common/utils.js', () => {
     validateEmail: vi.fn(),
     generateIdentifierFromEmail: vi.fn(),
     createApiConfiguration: vi.fn(),
-    mapHttpStatusToError: vi.fn()
+    mapHttpStatusToError: vi.fn(),
   };
 });
 
@@ -34,8 +34,8 @@ describe('ProfileService', () => {
       getProfileById: vi.fn().mockResolvedValue({
         hash: 'test-hash',
         displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser'
-      })
+        profileUrl: 'https://gravatar.com/testuser',
+      }),
     };
 
     // Create the service with the mock client
@@ -68,7 +68,7 @@ describe('ProfileService', () => {
       expect(result).toEqual({
         hash: 'test-hash',
         displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser'
+        profileUrl: 'https://gravatar.com/testuser',
       });
     });
 
@@ -81,7 +81,9 @@ describe('ProfileService', () => {
         return Promise.resolve(new GravatarResourceNotFoundError('Profile not found'));
       });
 
-      await expect(service.getProfileById('test-hash')).rejects.toThrow(GravatarResourceNotFoundError);
+      await expect(service.getProfileById('test-hash')).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
       await expect(service.getProfileById('test-hash')).rejects.toThrow('Profile not found');
     });
   });
@@ -94,8 +96,12 @@ describe('ProfileService', () => {
 
     it('should throw GravatarValidationError for invalid email', async () => {
       vi.mocked(utils.validateEmail).mockReturnValue(false);
-      await expect(service.getProfileByEmail('invalid-email')).rejects.toThrow(GravatarValidationError);
-      await expect(service.getProfileByEmail('invalid-email')).rejects.toThrow('Invalid email format');
+      await expect(service.getProfileByEmail('invalid-email')).rejects.toThrow(
+        GravatarValidationError,
+      );
+      await expect(service.getProfileByEmail('invalid-email')).rejects.toThrow(
+        'Invalid email format',
+      );
     });
 
     it('should generate identifier from email', async () => {
@@ -118,7 +124,7 @@ describe('ProfileService', () => {
       expect(result).toEqual({
         hash: 'test-hash',
         displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser'
+        profileUrl: 'https://gravatar.com/testuser',
       });
     });
   });

@@ -61,9 +61,9 @@ describe('Avatar API Integration', () => {
         `https://secure.gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
 
       // Verify the result
@@ -83,7 +83,7 @@ describe('Avatar API Integration', () => {
         200,
         DefaultAvatarOption.IDENTICON,
         true,
-        Rating.PG
+        Rating.PG,
       );
 
       // Verify the mock was called with the correct URL including query parameters
@@ -91,9 +91,9 @@ describe('Avatar API Integration', () => {
         `https://secure.gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
 
       // Verify the result
@@ -115,9 +115,9 @@ describe('Avatar API Integration', () => {
         `https://secure.gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
     });
   });
@@ -140,9 +140,9 @@ describe('Avatar API Integration', () => {
         `https://secure.gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
 
       // Verify the result
@@ -165,7 +165,7 @@ describe('Avatar API Integration', () => {
         200,
         DefaultAvatarOption.IDENTICON,
         true,
-        Rating.PG
+        Rating.PG,
       );
 
       // Verify the mocks were called
@@ -174,9 +174,9 @@ describe('Avatar API Integration', () => {
         `https://secure.gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
 
       // Verify the result
@@ -202,9 +202,9 @@ describe('Avatar API Integration', () => {
         `https://secure.gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': expect.any(String)
-          })
-        })
+            'User-Agent': expect.any(String),
+          }),
+        }),
       );
     });
   });

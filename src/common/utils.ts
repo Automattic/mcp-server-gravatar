@@ -33,12 +33,12 @@ export function validateEmail(email: string): boolean {
 export function generateIdentifierFromEmail(email: string): string {
   // Normalize the email first
   const normalizedEmail = normalizeEmail(email);
-  
+
   // Validate the normalized email
   if (!validateEmail(normalizedEmail)) {
     throw new GravatarValidationError('Invalid email format');
   }
-  
+
   // Hash the normalized email
   return generateSha256Hash(normalizedEmail);
 }
@@ -96,22 +96,22 @@ export function getUserAgent(): string {
 export function createApiConfiguration(): Configuration {
   // Get API key from environment variable
   const apiKey = getApiKey();
-  
+
   // Create configuration with headers
   const config: {
     headers: { 'User-Agent': string };
     accessToken?: string;
   } = {
     headers: {
-      'User-Agent': getUserAgent()
-    }
+      'User-Agent': getUserAgent(),
+    },
   };
-  
+
   // Add API key if available
   if (apiKey) {
     config.accessToken = apiKey;
   }
-  
+
   return new Configuration(config);
 }
 
@@ -123,11 +123,9 @@ export function createApiConfiguration(): Configuration {
  */
 export async function mapHttpStatusToError(status: number, message: string): Promise<Error> {
   // Import error types from errors.js
-  const { 
-    GravatarResourceNotFoundError, 
-    GravatarRateLimitError, 
-    GravatarError 
-  } = await import('./errors.js');
+  const { GravatarResourceNotFoundError, GravatarRateLimitError, GravatarError } = await import(
+    './errors.js'
+  );
 
   switch (status) {
     case 404:
