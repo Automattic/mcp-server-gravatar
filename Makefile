@@ -3,7 +3,7 @@
 # Constants
 OPENAPI_GENERATOR_VERSION = 7.13.0
 
-.PHONY: download-spec generate-client test lint clean dev build inspect help
+.PHONY: download-spec generate-client test lint lint-fix format format-check quality-check clean dev build inspect help
 
 # Default target shows help
 help:
@@ -12,6 +12,12 @@ help:
 	@echo "  generate-client   - Generate Gravatar API client from OpenAPI spec"
 	@echo "  build             - Build the TypeScript project"
 	@echo "  test              - Run tests"
+	@echo "  lint              - Run linting"
+	@echo "  lint-fix          - Run linting with auto-fix"
+	@echo "  format            - Format code with Prettier"
+	@echo "  format-check      - Check code formatting"
+	@echo "  quality-check     - Run linting and format checking"
+	@echo "  dev               - Start development server"
 	@echo "  inspector         - Run MCP inspector to validate tools"
 	@echo "  clean             - Clean build artifacts"
 
@@ -38,6 +44,36 @@ test:
 	@echo "Running tests..."
 	npm test
 	@echo "Tests completed."
+
+# Linting and formatting
+lint:
+	@echo "Running linter..."
+	npm run lint
+	@echo "Linting completed."
+
+lint-fix:
+	@echo "Running linter with auto-fix..."
+	npm run lint:fix
+	@echo "Linting and fixing completed."
+
+format:
+	@echo "Formatting code..."
+	npm run format
+	@echo "Formatting completed."
+
+format-check:
+	@echo "Checking code formatting..."
+	npm run format:check
+	@echo "Format check completed."
+
+# Combined quality check
+quality-check: lint format-check
+	@echo "Quality check completed."
+
+# Start development server
+dev:
+	@echo "Starting development server..."
+	npm run dev
 
 # Run MCP inspector
 inspector:
