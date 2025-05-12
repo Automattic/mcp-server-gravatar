@@ -8,9 +8,15 @@ import {
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-import { profileTools, getProfileByIdSchema, getProfileByEmailSchema, getProfileById, getProfileByEmail } from './operations/profile.js';
-import { experimentalTools, getInferredInterestsByIdSchema, getInferredInterestsByEmailSchema, getInferredInterestsById, getInferredInterestsByEmail } from './operations/experimental.js';
-import { avatarTools, getAvatarByIdSchema, getAvatarByEmailSchema, getAvatarById, getAvatarByEmail } from './operations/avatar.js';
+import { 
+  allTools,
+  profileTools, getProfileByIdSchema, getProfileByEmailSchema,
+  experimentalTools, getInferredInterestsByIdSchema, getInferredInterestsByEmailSchema,
+  avatarTools, getAvatarByIdSchema, getAvatarByEmailSchema,
+  defaultProfileService,
+  defaultExperimentalService,
+  defaultAvatarService
+} from './services/index.js';
 import {
   GravatarError,
   GravatarValidationError,
@@ -85,7 +91,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (request.params.name) {
       case "get_profile_by_id": {
         const args = getProfileByIdSchema.parse(request.params.arguments);
-        const profile = await getProfileById(args.hash);
+        const profile = await defaultProfileService.getProfileById(args.hash);
         return {
           content: [{ type: "text", text: JSON.stringify(profile, null, 2) }],
         };
@@ -93,7 +99,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "get_profile_by_email": {
         const args = getProfileByEmailSchema.parse(request.params.arguments);
-        const profile = await getProfileByEmail(args.email);
+        const profile = await defaultProfileService.getProfileByEmail(args.email);
         return {
           content: [{ type: "text", text: JSON.stringify(profile, null, 2) }],
         };
@@ -101,7 +107,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "get_inferred_interests_by_id": {
         const args = getInferredInterestsByIdSchema.parse(request.params.arguments);
-        const interests = await getInferredInterestsById(args.hash);
+        const interests = await defaultExperimentalService.getInferredInterestsById(args.hash);
         // Extract just the name field from each interest
         const interestNames = interests.map((interest: { name: string }) => interest.name);
         return {
@@ -111,7 +117,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "get_inferred_interests_by_email": {
         const args = getInferredInterestsByEmailSchema.parse(request.params.arguments);
-        const interests = await getInferredInterestsByEmail(args.email);
+        const interests = await defaultExperimentalService.getInferredInterestsByEmail(args.email);
         // Extract just the name field from each interest
         const interestNames = interests.map((interest: { name: string }) => interest.name);
         return {
@@ -121,7 +127,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "get_avatar_by_id": {
         const args = getAvatarByIdSchema.parse(request.params.arguments);
-        const avatarBuffer = await getAvatarById(
+        const avatarBuffer = await defaultAvatarService.getAvatarById(
           args.hash,
           args.size,
           args.defaultOption,
@@ -139,7 +145,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "get_avatar_by_email": {
         const args = getAvatarByEmailSchema.parse(request.params.arguments);
-        const avatarBuffer = await getAvatarByEmail(
+        const avatarBuffer = await defaultAvatarService.getAvatarByEmail(
           args.email,
           args.size,
           args.defaultOption,
