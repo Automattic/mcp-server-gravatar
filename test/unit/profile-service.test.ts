@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createProfileService } from '../../src/services/profile-service.js';
 import type { IProfileClient, IProfileService } from '../../src/services/interfaces.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
+import type { ApiErrorResponse } from '../../src/common/types.js';
 import * as utils from '../../src/common/utils.js';
 
 // Mock the utils functions
@@ -72,8 +73,8 @@ describe('ProfileService', () => {
     });
 
     it('should handle API errors', async () => {
-      const error = new Error('API Error');
-      (error as any).response = { status: 404 };
+      const error = new Error('API Error') as unknown as ApiErrorResponse;
+      error.response = { status: 404 };
 
       mockClient.getProfileById = vi.fn().mockRejectedValue(error);
       vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {

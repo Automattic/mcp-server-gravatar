@@ -3,7 +3,9 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
 import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
+import { isApiErrorResponse } from '../common/types.js';
 import type { IExperimentalClient, IExperimentalService } from './interfaces.js';
+import type { Interest } from '../generated/gravatar-api/models/Interest.js';
 
 // Schema for getInferredInterestsById
 export const getInferredInterestsByIdSchema = z.object({
@@ -21,12 +23,12 @@ export const getInferredInterestsByEmailSchema = z.object({
 
 // Implement the ExperimentalService
 export class ExperimentalService implements IExperimentalService {
-  constructor(private readonly client: IExperimentalClient) {}
+  constructor(private readonly client: IExperimentalClient) { }
 
-  async getInferredInterestsById(hash: string): Promise<any> {
+  async getInferredInterestsById(hash: string): Promise<Interest[]> {
     try {
       console.log(`ExperimentalService.getInferredInterestsById called with hash: ${hash}`);
-      
+
       // Validate hash
       if (!validateHash(hash)) {
         console.error(`Invalid hash format: ${hash}`);
@@ -38,10 +40,13 @@ export class ExperimentalService implements IExperimentalService {
       const response = await this.client.getProfileInferredInterestsById({ profileIdentifier: hash });
       console.log(`Received response for hash ${hash}:`, response);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error getting inferred interests for hash ${hash}:`, error);
-      if (error.response && error.response.status) {
-        const mappedError = await mapHttpStatusToError(error.response.status, error.message || 'Failed to fetch inferred interests');
+      if (isApiErrorResponse(error)) {
+        const mappedError = await mapHttpStatusToError(
+          error.response?.status || 500,
+          error.message || 'Failed to fetch inferred interests'
+        );
         console.error(`Mapped error:`, mappedError);
         throw mappedError;
       }
@@ -49,10 +54,10 @@ export class ExperimentalService implements IExperimentalService {
     }
   }
 
-  async getInferredInterestsByEmail(email: string): Promise<any> {
+  async getInferredInterestsByEmail(email: string): Promise<Interest[]> {
     try {
       console.log(`ExperimentalService.getInferredInterestsByEmail called with email: ${email}`);
-      
+
       // Validate email
       if (!validateEmail(email)) {
         console.error(`Invalid email format: ${email}`);

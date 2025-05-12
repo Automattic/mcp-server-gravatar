@@ -65,7 +65,7 @@ export class GravatarRateLimitError extends GravatarError {
  */
 export function formatGravatarError(error: GravatarError): string {
   let message = `Gravatar API Error: ${error.message}`;
-  
+
   if (error instanceof GravatarValidationError) {
     message = `Validation Error: ${error.message}`;
   } else if (error instanceof GravatarResourceNotFoundError) {
@@ -84,6 +84,26 @@ export function formatGravatarError(error: GravatarError): string {
 /**
  * Checks if an error is a Gravatar API error
  */
-export function isGravatarError(error: any): error is GravatarError {
+export function isGravatarError(error: unknown): error is GravatarError {
   return error instanceof GravatarError;
+}
+
+/**
+ * Maps an HTTP status code to the appropriate Gravatar error
+ */
+export async function mapHttpStatusToError(status: number, message: string): Promise<GravatarError> {
+  switch (status) {
+    case 400:
+      return new GravatarValidationError(message);
+    case 401:
+      return new GravatarAuthenticationError(message);
+    case 403:
+      return new GravatarPermissionError(message);
+    case 404:
+      return new GravatarResourceNotFoundError(message);
+    case 429:
+      return new GravatarRateLimitError(message, new Date(Date.now() + 60000)); // Default to 1 minute
+    default:
+      return new GravatarError(message);
+  }
 }

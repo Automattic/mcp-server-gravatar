@@ -3,7 +3,9 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { validateEmail, validateHash, generateIdentifierFromEmail, createApiConfiguration, mapHttpStatusToError } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
+import { isApiErrorResponse } from '../common/types.js';
 import type { IProfileClient, IProfileService } from './interfaces.js';
+import type { Profile } from '../generated/gravatar-api/models/Profile.js';
 
 // Schema for getProfileById
 export const getProfileByIdSchema = z.object({
@@ -21,12 +23,12 @@ export const getProfileByEmailSchema = z.object({
 
 // Implement the ProfileService
 export class ProfileService implements IProfileService {
-  constructor(private readonly client: IProfileClient) {}
+  constructor(private readonly client: IProfileClient) { }
 
-  async getProfileById(hash: string): Promise<any> {
+  async getProfileById(hash: string): Promise<Profile> {
     try {
       console.log(`ProfileService.getProfileById called with hash: ${hash}`);
-      
+
       // Validate hash
       if (!validateHash(hash)) {
         console.error(`Invalid hash format: ${hash}`);
@@ -38,10 +40,13 @@ export class ProfileService implements IProfileService {
       const response = await this.client.getProfileById({ profileIdentifier: hash });
       console.log(`Received response for hash ${hash}:`, response);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error getting profile for hash ${hash}:`, error);
-      if (error.response && error.response.status) {
-        const mappedError = await mapHttpStatusToError(error.response.status, error.message || 'Failed to fetch profile');
+      if (isApiErrorResponse(error)) {
+        const mappedError = await mapHttpStatusToError(
+          error.response?.status || 500,
+          error.message || 'Failed to fetch profile'
+        );
         console.error(`Mapped error:`, mappedError);
         throw mappedError;
       }
@@ -49,10 +54,10 @@ export class ProfileService implements IProfileService {
     }
   }
 
-  async getProfileByEmail(email: string): Promise<any> {
+  async getProfileByEmail(email: string): Promise<Profile> {
     try {
       console.log(`ProfileService.getProfileByEmail called with email: ${email}`);
-      
+
       // Validate email
       if (!validateEmail(email)) {
         console.error(`Invalid email format: ${email}`);
