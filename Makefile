@@ -11,6 +11,7 @@ help:
 	@echo "  download-spec     - Download Gravatar OpenAPI spec"
 	@echo "  generate-client   - Generate Gravatar API client from OpenAPI spec"
 	@echo "  build             - Build the TypeScript project"
+	@echo "  test              - Run tests"
 	@echo "  inspector         - Run MCP inspector to validate tools"
 	@echo "  clean             - Clean build artifacts"
 
@@ -31,6 +32,12 @@ build:
 	@echo "Building the project..."
 	npm run build
 	@echo "Build completed."
+
+# Run tests
+test:
+	@echo "Running tests..."
+	npm test
+	@echo "Tests completed."
 
 # Run MCP inspector
 inspector:
