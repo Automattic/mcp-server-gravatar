@@ -2,7 +2,9 @@
 name: "\U0001F41E Bug report"
 about: Report a bug if something isn't working as expected with the Gravatar MCP Server
 title: ''
-labels: bug
+labels:
+  - 'Bug'
+  - '[Priority] Medium'
 assignees: ''
 
 ---
