@@ -11,6 +11,9 @@ openapi.json
 # Documentation
 README.md
 
+# VS Code settings
+.vscode/settings.json
+
 # Misc
 .DS_Store
 .env
