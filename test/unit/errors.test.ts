@@ -18,6 +18,70 @@ describe('Error Classes', () => {
     expect(error.message).toBe('Test error');
   });
 
+  describe('mapHttpStatusToError', () => {
+    it('should map status 400 to GravatarValidationError', async () => {
+      const error = await import('../../src/common/errors.js').then(module =>
+        module.mapHttpStatusToError(400, 'Bad request'),
+      );
+      expect(error).toBeInstanceOf(GravatarValidationError);
+      expect(error.message).toContain('Bad request');
+    });
+
+    it('should map status 401 to GravatarAuthenticationError', async () => {
+      const error = await import('../../src/common/errors.js').then(module =>
+        module.mapHttpStatusToError(401, 'Unauthorized'),
+      );
+      expect(error).toBeInstanceOf(GravatarAuthenticationError);
+      expect(error.message).toContain('Unauthorized');
+    });
+
+    it('should map status 403 to GravatarPermissionError', async () => {
+      const error = await import('../../src/common/errors.js').then(module =>
+        module.mapHttpStatusToError(403, 'Forbidden'),
+      );
+      expect(error).toBeInstanceOf(GravatarPermissionError);
+      expect(error.message).toContain('Forbidden');
+    });
+
+    it('should map status 404 to GravatarResourceNotFoundError', async () => {
+      const error = await import('../../src/common/errors.js').then(module =>
+        module.mapHttpStatusToError(404, 'Not found'),
+      );
+      expect(error).toBeInstanceOf(GravatarResourceNotFoundError);
+      expect(error.message).toContain('Not found');
+    });
+
+    it('should map status 429 to GravatarRateLimitError', async () => {
+      const now = Date.now();
+      const error = await import('../../src/common/errors.js').then(module =>
+        module.mapHttpStatusToError(429, 'Too many requests'),
+      );
+      expect(error).toBeInstanceOf(GravatarRateLimitError);
+      expect(error.message).toContain('Too many requests');
+
+      // Type assertion to tell TypeScript this is a GravatarRateLimitError
+      const rateLimitError = error as GravatarRateLimitError;
+      expect(rateLimitError).toHaveProperty('resetAt');
+      expect(rateLimitError.resetAt).toBeInstanceOf(Date);
+      // Check that resetAt is approximately 1 minute in the future
+      expect(rateLimitError.resetAt.getTime()).toBeGreaterThan(now);
+      expect(rateLimitError.resetAt.getTime()).toBeLessThanOrEqual(now + 61000); // Allow 1 second buffer
+    });
+
+    it('should map other status codes to GravatarError', async () => {
+      const error = await import('../../src/common/errors.js').then(module =>
+        module.mapHttpStatusToError(500, 'Server error'),
+      );
+      expect(error).toBeInstanceOf(GravatarError);
+      expect(error).not.toBeInstanceOf(GravatarValidationError);
+      expect(error).not.toBeInstanceOf(GravatarAuthenticationError);
+      expect(error).not.toBeInstanceOf(GravatarPermissionError);
+      expect(error).not.toBeInstanceOf(GravatarResourceNotFoundError);
+      expect(error).not.toBeInstanceOf(GravatarRateLimitError);
+      expect(error.message).toContain('Server error');
+    });
+  });
+
   it('GravatarValidationError should be instance of GravatarError', () => {
     const error = new GravatarValidationError('Invalid input');
     expect(error).toBeInstanceOf(GravatarError);
