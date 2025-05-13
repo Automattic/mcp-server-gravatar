@@ -30,7 +30,7 @@ export const getInferredInterestsByEmailSchema = z.object({
 
 // Implement the ExperimentalService
 export class ExperimentalService implements IExperimentalService {
-  constructor(private readonly client: IExperimentalClient) { }
+  constructor(private readonly client: IExperimentalClient) {}
 
   async getInferredInterestsById(hash: string): Promise<Interest[]> {
     try {

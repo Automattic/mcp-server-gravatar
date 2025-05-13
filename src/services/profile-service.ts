@@ -30,7 +30,7 @@ export const getProfileByEmailSchema = z.object({
 
 // Implement the ProfileService
 export class ProfileService implements IProfileService {
-  constructor(private readonly client: IProfileClient) { }
+  constructor(private readonly client: IProfileClient) {}
 
   async getProfileById(hash: string): Promise<Profile> {
     try {

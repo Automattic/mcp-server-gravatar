@@ -52,7 +52,7 @@ export const getAvatarByEmailSchema = z.object({
 
 // Implement the AvatarService
 export class AvatarService implements IAvatarService {
-  constructor(private readonly fetchFn: typeof fetch = fetch) { }
+  constructor(private readonly fetchFn: typeof fetch = fetch) {}
 
   async getAvatarById(
     hash: string,
