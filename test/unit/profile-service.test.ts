@@ -35,13 +35,13 @@ describe('Profile MCP Tools', () => {
       hash: 'test-hash',
       displayName: 'Test User',
       profileUrl: 'https://gravatar.com/testuser',
-    } as any);
+    } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     vi.spyOn(defaultProfileService, 'getProfileByEmail').mockResolvedValue({
       hash: 'test-hash',
       displayName: 'Test User',
       profileUrl: 'https://gravatar.com/testuser',
-    } as any);
+    } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
   });
 
   afterEach(() => {
@@ -60,6 +60,7 @@ describe('Profile MCP Tools', () => {
       const getProfileByIdSpy = vi.spyOn(defaultProfileService, 'getProfileById');
 
       // Call the handler
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await profileTools[0].handler({ hash: 'test-hash' } as any);
 
       // Verify the service method was called with the correct parameters
@@ -85,13 +86,13 @@ describe('Profile MCP Tools', () => {
           hash: 'test-hash',
           displayName: 'Test User',
           profileUrl: 'https://gravatar.com/testuser',
-        } as any;
+        } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       });
 
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         hash: 'invalid-hash',
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       await expect(profileTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -109,6 +110,7 @@ describe('Profile MCP Tools', () => {
       const getProfileByEmailSpy = vi.spyOn(defaultProfileService, 'getProfileByEmail');
 
       // Call the handler
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await profileTools[1].handler({ email: 'test@example.com' } as any);
 
       // Verify the service method was called with the correct parameters
@@ -134,13 +136,13 @@ describe('Profile MCP Tools', () => {
           hash: 'test-hash',
           displayName: 'Test User',
           profileUrl: 'https://gravatar.com/testuser',
-        } as any;
+        } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       });
 
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         email: 'invalid-email',
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       await expect(profileTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
     });

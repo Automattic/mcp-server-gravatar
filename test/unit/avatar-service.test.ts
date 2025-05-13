@@ -245,7 +245,7 @@ describe('Avatar MCP Tools', () => {
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
         rating: Rating.PG,
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       const result = await tool.handler(params);
 
@@ -263,7 +263,7 @@ describe('Avatar MCP Tools', () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         hash: 'invalid-hash',
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       await expect(tool.handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -287,7 +287,7 @@ describe('Avatar MCP Tools', () => {
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
         rating: Rating.PG,
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       const result = await tool.handler(params);
 
@@ -306,7 +306,7 @@ describe('Avatar MCP Tools', () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         email: 'invalid-email',
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       await expect(tool.handler(params)).rejects.toThrow(GravatarValidationError);
     });
