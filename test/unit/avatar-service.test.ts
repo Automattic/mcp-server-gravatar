@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createAvatarService } from '../../src/services/avatar-service.js';
+import { createAvatarService, avatarTools } from '../../src/services/avatar-service.js';
 import type { IAvatarService } from '../../src/services/interfaces.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
-import type fetch from 'node-fetch';
+import fetch from 'node-fetch';
 
 // Mock node-fetch
 vi.mock('node-fetch', () => {
@@ -194,6 +194,121 @@ describe('AvatarService', () => {
     it('should return the avatar data', async () => {
       const result = await service.getAvatarByEmail('test@example.com');
       expect(result).toBeInstanceOf(Buffer);
+    });
+  });
+});
+
+describe('Avatar MCP Tools', () => {
+  let mockFetch: typeof fetch;
+
+  beforeEach(() => {
+    // Reset all mocks
+    vi.clearAllMocks();
+
+    // Default mock implementations
+    vi.mocked(utils.validateHash).mockReturnValue(true);
+    vi.mocked(utils.validateEmail).mockReturnValue(true);
+    vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
+    vi.mocked(utils.getUserAgent).mockReturnValue('mcp-server-gravatar/v1.0.0');
+
+    // Create a mock fetch function
+    mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(10)),
+      statusText: 'OK',
+      status: 200,
+    });
+
+    // Replace the default fetch with our mock
+    vi.mocked(fetch).mockImplementation(mockFetch);
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  describe('getAvatarById tool', () => {
+    it('should have the correct name and description', () => {
+      const tool = avatarTools[0];
+      expect(tool.name).toBe('getAvatarById');
+      expect(tool.description).toContain(
+        'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash)',
+      );
+    });
+
+    it('should call the service with correct parameters', async () => {
+      const tool = avatarTools[0];
+      // Use type assertion to tell TypeScript this is the correct type
+      const params = {
+        hash: 'test-hash',
+        size: 200,
+        defaultOption: DefaultAvatarOption.IDENTICON,
+        forceDefault: true,
+        rating: Rating.PG,
+      } as any;
+
+      const result = await tool.handler(params);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('https://secure.gravatar.com/avatar/test-hash'),
+        expect.any(Object),
+      );
+      expect(result).toBeInstanceOf(Buffer);
+    });
+
+    it('should handle validation errors', async () => {
+      const tool = avatarTools[0];
+      vi.mocked(utils.validateHash).mockReturnValue(false);
+
+      // Use type assertion to tell TypeScript this is the correct type
+      const params = {
+        hash: 'invalid-hash',
+      } as any;
+
+      await expect(tool.handler(params)).rejects.toThrow(GravatarValidationError);
+    });
+  });
+
+  describe('getAvatarByEmail tool', () => {
+    it('should have the correct name and description', () => {
+      const tool = avatarTools[1];
+      expect(tool.name).toBe('getAvatarByEmail');
+      expect(tool.description).toContain(
+        'Get the avatar PNG image for a Gravatar profile using an email address',
+      );
+    });
+
+    it('should call the service with correct parameters', async () => {
+      const tool = avatarTools[1];
+      // Use type assertion to tell TypeScript this is the correct type
+      const params = {
+        email: 'test@example.com',
+        size: 200,
+        defaultOption: DefaultAvatarOption.IDENTICON,
+        forceDefault: true,
+        rating: Rating.PG,
+      } as any;
+
+      const result = await tool.handler(params);
+
+      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('https://secure.gravatar.com/avatar/email-hash'),
+        expect.any(Object),
+      );
+      expect(result).toBeInstanceOf(Buffer);
+    });
+
+    it('should handle validation errors', async () => {
+      const tool = avatarTools[1];
+      vi.mocked(utils.validateEmail).mockReturnValue(false);
+
+      // Use type assertion to tell TypeScript this is the correct type
+      const params = {
+        email: 'invalid-email',
+      } as any;
+
+      await expect(tool.handler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 });
