@@ -30,11 +30,11 @@ export const getProfileByEmailSchema = z.object({
 
 // Implement the ProfileService
 export class ProfileService implements IProfileService {
-  constructor(private readonly client: IProfileClient) {}
+  constructor(private readonly client: IProfileClient) { }
 
   async getProfileById(hash: string): Promise<Profile> {
     try {
-      console.log(`ProfileService.getProfileById called with hash: ${hash}`);
+      console.error(`ProfileService.getProfileById called with hash: ${hash}`);
 
       // Validate hash
       if (!validateHash(hash)) {
@@ -43,9 +43,9 @@ export class ProfileService implements IProfileService {
       }
 
       // Make API call
-      console.log(`Making API call to get profile for hash: ${hash}`);
+      console.error(`Making API call to get profile for hash: ${hash}`);
       const response = await this.client.getProfileById({ profileIdentifier: hash });
-      console.log(`Received response for hash ${hash}:`, response);
+      console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
       console.error(`Error getting profile for hash ${hash}:`, error);
@@ -63,7 +63,7 @@ export class ProfileService implements IProfileService {
 
   async getProfileByEmail(email: string): Promise<Profile> {
     try {
-      console.log(`ProfileService.getProfileByEmail called with email: ${email}`);
+      console.error(`ProfileService.getProfileByEmail called with email: ${email}`);
 
       // Validate email
       if (!validateEmail(email)) {
@@ -73,7 +73,7 @@ export class ProfileService implements IProfileService {
 
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
-      console.log(`Generated identifier from email: ${identifier}`);
+      console.error(`Generated identifier from email: ${identifier}`);
 
       // Use getProfileById to fetch the profile
       return await this.getProfileById(identifier);

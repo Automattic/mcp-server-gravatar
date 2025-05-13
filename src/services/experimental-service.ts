@@ -30,11 +30,11 @@ export const getInferredInterestsByEmailSchema = z.object({
 
 // Implement the ExperimentalService
 export class ExperimentalService implements IExperimentalService {
-  constructor(private readonly client: IExperimentalClient) {}
+  constructor(private readonly client: IExperimentalClient) { }
 
   async getInferredInterestsById(hash: string): Promise<Interest[]> {
     try {
-      console.log(`ExperimentalService.getInferredInterestsById called with hash: ${hash}`);
+      console.error(`ExperimentalService.getInferredInterestsById called with hash: ${hash}`);
 
       // Validate hash
       if (!validateHash(hash)) {
@@ -43,11 +43,11 @@ export class ExperimentalService implements IExperimentalService {
       }
 
       // Make API call
-      console.log(`Making API call to get inferred interests for hash: ${hash}`);
+      console.error(`Making API call to get inferred interests for hash: ${hash}`);
       const response = await this.client.getProfileInferredInterestsById({
         profileIdentifier: hash,
       });
-      console.log(`Received response for hash ${hash}:`, response);
+      console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
       console.error(`Error getting inferred interests for hash ${hash}:`, error);
@@ -65,7 +65,7 @@ export class ExperimentalService implements IExperimentalService {
 
   async getInferredInterestsByEmail(email: string): Promise<Interest[]> {
     try {
-      console.log(`ExperimentalService.getInferredInterestsByEmail called with email: ${email}`);
+      console.error(`ExperimentalService.getInferredInterestsByEmail called with email: ${email}`);
 
       // Validate email
       if (!validateEmail(email)) {
@@ -75,7 +75,7 @@ export class ExperimentalService implements IExperimentalService {
 
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
-      console.log(`Generated identifier from email: ${identifier}`);
+      console.error(`Generated identifier from email: ${identifier}`);
 
       // Use getInferredInterestsById to fetch the inferred interests
       return await this.getInferredInterestsById(identifier);

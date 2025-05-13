@@ -52,7 +52,7 @@ export const getAvatarByEmailSchema = z.object({
 
 // Implement the AvatarService
 export class AvatarService implements IAvatarService {
-  constructor(private readonly fetchFn: typeof fetch = fetch) {}
+  constructor(private readonly fetchFn: typeof fetch = fetch) { }
 
   async getAvatarById(
     hash: string,
@@ -62,7 +62,7 @@ export class AvatarService implements IAvatarService {
     rating?: Rating,
   ): Promise<Buffer> {
     try {
-      console.log(
+      console.error(
         `AvatarService.getAvatarById called with hash: ${hash}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
       );
 
@@ -100,7 +100,7 @@ export class AvatarService implements IAvatarService {
         url += `?${queryString}`;
       }
 
-      console.log(`Making request to URL: ${url}`);
+      console.error(`Making request to URL: ${url}`);
 
       // Fetch the image from the URL with User-Agent header
       const response = await this.fetchFn(url, {
@@ -109,7 +109,7 @@ export class AvatarService implements IAvatarService {
         },
       });
 
-      console.log(`Received response with status: ${response.status} ${response.statusText}`);
+      console.error(`Received response with status: ${response.status} ${response.statusText}`);
 
       if (!response.ok) {
         console.error(`Failed to fetch avatar: ${response.statusText}`);
@@ -119,7 +119,7 @@ export class AvatarService implements IAvatarService {
       // Convert the response to a buffer
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      console.log(`Successfully converted response to buffer of size: ${buffer.length} bytes`);
+      console.error(`Successfully converted response to buffer of size: ${buffer.length} bytes`);
       return buffer;
     } catch (error) {
       console.error(`Error getting avatar for hash ${hash}:`, error);
@@ -135,7 +135,7 @@ export class AvatarService implements IAvatarService {
     rating?: Rating,
   ): Promise<Buffer> {
     try {
-      console.log(
+      console.error(
         `AvatarService.getAvatarByEmail called with email: ${email}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
       );
 
@@ -147,7 +147,7 @@ export class AvatarService implements IAvatarService {
 
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
-      console.log(`Generated identifier from email: ${identifier}`);
+      console.error(`Generated identifier from email: ${identifier}`);
 
       // Use getAvatarById to get the avatar
       return await this.getAvatarById(identifier, size, defaultOption, forceDefault, rating);
