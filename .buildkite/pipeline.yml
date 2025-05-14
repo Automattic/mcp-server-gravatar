@@ -4,7 +4,7 @@
 # Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buidkite-agent pipeline upload`
 
 steps:
-  - group: "Linters"
+  - group: Linters
     steps:
       - label: "🕵️ Lint & Format Check"
         key: quality-check
@@ -12,6 +12,9 @@ steps:
         command: |
           echo "--- 🛠 Lint & Format Check"
           make quality-check
+        notify:
+          - github_commit_status:
+              context: Lint
       # - label: ☢️ Danger - PR Check
       #   command: danger
       #   key: danger
@@ -28,6 +31,9 @@ steps:
     command: |
       echo "--- 🧪 Running tests"
       make test
+    notify:
+      - github_commit_status:
+          context: Test
 
   - label: "📦 Build"
     key: build
@@ -35,6 +41,9 @@ steps:
     command: |
       echo "--- 📦 Building the project"
       make build
+    notify:
+      - github_commit_status:
+          context: Build
 
   - label: "🔍 MCP Inspector"
     key: inspector
@@ -42,3 +51,6 @@ steps:
     command: |
       echo "--- 🔍 Running MCP inspector"
       make inspector
+    notify:
+      - github_commit_status:
+          context: Inspector
