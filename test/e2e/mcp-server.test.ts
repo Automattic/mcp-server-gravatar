@@ -4,11 +4,9 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { ApiErrorResponse } from '../../src/common/types.js';
-import {
-  defaultProfileService,
-  defaultExperimentalService,
-  createAvatarService,
-} from '../../src/services/index.js';
+import { createAvatarService } from '../../src/services/index.js';
+import { getDefaultProfileService } from '../../src/services/profile-service.js';
+import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi.js';
 import fetch from 'node-fetch';
@@ -56,7 +54,7 @@ describe('MCP Server End-to-End', () => {
   let experimentalService;
   let avatarService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset all mocks
     vi.resetAllMocks();
 
@@ -73,8 +71,8 @@ describe('MCP Server End-to-End', () => {
     vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
     // Create service instances with mocked dependencies
-    profileService = defaultProfileService;
-    experimentalService = defaultExperimentalService;
+    profileService = await getDefaultProfileService();
+    experimentalService = await getDefaultExperimentalService();
     avatarService = createAvatarService(fetch);
   });
 

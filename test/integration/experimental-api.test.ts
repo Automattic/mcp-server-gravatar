@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as utils from '../../src/common/utils.js';
-import { defaultExperimentalService } from '../../src/services/index.js';
+import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
 import { GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -16,6 +16,7 @@ describe('Experimental API Integration', () => {
   // Use a valid MD5 hash (32 characters) for testing
   const hash = '00000000000000000000000000000000';
   const email = 'test@example.com';
+  let experimentalService;
 
   // Load the interests fixture and convert it to the proper type
   const interestsJson = JSON.parse(
@@ -23,8 +24,9 @@ describe('Experimental API Integration', () => {
   );
   const interestsFixture = interestsJson.map(interest => InterestFromJSON(interest));
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Setup runs before each test
+    experimentalService = await getDefaultExperimentalService();
   });
 
   afterEach(() => {
@@ -40,7 +42,7 @@ describe('Experimental API Integration', () => {
       );
 
       // Call the function
-      const result = await defaultExperimentalService.getInferredInterestsById(hash);
+      const result = await experimentalService.getInferredInterestsById(hash);
 
       // Verify the mock was called
       expect(ExperimentalApi.prototype.getProfileInferredInterestsById).toHaveBeenCalledWith({
@@ -68,10 +70,10 @@ describe('Experimental API Integration', () => {
       });
 
       // Call the function and expect it to throw
-      await expect(defaultExperimentalService.getInferredInterestsById(hash)).rejects.toThrow(
+      await expect(experimentalService.getInferredInterestsById(hash)).rejects.toThrow(
         GravatarResourceNotFoundError,
       );
-      await expect(defaultExperimentalService.getInferredInterestsById(hash)).rejects.toThrow(
+      await expect(experimentalService.getInferredInterestsById(hash)).rejects.toThrow(
         /Resource Not Found/,
       );
 
@@ -93,7 +95,7 @@ describe('Experimental API Integration', () => {
       );
 
       // Call the function
-      const result = await defaultExperimentalService.getInferredInterestsByEmail(email);
+      const result = await experimentalService.getInferredInterestsByEmail(email);
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
@@ -125,10 +127,10 @@ describe('Experimental API Integration', () => {
       });
 
       // Call the function and expect it to throw
-      await expect(defaultExperimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(
+      await expect(experimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(
         GravatarResourceNotFoundError,
       );
-      await expect(defaultExperimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(
+      await expect(experimentalService.getInferredInterestsByEmail(email)).rejects.toThrow(
         /Resource Not Found/,
       );
 

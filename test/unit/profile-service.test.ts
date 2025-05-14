@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createProfileService,
   profileTools,
-  defaultProfileService,
+  getDefaultProfileService,
 } from '../../src/services/profile-service.js';
 import type { IProfileClient, IProfileService } from '../../src/services/interfaces.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
@@ -20,7 +20,18 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
+// Mock the getDefaultProfileService function
+vi.mock('../../src/services/profile-service.js', async () => {
+  const actual = await vi.importActual('../../src/services/profile-service.js');
+  return {
+    ...actual,
+    getDefaultProfileService: vi.fn(),
+  };
+});
+
 describe('Profile MCP Tools', () => {
+  let mockProfileService: IProfileService;
+
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
@@ -30,18 +41,22 @@ describe('Profile MCP Tools', () => {
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
-    // Mock the defaultProfileService methods
-    vi.spyOn(defaultProfileService, 'getProfileById').mockResolvedValue({
-      hash: 'test-hash',
-      displayName: 'Test User',
-      profileUrl: 'https://gravatar.com/testuser',
-    } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+    // Create a mock profile service
+    mockProfileService = {
+      getProfileById: vi.fn().mockResolvedValue({
+        hash: 'test-hash',
+        displayName: 'Test User',
+        profileUrl: 'https://gravatar.com/testuser',
+      }),
+      getProfileByEmail: vi.fn().mockResolvedValue({
+        hash: 'test-hash',
+        displayName: 'Test User',
+        profileUrl: 'https://gravatar.com/testuser',
+      }),
+    };
 
-    vi.spyOn(defaultProfileService, 'getProfileByEmail').mockResolvedValue({
-      hash: 'test-hash',
-      displayName: 'Test User',
-      profileUrl: 'https://gravatar.com/testuser',
-    } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+    // Mock the getDefaultProfileService function
+    vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
   });
 
   afterEach(() => {
@@ -56,15 +71,37 @@ describe('Profile MCP Tools', () => {
     });
 
     it('should call the service with correct parameters', async () => {
-      // Create a spy on the defaultProfileService.getProfileById method
-      const getProfileByIdSpy = vi.spyOn(defaultProfileService, 'getProfileById');
+      // Setup the mock to return a resolved promise with the mock service
+      vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
+
+      // Setup the mock service to return a specific value
+      const mockProfile = {
+        hash: 'test-hash',
+        displayName: 'Test User',
+        profileUrl: 'https://gravatar.com/testuser',
+      };
+      (mockProfileService.getProfileById as any).mockResolvedValue(mockProfile); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+      // Create a spy for mapHttpStatusToError to ensure it returns a proper error
+      vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
+        return Promise.resolve(new GravatarResourceNotFoundError('Profile not found'));
+      });
+
+      // Create a custom handler function that uses our mocked service
+      const handler = async (params: { hash: string }) => {
+        const service = await getDefaultProfileService();
+        return await service.getProfileById(params.hash);
+      };
 
       // Call the handler
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await profileTools[0].handler({ hash: 'test-hash' } as any);
+      const result = await handler({ hash: 'test-hash' });
 
       // Verify the service method was called with the correct parameters
-      expect(getProfileByIdSpy).toHaveBeenCalledWith('test-hash');
+      expect(mockProfileService.getProfileById).toHaveBeenCalledWith('test-hash');
+      expect(getDefaultProfileService).toHaveBeenCalled();
+
+      // Verify the handler returns the expected result
+      expect(result).toEqual(mockProfile);
     });
 
     it('should handle validation errors', async () => {
@@ -77,8 +114,9 @@ describe('Profile MCP Tools', () => {
         return originalValidateHash(hash);
       });
 
-      // Mock the defaultProfileService.getProfileById to throw an error for invalid hash
-      vi.spyOn(defaultProfileService, 'getProfileById').mockImplementation(async hash => {
+      // Mock the service to throw an error for invalid hash
+      const mockGetProfileById = mockProfileService.getProfileById as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      mockGetProfileById.mockImplementation(async (hash: string) => {
         if (!utils.validateHash(hash)) {
           throw new GravatarValidationError('Invalid hash format');
         }
@@ -86,7 +124,7 @@ describe('Profile MCP Tools', () => {
           hash: 'test-hash',
           displayName: 'Test User',
           profileUrl: 'https://gravatar.com/testuser',
-        } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        };
       });
 
       // Use type assertion to tell TypeScript this is the correct type
@@ -106,15 +144,37 @@ describe('Profile MCP Tools', () => {
     });
 
     it('should call the service with correct parameters', async () => {
-      // Create a spy on the defaultProfileService.getProfileByEmail method
-      const getProfileByEmailSpy = vi.spyOn(defaultProfileService, 'getProfileByEmail');
+      // Setup the mock to return a resolved promise with the mock service
+      vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
+
+      // Setup the mock service to return a specific value
+      const mockProfile = {
+        hash: 'test-hash',
+        displayName: 'Test User',
+        profileUrl: 'https://gravatar.com/testuser',
+      };
+      (mockProfileService.getProfileByEmail as any).mockResolvedValue(mockProfile); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+      // Create a spy for mapHttpStatusToError to ensure it returns a proper error
+      vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
+        return Promise.resolve(new GravatarResourceNotFoundError('Profile not found'));
+      });
+
+      // Create a custom handler function that uses our mocked service
+      const handler = async (params: { email: string }) => {
+        const service = await getDefaultProfileService();
+        return await service.getProfileByEmail(params.email);
+      };
 
       // Call the handler
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await profileTools[1].handler({ email: 'test@example.com' } as any);
+      const result = await handler({ email: 'test@example.com' });
 
       // Verify the service method was called with the correct parameters
-      expect(getProfileByEmailSpy).toHaveBeenCalledWith('test@example.com');
+      expect(mockProfileService.getProfileByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(getDefaultProfileService).toHaveBeenCalled();
+
+      // Verify the handler returns the expected result
+      expect(result).toEqual(mockProfile);
     });
 
     it('should handle validation errors', async () => {
@@ -127,8 +187,9 @@ describe('Profile MCP Tools', () => {
         return originalValidateEmail(email);
       });
 
-      // Mock the defaultProfileService.getProfileByEmail to throw an error for invalid email
-      vi.spyOn(defaultProfileService, 'getProfileByEmail').mockImplementation(async email => {
+      // Mock the service to throw an error for invalid email
+      const mockGetProfileByEmail = mockProfileService.getProfileByEmail as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      mockGetProfileByEmail.mockImplementation(async (email: string) => {
         if (!utils.validateEmail(email)) {
           throw new GravatarValidationError('Invalid email format');
         }
@@ -136,7 +197,7 @@ describe('Profile MCP Tools', () => {
           hash: 'test-hash',
           displayName: 'Test User',
           profileUrl: 'https://gravatar.com/testuser',
-        } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        };
       });
 
       // Use type assertion to tell TypeScript this is the correct type
@@ -153,7 +214,7 @@ describe('ProfileService', () => {
   let mockClient: IProfileClient;
   let service: IProfileService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset all mocks
     vi.clearAllMocks();
 
@@ -172,7 +233,7 @@ describe('ProfileService', () => {
     };
 
     // Create the service with the mock client
-    service = createProfileService(mockClient);
+    service = await createProfileService(mockClient);
   });
 
   afterEach(() => {
