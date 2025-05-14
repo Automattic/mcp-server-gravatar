@@ -1,11 +1,12 @@
-// No need to import McpError, we'll return formatted error objects directly
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 /**
  * Base class for all Gravatar API errors
+ * Extends McpError to ensure MCP compliance
  */
-export class GravatarError extends Error {
-  constructor(message: string) {
-    super(message);
+export class GravatarError extends McpError {
+  constructor(code: ErrorCode = ErrorCode.InternalError, message: string) {
+    super(code, message);
     this.name = 'GravatarError';
   }
 }
@@ -15,7 +16,7 @@ export class GravatarError extends Error {
  */
 export class GravatarValidationError extends GravatarError {
   constructor(message: string) {
-    super(`Validation Error: ${message}`);
+    super(ErrorCode.InvalidParams, `Validation Error: ${message}`);
     this.name = 'GravatarValidationError';
   }
 }
@@ -25,7 +26,7 @@ export class GravatarValidationError extends GravatarError {
  */
 export class GravatarResourceNotFoundError extends GravatarError {
   constructor(message: string) {
-    super(`Resource Not Found: ${message}`);
+    super(ErrorCode.InvalidRequest, `Resource Not Found: ${message}`);
     this.name = 'GravatarResourceNotFoundError';
   }
 }
@@ -35,7 +36,7 @@ export class GravatarResourceNotFoundError extends GravatarError {
  */
 export class GravatarAuthenticationError extends GravatarError {
   constructor(message: string) {
-    super(`Authentication Failed: ${message}`);
+    super(ErrorCode.InvalidRequest, `Authentication Failed: ${message}`);
     this.name = 'GravatarAuthenticationError';
   }
 }
@@ -45,7 +46,7 @@ export class GravatarAuthenticationError extends GravatarError {
  */
 export class GravatarPermissionError extends GravatarError {
   constructor(message: string) {
-    super(`Permission Denied: ${message}`);
+    super(ErrorCode.InvalidRequest, `Permission Denied: ${message}`);
     this.name = 'GravatarPermissionError';
   }
 }
@@ -54,34 +55,16 @@ export class GravatarPermissionError extends GravatarError {
  * Error thrown when the Gravatar API returns a 429 Too Many Requests response
  */
 export class GravatarRateLimitError extends GravatarError {
-  constructor(
-    message: string,
-    public resetAt: Date,
-  ) {
-    super(`Rate Limit Exceeded: ${message}`);
+  public resetAt: Date;
+
+  constructor(message: string, resetAt: Date) {
+    super(
+      ErrorCode.InvalidRequest,
+      `Rate Limit Exceeded: ${message}\nResets at: ${resetAt.toISOString()}`,
+    );
     this.name = 'GravatarRateLimitError';
+    this.resetAt = resetAt;
   }
-}
-
-/**
- * Maps a Gravatar API error to a formatted error message
- */
-export function formatGravatarError(error: GravatarError): string {
-  let message = `Gravatar API Error: ${error.message}`;
-
-  if (error instanceof GravatarValidationError) {
-    message = `Validation Error: ${error.message}`;
-  } else if (error instanceof GravatarResourceNotFoundError) {
-    message = `Not Found: ${error.message}`;
-  } else if (error instanceof GravatarAuthenticationError) {
-    message = `Authentication Failed: ${error.message}`;
-  } else if (error instanceof GravatarPermissionError) {
-    message = `Permission Denied: ${error.message}`;
-  } else if (error instanceof GravatarRateLimitError) {
-    message = `Rate Limit Exceeded: ${error.message}\nResets at: ${error.resetAt.toISOString()}`;
-  }
-
-  return message;
 }
 
 /**
@@ -110,6 +93,6 @@ export async function mapHttpStatusToError(
     case 429:
       return new GravatarRateLimitError(message, new Date(Date.now() + 60000)); // Default to 1 minute
     default:
-      return new GravatarError(message);
+      return new GravatarError(ErrorCode.InternalError, message);
   }
 }

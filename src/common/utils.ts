@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { GravatarValidationError } from './errors.js';
 import { VERSION } from './version.js';
 
@@ -133,8 +134,8 @@ export async function mapHttpStatusToError(status: number, message: string): Pro
     case 429:
       return new GravatarRateLimitError(message, new Date(Date.now() + 60000)); // Assume 1 minute rate limit
     case 500:
-      return new GravatarError(`Internal Server Error: ${message}`);
+      return new GravatarError(ErrorCode.InternalError, `Internal Server Error: ${message}`);
     default:
-      return new GravatarError(`HTTP Error ${status}: ${message}`);
+      return new GravatarError(ErrorCode.InternalError, `HTTP Error ${status}: ${message}`);
   }
 }
