@@ -38,10 +38,10 @@ steps:
       - github_commit_status:
           context: Build
 
-  - label: 🔍 MCP Inspector
+  - label: 🔍 Test MCP Inspector
     key: inspector
     plugins: [$NVM_PLUGIN]
     command: .buildkite/commands/test-run-inspector.sh
     notify:
       - github_commit_status:
-          context: Inspector
+          context: MCP Inspector Testing
