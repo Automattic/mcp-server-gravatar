@@ -15,6 +15,10 @@
     "npm": ">=8.0.0"
   },
   "engineStrict": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/mcp-server-gravatar.git"
+  },
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
     "prepare": "npm run build",
