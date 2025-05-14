@@ -19,6 +19,7 @@
     "type": "git",
     "url": "https://github.com/Automattic/mcp-server-gravatar.git"
   },
+  "homepage": "https://github.com/Automattic/mcp-server-gravatar",
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
     "prepare": "npm run build",
