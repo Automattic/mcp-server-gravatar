@@ -41,10 +41,7 @@ steps:
   - label: 🔍 MCP Inspector
     key: inspector
     plugins: [$NVM_PLUGIN]
-    command: |
-      echo "--- 🔍 Running MCP inspector"
-      npm ci
-      make inspector
+    command: .buildkite/commands/test-run-inspector.sh
     notify:
       - github_commit_status:
           context: Inspector
