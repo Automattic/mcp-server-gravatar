@@ -85,17 +85,30 @@ export class ProfileService implements IProfileService {
 }
 
 // Factory function to create the default client
-export function createProfileClient(): IProfileClient {
-  return new ProfilesApi(createApiConfiguration());
+export async function createProfileClient(): Promise<IProfileClient> {
+  const config = await createApiConfiguration();
+  return new ProfilesApi(config);
 }
 
 // Factory function to create the service with optional client
-export function createProfileService(client?: IProfileClient): IProfileService {
-  return new ProfileService(client || createProfileClient());
+export async function createProfileService(client?: IProfileClient): Promise<IProfileService> {
+  if (client) {
+    return new ProfileService(client);
+  }
+  const defaultClient = await createProfileClient();
+  return new ProfileService(defaultClient);
 }
 
-// Default instance for convenience
-export const defaultProfileService = createProfileService();
+// We'll initialize this later when needed
+let _defaultProfileService: IProfileService | null = null;
+
+// Function to get or create the default service
+export async function getDefaultProfileService(): Promise<IProfileService> {
+  if (!_defaultProfileService) {
+    _defaultProfileService = await createProfileService();
+  }
+  return _defaultProfileService;
+}
 
 // Tool definitions for MCP
 export const profileTools = [
@@ -104,7 +117,8 @@ export const profileTools = [
     description: 'Fetch a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getProfileByIdSchema),
     handler: async (params: z.infer<typeof getProfileByIdSchema>) => {
-      return await defaultProfileService.getProfileById(params.hash);
+      const service = await getDefaultProfileService();
+      return await service.getProfileById(params.hash);
     },
   },
   {
@@ -112,7 +126,8 @@ export const profileTools = [
     description: 'Fetch a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getProfileByEmailSchema),
     handler: async (params: z.infer<typeof getProfileByEmailSchema>) => {
-      return await defaultProfileService.getProfileByEmail(params.email);
+      const service = await getDefaultProfileService();
+      return await service.getProfileByEmail(params.email);
     },
   },
 ];

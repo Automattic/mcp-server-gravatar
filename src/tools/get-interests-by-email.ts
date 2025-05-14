@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
-  defaultExperimentalService,
+  getDefaultExperimentalService,
   getInferredInterestsByEmailSchema,
 } from '../services/experimental-service.js';
 
@@ -14,7 +14,8 @@ export const getInterestsByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getInferredInterestsByEmailSchema>) {
-  const interests = await defaultExperimentalService.getInferredInterestsByEmail(params.email);
+  const experimentalService = await getDefaultExperimentalService();
+  const interests = await experimentalService.getInferredInterestsByEmail(params.email);
   // Extract just the name field from each interest
   const interestNames = interests.map((interest: { name: string }) => interest.name);
   return {

@@ -7,6 +7,7 @@ import {
   generateIdentifierFromEmail,
   getUserAgent,
 } from '../common/utils.js';
+import { apiConfig } from '../config/server-config.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
 import type { IAvatarService } from './interfaces.js';
@@ -72,8 +73,8 @@ export class AvatarService implements IAvatarService {
         throw new GravatarValidationError('Invalid hash format');
       }
 
-      // Build avatar URL
-      let url = `https://secure.gravatar.com/avatar/${hash}`;
+      // Build avatar URL using the configured avatarBaseUrl
+      let url = `${apiConfig.avatarBaseUrl}/${hash}`;
 
       // Add query parameters
       const queryParams = new URLSearchParams();
@@ -163,8 +164,16 @@ export function createAvatarService(fetchFn?: typeof fetch): IAvatarService {
   return new AvatarService(fetchFn || fetch);
 }
 
-// Default instance for convenience
-export const defaultAvatarService = createAvatarService();
+// We'll initialize this later when needed
+let _defaultAvatarService: IAvatarService | null = null;
+
+// Function to get or create the default service
+export function getDefaultAvatarService(): IAvatarService {
+  if (!_defaultAvatarService) {
+    _defaultAvatarService = createAvatarService();
+  }
+  return _defaultAvatarService;
+}
 
 // Tool definitions for MCP
 export const avatarTools = [
@@ -174,7 +183,8 @@ export const avatarTools = [
       'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getAvatarByIdSchema),
     handler: async (params: z.infer<typeof getAvatarByIdSchema>) => {
-      return await defaultAvatarService.getAvatarById(
+      const service = getDefaultAvatarService();
+      return await service.getAvatarById(
         params.hash,
         params.size,
         params.defaultOption,
@@ -188,7 +198,8 @@ export const avatarTools = [
     description: 'Get the avatar PNG image for a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getAvatarByEmailSchema),
     handler: async (params: z.infer<typeof getAvatarByEmailSchema>) => {
-      return await defaultAvatarService.getAvatarByEmail(
+      const service = getDefaultAvatarService();
+      return await service.getAvatarByEmail(
         params.email,
         params.size,
         params.defaultOption,

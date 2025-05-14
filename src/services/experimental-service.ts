@@ -87,17 +87,32 @@ export class ExperimentalService implements IExperimentalService {
 }
 
 // Factory function to create the default client
-export function createExperimentalClient(): IExperimentalClient {
-  return new ExperimentalApi(createApiConfiguration());
+export async function createExperimentalClient(): Promise<IExperimentalClient> {
+  const config = await createApiConfiguration();
+  return new ExperimentalApi(config);
 }
 
 // Factory function to create the service with optional client
-export function createExperimentalService(client?: IExperimentalClient): IExperimentalService {
-  return new ExperimentalService(client || createExperimentalClient());
+export async function createExperimentalService(
+  client?: IExperimentalClient,
+): Promise<IExperimentalService> {
+  if (client) {
+    return new ExperimentalService(client);
+  }
+  const defaultClient = await createExperimentalClient();
+  return new ExperimentalService(defaultClient);
 }
 
-// Default instance for convenience
-export const defaultExperimentalService = createExperimentalService();
+// We'll initialize this later when needed
+let _defaultExperimentalService: IExperimentalService | null = null;
+
+// Function to get or create the default service
+export async function getDefaultExperimentalService(): Promise<IExperimentalService> {
+  if (!_defaultExperimentalService) {
+    _defaultExperimentalService = await createExperimentalService();
+  }
+  return _defaultExperimentalService;
+}
 
 // Tool definitions for MCP
 export const experimentalTools = [
@@ -107,7 +122,8 @@ export const experimentalTools = [
       'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
     handler: async (params: z.infer<typeof getInferredInterestsByIdSchema>) => {
-      return await defaultExperimentalService.getInferredInterestsById(params.hash);
+      const service = await getDefaultExperimentalService();
+      return await service.getInferredInterestsById(params.hash);
     },
   },
   {
@@ -115,7 +131,8 @@ export const experimentalTools = [
     description: 'Fetch inferred interests for a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getInferredInterestsByEmailSchema),
     handler: async (params: z.infer<typeof getInferredInterestsByEmailSchema>) => {
-      return await defaultExperimentalService.getInferredInterestsByEmail(params.email);
+      const service = await getDefaultExperimentalService();
+      return await service.getInferredInterestsByEmail(params.email);
     },
   },
 ];

@@ -75,14 +75,6 @@ export function generateSha256Hash(email: string): string {
 }
 
 /**
- * Gets the API key from the environment variables
- * @returns The API key or undefined if not set
- */
-export function getApiKey(): string | undefined {
-  return process.env.GRAVATAR_API_KEY;
-}
-
-/**
  * Gets the User-Agent string for API requests
  * @returns The User-Agent string
  */
@@ -91,12 +83,23 @@ export function getUserAgent(): string {
 }
 
 /**
+ * Gets the API key from the environment variables
+ * Uses the environment variable name specified in securityConfig
+ * @returns The API key or undefined if not set
+ */
+export async function getApiKey(): Promise<string | undefined> {
+  const { securityConfig } = await import('../config/server-config.js');
+  return process.env[securityConfig.apiKeyEnvVar];
+}
+
+/**
  * Creates a configuration object for API clients
+ * Uses the API key from environment variables
  * @returns Configuration object with API key and User-Agent header
  */
-export function createApiConfiguration(): Configuration {
+export async function createApiConfiguration(): Promise<Configuration> {
   // Get API key from environment variable
-  const apiKey = getApiKey();
+  const apiKey = await getApiKey();
 
   // Create configuration with headers
   const config: {

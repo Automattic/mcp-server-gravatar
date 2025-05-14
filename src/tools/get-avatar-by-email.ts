@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { defaultAvatarService, getAvatarByEmailSchema } from '../services/avatar-service.js';
+import { getDefaultAvatarService, getAvatarByEmailSchema } from '../services/avatar-service.js';
 
 // Tool definition
 export const getAvatarByEmailTool = {
@@ -11,7 +11,8 @@ export const getAvatarByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
-  const avatarBuffer = await defaultAvatarService.getAvatarByEmail(
+  const service = getDefaultAvatarService();
+  const avatarBuffer = await service.getAvatarByEmail(
     params.email,
     params.size,
     params.defaultOption,
