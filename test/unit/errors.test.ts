@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import {
   GravatarError,
   GravatarValidationError,
@@ -6,16 +7,15 @@ import {
   GravatarAuthenticationError,
   GravatarPermissionError,
   GravatarRateLimitError,
-  formatGravatarError,
   isGravatarError,
 } from '../../src/common/errors.js';
 
 describe('Error Classes', () => {
   it('GravatarError should be instance of Error', () => {
-    const error = new GravatarError('Test error');
+    const error = new GravatarError(ErrorCode.InternalError, 'Test error');
     expect(error).toBeInstanceOf(Error);
     expect(error.name).toBe('GravatarError');
-    expect(error.message).toBe('Test error');
+    expect(error.message).toBe('MCP error -32603: Test error');
   });
 
   describe('mapHttpStatusToError', () => {
@@ -126,52 +126,8 @@ describe('Error Classes', () => {
 });
 
 describe('Error Utilities', () => {
-  it('formatGravatarError should format validation errors', () => {
-    const error = new GravatarValidationError('Invalid email');
-    const formatted = formatGravatarError(error);
-    expect(formatted).toContain('Validation Error');
-    expect(formatted).toContain('Invalid email');
-  });
-
-  it('formatGravatarError should format resource not found errors', () => {
-    const error = new GravatarResourceNotFoundError('Profile not found');
-    const formatted = formatGravatarError(error);
-    expect(formatted).toContain('Not Found');
-    expect(formatted).toContain('Profile not found');
-  });
-
-  it('formatGravatarError should format authentication errors', () => {
-    const error = new GravatarAuthenticationError('Invalid API key');
-    const formatted = formatGravatarError(error);
-    expect(formatted).toContain('Authentication Failed');
-    expect(formatted).toContain('Invalid API key');
-  });
-
-  it('formatGravatarError should format permission errors', () => {
-    const error = new GravatarPermissionError('Access denied');
-    const formatted = formatGravatarError(error);
-    expect(formatted).toContain('Permission Denied');
-    expect(formatted).toContain('Access denied');
-  });
-
-  it('formatGravatarError should format rate limit errors with reset time', () => {
-    const resetDate = new Date();
-    const error = new GravatarRateLimitError('Too many requests', resetDate);
-    const formatted = formatGravatarError(error);
-    expect(formatted).toContain('Rate Limit Exceeded');
-    expect(formatted).toContain('Too many requests');
-    expect(formatted).toContain(resetDate.toISOString());
-  });
-
-  it('formatGravatarError should format generic Gravatar errors', () => {
-    const error = new GravatarError('Unknown error');
-    const formatted = formatGravatarError(error);
-    expect(formatted).toContain('Gravatar API Error');
-    expect(formatted).toContain('Unknown error');
-  });
-
   it('isGravatarError should identify Gravatar errors', () => {
-    expect(isGravatarError(new GravatarError('Test'))).toBe(true);
+    expect(isGravatarError(new GravatarError(ErrorCode.InternalError, 'Test'))).toBe(true);
     expect(isGravatarError(new GravatarValidationError('Test'))).toBe(true);
     expect(isGravatarError(new GravatarResourceNotFoundError('Test'))).toBe(true);
     expect(isGravatarError(new GravatarAuthenticationError('Test'))).toBe(true);
