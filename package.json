@@ -10,6 +10,19 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "engineStrict": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/mcp-server-gravatar.git"
+  },
+  "homepage": "https://github.com/Automattic/mcp-server-gravatar",
+  "bugs": {
+    "url": "https://github.com/Automattic/mcp-server-gravatar/issues"
+  },
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
     "prepare": "npm run build",
@@ -31,7 +44,7 @@
     "ai"
   ],
   "author": "Automattic",
-  "license": "ISC",
+  "license": "MPL-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.1",
     "node-fetch": "^3.3.2",
