@@ -14,7 +14,7 @@ steps:
           make quality-check
         notify:
           - github_commit_status:
-              context: Lint
+              context: Lint & Formatting Check
 
   - label: 🧪 Test
     key: test
