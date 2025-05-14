@@ -10,6 +10,9 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
     "prepare": "npm run build",
