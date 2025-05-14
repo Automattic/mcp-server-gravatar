@@ -11,6 +11,7 @@ steps:
         plugins: [$NVM_PLUGIN]
         command: |
           echo "--- 🛠 Lint & Format Check"
+          npm ci
           make quality-check
         notify:
           - github_commit_status:
@@ -30,6 +31,7 @@ steps:
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 🧪 Running tests"
+      npm ci
       make test
     notify:
       - github_commit_status:
@@ -40,6 +42,7 @@ steps:
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 📦 Building the project"
+      npm ci
       make build
     notify:
       - github_commit_status:
@@ -50,6 +53,7 @@ steps:
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 🔍 Running MCP inspector"
+      npm ci
       make inspector
     notify:
       - github_commit_status:
