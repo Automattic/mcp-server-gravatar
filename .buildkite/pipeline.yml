@@ -32,53 +32,26 @@ steps:
           - github_commit_status:
               context: Type Checking
 
-  - group: 'Tests'
-    key: all-tests
-    steps:
-      - label: '🧪 Unit Tests'
-        key: unit-tests
-        plugins: [$NVM_PLUGIN]
-        command: |
-          echo "--- 📦 Installing dependencies"
-          npm ci
-          echo "--- 🧪 Running unit tests"
-          npm run test:unit
-        notify:
-          - github_commit_status:
-              context: Unit Tests
-
-      - label: '🔄 Integration Tests'
-        key: integration-tests
-        plugins: [$NVM_PLUGIN]
-        command: |
-          echo "--- 📦 Installing dependencies"
-          npm ci
-          echo "--- 🔄 Running integration tests"
-          npm run test:integration
-        notify:
-          - github_commit_status:
-              context: Integration Tests
-
-      - label: '🌐 End-to-End Tests'
-        key: e2e-tests
-        plugins: [$NVM_PLUGIN]
-        command: |
-          echo "--- 📦 Installing dependencies"
-          npm ci
-          echo "--- 🌐 Running end-to-end tests"
-          npm run test:e2e
-        notify:
-          - github_commit_status:
-              context: End-to-End Tests
-
-  - label: '📊 Test Coverage'
-    key: test-coverage
-    depends_on: all-tests
+  - label: '🧪 Tests'
+    key: tests
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 📦 Installing dependencies"
       npm ci
-      echo "--- 📊 Generating test coverage report"
+      echo "--- 🧪 Running all tests"
+      npm test
+    notify:
+      - github_commit_status:
+          context: Tests
+
+  - label: '� Test Coverage'
+    key: test-coverage
+    depends_on: tests
+    plugins: [$NVM_PLUGIN]
+    command: |
+      echo "--- 📦 Installing dependencies"
+      npm ci
+      echo "--- � Generating test coverage report"
       npm run test:coverage
     artifact_paths:
       - 'coverage/**/*'
@@ -88,7 +61,7 @@ steps:
 
   - label: '🔍 MCP Server Build and Run'
     key: server-launch-test
-    depends_on: all-tests
+    depends_on: tests
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 📦 Installing dependencies"
