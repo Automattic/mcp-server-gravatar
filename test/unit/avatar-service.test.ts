@@ -67,7 +67,7 @@ describe('AvatarService', () => {
     it('should call fetch with correct URL for basic request', async () => {
       await service.getAvatarById('test-hash');
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://secure.gravatar.com/avatar/test-hash',
+        'https://gravatar.com/avatar/test-hash',
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -79,7 +79,7 @@ describe('AvatarService', () => {
     it('should include size parameter when provided', async () => {
       await service.getAvatarById('test-hash', 200);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://secure.gravatar.com/avatar/test-hash?s=200',
+        'https://gravatar.com/avatar/test-hash?s=200',
         expect.any(Object),
       );
     });
@@ -87,7 +87,7 @@ describe('AvatarService', () => {
     it('should include default option parameter when provided', async () => {
       await service.getAvatarById('test-hash', undefined, DefaultAvatarOption.IDENTICON);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://secure.gravatar.com/avatar/test-hash?d=identicon',
+        'https://gravatar.com/avatar/test-hash?d=identicon',
         expect.any(Object),
       );
     });
@@ -95,7 +95,7 @@ describe('AvatarService', () => {
     it('should include force default parameter when true', async () => {
       await service.getAvatarById('test-hash', undefined, undefined, true);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://secure.gravatar.com/avatar/test-hash?f=y',
+        'https://gravatar.com/avatar/test-hash?f=y',
         expect.any(Object),
       );
     });
@@ -103,7 +103,7 @@ describe('AvatarService', () => {
     it('should include rating parameter when provided', async () => {
       await service.getAvatarById('test-hash', undefined, undefined, undefined, Rating.PG);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://secure.gravatar.com/avatar/test-hash?r=pg',
+        'https://gravatar.com/avatar/test-hash?r=pg',
         expect.any(Object),
       );
     });
@@ -113,7 +113,7 @@ describe('AvatarService', () => {
 
       // The order of query parameters might vary, so we'll check for each one separately
       const url = vi.mocked(mockFetch).mock.calls[0][0] as string;
-      expect(url).toContain('https://secure.gravatar.com/avatar/test-hash?');
+      expect(url).toContain('https://gravatar.com/avatar/test-hash?');
       expect(url).toContain('s=100');
       expect(url).toContain('d=robohash');
       expect(url).toContain('f=y');
@@ -338,7 +338,7 @@ describe('Avatar MCP Tools', () => {
       const result = await tool.handler(params);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('https://secure.gravatar.com/avatar/test-hash'),
+        expect.stringContaining('https://gravatar.com/avatar/test-hash'),
         expect.any(Object),
       );
       expect(result).toBeInstanceOf(Buffer);
@@ -381,7 +381,7 @@ describe('Avatar MCP Tools', () => {
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('https://secure.gravatar.com/avatar/email-hash'),
+        expect.stringContaining('https://gravatar.com/avatar/email-hash'),
         expect.any(Object),
       );
       expect(result).toBeInstanceOf(Buffer);
