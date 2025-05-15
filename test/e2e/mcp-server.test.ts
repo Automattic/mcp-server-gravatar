@@ -155,7 +155,7 @@ describe('MCP Server End-to-End', () => {
       const result = await avatarService.getAvatarById(hash);
 
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}`,
+        `https://gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
@@ -175,7 +175,7 @@ describe('MCP Server End-to-End', () => {
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}`,
+        `https://gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),

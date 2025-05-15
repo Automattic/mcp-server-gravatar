@@ -35,13 +35,12 @@ export const capabilities = {
  * API configuration
  *
  * - avatarBaseUrl: The base URL for Gravatar avatar images
- *   Override with GRAVATAR_AVATAR_BASE_URL environment variable
  *
  * Note: The API base URL is handled by the generated API client
  * and doesn't need to be specified here.
  */
 export const apiConfig = {
-  avatarBaseUrl: process.env.GRAVATAR_AVATAR_BASE_URL || 'https://secure.gravatar.com/avatar',
+  avatarBaseUrl: 'https://gravatar.com/avatar',
 };
 
 /**

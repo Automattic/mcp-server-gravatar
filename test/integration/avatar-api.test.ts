@@ -56,7 +56,7 @@ describe('Avatar API Integration', () => {
 
       // Verify the mock was called
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}`,
+        `https://gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
@@ -85,7 +85,7 @@ describe('Avatar API Integration', () => {
 
       // Verify the mock was called with the correct URL including query parameters
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
+        `https://gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
@@ -108,7 +108,7 @@ describe('Avatar API Integration', () => {
 
       // Verify the mock was called
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}`,
+        `https://gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
@@ -132,7 +132,7 @@ describe('Avatar API Integration', () => {
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}`,
+        `https://gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
@@ -165,7 +165,7 @@ describe('Avatar API Integration', () => {
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
+        `https://gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
@@ -192,7 +192,7 @@ describe('Avatar API Integration', () => {
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
       expect(fetch).toHaveBeenCalledWith(
-        `https://secure.gravatar.com/avatar/${hash}`,
+        `https://gravatar.com/avatar/${hash}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
