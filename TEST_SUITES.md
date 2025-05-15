@@ -66,11 +66,7 @@ The npm scripts specify the test directory to run:
 
 ## CI Integration
 
-The BuildKite CI pipeline runs all test suites in parallel to provide faster feedback:
-
-- Unit tests, integration tests, and end-to-end tests run in parallel
-- Test coverage is generated after all tests have completed
-- Each test suite reports its status to GitHub
+The BuildKite CI pipeline runs all tests together.  The test suites are not run separately.
 
 ## Best Practices
 
