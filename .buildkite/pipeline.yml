@@ -86,22 +86,9 @@ steps:
       - github_commit_status:
           context: Test Coverage
 
-  - label: '📦 Build Check'
-    key: build
-    depends_on: [quality-checks, all-tests]
-    plugins: [$NVM_PLUGIN]
-    command: |
-      echo "--- 📦 Installing dependencies"
-      npm ci
-      echo "--- 📦 Building the project"
-      npm run build
-    notify:
-      - github_commit_status:
-          context: Build
-
-  - label: '🔍 MCP Server Test'
+  - label: '🔍 MCP Server Build and Run'
     key: server-launch-test
-    depends_on: build
+    depends_on: all-tests
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 📦 Installing dependencies"
@@ -109,4 +96,4 @@ steps:
       .buildkite/commands/test-run-server.sh
     notify:
       - github_commit_status:
-          context: MCP Server Launch
+          context: MCP Server
