@@ -66,7 +66,7 @@ The npm scripts specify the test directory to run:
 
 ## CI Integration
 
-The BuildKite CI pipeline runs all tests together.  The test suites are not run separately.
+The BuildKite CI pipeline runs all tests together. The test suites are not run separately.
 
 ## Best Practices
 

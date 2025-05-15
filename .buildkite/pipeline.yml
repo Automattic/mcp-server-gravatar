@@ -46,7 +46,9 @@ steps:
 
   - label: '🔍 MCP Server Build and Run'
     key: server-launch-test
-    depends_on: tests
+    depends_on:
+      - tests
+      - quality-checks
     plugins: [$NVM_PLUGIN]
     command: |
       echo "--- 📦 Installing dependencies"
