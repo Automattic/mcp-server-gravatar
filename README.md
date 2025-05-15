@@ -265,7 +265,27 @@ Run `make help` to see all available commands.
 
 ## Environment Variables
 
-- `GRAVATAR_API_KEY`: Optional API key for Gravatar API. If provided, it will be used for API requests, which may increase rate limits.
+- `GRAVATAR_API_KEY`: Optional API key for Gravatar API. If provided, it will be used for API requests, which increases rate limits and provides access to additional features.
+
+- `GRAVATAR_API_KEY_ENV_VAR`: Optional name of the environment variable that contains the API key. Default is `GRAVATAR_API_KEY`. This is useful if you need to use a different environment variable name in your deployment environment.
+
+When running the server locally, you can set these environment variables in your shell before starting the server:
+
+```bash
+# Set API key (recommended)
+export GRAVATAR_API_KEY=your_api_key_here
+
+# Start the server
+npm start
+```
+
+Or you can provide them inline when starting the server:
+
+```bash
+GRAVATAR_API_KEY=your_api_key_here npm start
+```
+
+When configuring the server in Claude Desktop or VS Code, you can set these environment variables in the configuration as shown in the Setup section above.
 
 ## Troubleshooting
 
