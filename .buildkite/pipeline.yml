@@ -18,7 +18,7 @@ steps:
           npm run format:check
         notify:
           - github_commit_status:
-              context: Lint & Formatting Check
+              context: Linting & Formatting
 
       - label: '🔍 Type Checking'
         key: type-check
@@ -44,7 +44,7 @@ steps:
       - github_commit_status:
           context: Tests
 
-  - label: '🔍 MCP Server Build and Run'
+  - label: '🔍 MCP Server Build & Run'
     key: server-launch-test
     depends_on:
       - tests
@@ -56,4 +56,4 @@ steps:
       .buildkite/commands/test-run-server.sh
     notify:
       - github_commit_status:
-          context: MCP Server
+          context: Build & Run
