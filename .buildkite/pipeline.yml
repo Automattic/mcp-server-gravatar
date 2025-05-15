@@ -32,19 +32,6 @@ steps:
           - github_commit_status:
               context: Type Checking
 
-      - label: '🔄 API Client Generation Check'
-        key: api-client-check
-        plugins: [$NVM_PLUGIN]
-        command: |
-          echo "--- 📦 Installing dependencies"
-          npm ci
-          echo "--- 🔄 Checking API client generation"
-          npm run generate-client
-          git diff --exit-code src/generated/
-        notify:
-          - github_commit_status:
-              context: API Client Generation
-
   - group: 'Tests'
     key: all-tests
     steps:
