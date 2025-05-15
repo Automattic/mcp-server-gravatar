@@ -1,17 +1,11 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
-import {
-  validateEmail,
-  validateHash,
-  generateIdentifierFromEmail,
-  createApiConfiguration,
-  mapHttpStatusToError,
-} from '../common/utils.js';
+import { validateEmail, validateHash, generateIdentifierFromEmail } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import { isApiErrorResponse } from '../common/types.js';
-import type { IProfileClient, IProfileService } from './interfaces.js';
+import type { IProfileService } from './interfaces.js';
 import type { Profile } from '../generated/gravatar-api/models/Profile.js';
+import type { IProfileApiAdapter } from './adapters/index.js';
+import { createRestApiAdapter } from './adapters/index.js';
 
 // Schema for getProfileById
 export const getProfileByIdSchema = z.object({
@@ -28,10 +22,18 @@ export const getProfileByEmailSchema = z.object({
   }),
 });
 
-// Implement the ProfileService
+/**
+ * Service for interacting with Gravatar profiles
+ * Uses the adapter pattern to abstract API implementation details
+ */
 export class ProfileService implements IProfileService {
-  constructor(private readonly client: IProfileClient) {}
+  constructor(private readonly adapter: IProfileApiAdapter) {}
 
+  /**
+   * Get a profile by its identifier (hash)
+   * @param hash The profile identifier (MD5 or SHA256 hash)
+   * @returns The profile data
+   */
   async getProfileById(hash: string): Promise<Profile> {
     try {
       console.error(`ProfileService.getProfileById called with hash: ${hash}`);
@@ -42,25 +44,22 @@ export class ProfileService implements IProfileService {
         throw new GravatarValidationError('Invalid hash format');
       }
 
-      // Make API call
-      console.error(`Making API call to get profile for hash: ${hash}`);
-      const response = await this.client.getProfileById({ profileIdentifier: hash });
+      // Use adapter to make API call
+      console.error(`Using adapter to get profile for hash: ${hash}`);
+      const response = await this.adapter.getProfileById(hash);
       console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
       console.error(`Error getting profile for hash ${hash}:`, error);
-      if (isApiErrorResponse(error)) {
-        const mappedError = await mapHttpStatusToError(
-          error.response?.status || 500,
-          error.message || 'Failed to fetch profile',
-        );
-        console.error(`Mapped error:`, mappedError);
-        throw mappedError;
-      }
       throw error;
     }
   }
 
+  /**
+   * Get a profile by email address
+   * @param email The email address
+   * @returns The profile data
+   */
   async getProfileByEmail(email: string): Promise<Profile> {
     try {
       console.error(`ProfileService.getProfileByEmail called with email: ${email}`);
@@ -84,25 +83,24 @@ export class ProfileService implements IProfileService {
   }
 }
 
-// Factory function to create the default client
-export async function createProfileClient(): Promise<IProfileClient> {
-  const config = await createApiConfiguration();
-  return new ProfilesApi(config);
+/**
+ * Factory function to create a ProfileService with the default adapter
+ * @returns A new ProfileService instance
+ */
+export async function createProfileService(): Promise<ProfileService> {
+  const adapter = await createRestApiAdapter();
+  return new ProfileService(adapter);
 }
 
-// Factory function to create the service with optional client
-export async function createProfileService(client?: IProfileClient): Promise<IProfileService> {
-  if (client) {
-    return new ProfileService(client);
-  }
-  const defaultClient = await createProfileClient();
-  return new ProfileService(defaultClient);
-}
+// For backward compatibility: maintain the singleton pattern
+// but use the new adapter-based implementation internally
+let _defaultProfileService: ProfileService | null = null;
 
-// We'll initialize this later when needed
-let _defaultProfileService: IProfileService | null = null;
-
-// Function to get or create the default service
+/**
+ * Get or create the default ProfileService instance (singleton)
+ * @returns The default ProfileService instance
+ * @deprecated Use createProfileService() instead
+ */
 export async function getDefaultProfileService(): Promise<IProfileService> {
   if (!_defaultProfileService) {
     _defaultProfileService = await createProfileService();
