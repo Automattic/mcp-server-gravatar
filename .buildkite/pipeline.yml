@@ -44,21 +44,6 @@ steps:
       - github_commit_status:
           context: Tests
 
-  - label: '� Test Coverage'
-    key: test-coverage
-    depends_on: tests
-    plugins: [$NVM_PLUGIN]
-    command: |
-      echo "--- 📦 Installing dependencies"
-      npm ci
-      echo "--- � Generating test coverage report"
-      npm run test:coverage
-    artifact_paths:
-      - 'coverage/**/*'
-    notify:
-      - github_commit_status:
-          context: Test Coverage
-
   - label: '🔍 MCP Server Build and Run'
     key: server-launch-test
     depends_on: tests
