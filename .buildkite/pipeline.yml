@@ -3,42 +3,116 @@
 # Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buidkite-agent pipeline upload`
 
 steps:
-  - group: Linters
+  - group: 'Code Quality Checks'
+    key: quality-checks
     steps:
-      - label: 🕵️ Lint & Format Check
+      - label: '🕵️ Linting & Formatting'
         key: quality-check
         plugins: [$NVM_PLUGIN]
         command: |
-          echo "--- 🛠 Lint & Format Check"
+          echo "--- 📦 Installing dependencies"
           npm ci
-          make quality-check
+          echo "--- 🕵️ Running linting checks"
+          npm run lint
+          echo "--- 🕵️ Running formatting checks"
+          npm run format:check
         notify:
           - github_commit_status:
               context: Lint & Formatting Check
 
-  - label: 🧪 Test
-    key: test
+      - label: '🔍 Type Checking'
+        key: type-check
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 📦 Installing dependencies"
+          npm ci
+          echo "--- 🔍 Running TypeScript type checking"
+          npx tsc --noEmit
+        notify:
+          - github_commit_status:
+              context: Type Checking
+
+      - label: '🔄 API Client Generation Check'
+        key: api-client-check
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 📦 Installing dependencies"
+          npm ci
+          echo "--- 🔄 Checking API client generation"
+          npm run generate-client
+          git diff --exit-code src/generated/
+        notify:
+          - github_commit_status:
+              context: API Client Generation
+
+  - group: 'Tests'
+    key: all-tests
+    steps:
+      - label: '🧪 Unit Tests'
+        key: unit-tests
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 📦 Installing dependencies"
+          npm ci
+          echo "--- 🧪 Running unit tests"
+          npm test -- --dir test/unit
+        notify:
+          - github_commit_status:
+              context: Unit Tests
+
+      - label: '🔄 Integration Tests'
+        key: integration-tests
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 📦 Installing dependencies"
+          npm ci
+          echo "--- 🔄 Running integration tests"
+          npm test -- --dir test/integration
+        notify:
+          - github_commit_status:
+              context: Integration Tests
+
+      - label: '🌐 End-to-End Tests'
+        key: e2e-tests
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 📦 Installing dependencies"
+          npm ci
+          echo "--- 🌐 Running end-to-end tests"
+          npm test -- --dir test/e2e
+        notify:
+          - github_commit_status:
+              context: End-to-End Tests
+
+  - label: '📊 Test Coverage'
+    key: test-coverage
+    depends_on: all-tests
     plugins: [$NVM_PLUGIN]
     command: |
-      echo "--- 🧪 Running tests"
+      echo "--- 📦 Installing dependencies"
       npm ci
-      make test
+      echo "--- 📊 Generating test coverage report"
+      npm run test:coverage
+    artifact_paths:
+      - 'coverage/**/*'
     notify:
       - github_commit_status:
-          context: Test
+          context: Test Coverage
 
-  - label: 📦 Build
+  - label: '📦 Build Check'
     key: build
+    depends_on: [quality-checks, all-tests]
     plugins: [$NVM_PLUGIN]
     command: |
-      echo "--- 📦 Building the project"
+      echo "--- 📦 Installing dependencies"
       npm ci
-      make build
+      echo "--- 📦 Building the project"
+      npm run build
     notify:
       - github_commit_status:
           context: Build
 
-  - label: "🔍 MCP Inspector Test"
+  - label: '🔍 MCP Inspector Test'
     key: inspector
     depends_on: build
     plugins: [$NVM_PLUGIN]
