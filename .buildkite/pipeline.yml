@@ -42,7 +42,7 @@ steps:
           echo "--- 📦 Installing dependencies"
           npm ci
           echo "--- 🧪 Running unit tests"
-          npm test -- --dir test/unit
+          npm run test:unit
         notify:
           - github_commit_status:
               context: Unit Tests
@@ -54,7 +54,7 @@ steps:
           echo "--- 📦 Installing dependencies"
           npm ci
           echo "--- 🔄 Running integration tests"
-          npm test -- --dir test/integration
+          npm run test:integration
         notify:
           - github_commit_status:
               context: Integration Tests
@@ -66,7 +66,7 @@ steps:
           echo "--- 📦 Installing dependencies"
           npm ci
           echo "--- 🌐 Running end-to-end tests"
-          npm test -- --dir test/e2e
+          npm run test:e2e
         notify:
           - github_commit_status:
               context: End-to-End Tests
