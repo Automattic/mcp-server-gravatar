@@ -38,10 +38,14 @@ steps:
       - github_commit_status:
           context: Build
 
-  - label: 🔍 Test MCP Inspector
+  - label: "🔍 MCP Inspector Test"
     key: inspector
+    depends_on: build
     plugins: [$NVM_PLUGIN]
-    command: .buildkite/commands/test-run-inspector.sh
+    command: |
+      echo "--- 📦 Installing dependencies"
+      npm ci
+      .buildkite/commands/test-run-inspector.sh
     notify:
       - github_commit_status:
           context: MCP Inspector Testing
