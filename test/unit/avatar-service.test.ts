@@ -121,13 +121,34 @@ describe('AvatarService', () => {
     });
 
     it('should return a buffer with the avatar data', async () => {
+      // Mock the arrayBuffer method to return a specific value
+      const mockArrayBuffer = new ArrayBuffer(20);
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+      (mockFetch as any).mockResolvedValue(mockResponse);
+
       const result = await service.getAvatarById('test-hash');
+
+      // Verify the response handling
+      expect(mockResponse.arrayBuffer).toHaveBeenCalled();
       expect(result).toBeInstanceOf(Buffer);
+      expect(result.length).toBe(20);
+
+      // Verify the Buffer.from conversion was done correctly
+      const expectedBuffer = Buffer.from(mockArrayBuffer);
+      expect(result).toEqual(expectedBuffer);
     });
 
-    it('should throw error when fetch fails', async () => {
-      mockFetch = vi.fn().mockResolvedValue({
+    it('should throw error when fetch fails with non-200 status', async () => {
+      // Mock a failed response with status code and statusText
+      mockFetch = vi.fn() as any;
+      (mockFetch as any).mockResolvedValue({
         ok: false,
+        status: 404,
         statusText: 'Not Found',
       });
 
@@ -139,12 +160,52 @@ describe('AvatarService', () => {
       );
     });
 
-    it('should throw error when fetch throws', async () => {
-      mockFetch = vi.fn().mockRejectedValue(new Error('Network error'));
+    it('should throw error when fetch fails with server error', async () => {
+      // Mock a failed response with a different status code
+      mockFetch = vi.fn() as any;
+      (mockFetch as any).mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      service = createAvatarService(mockFetch);
+
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow(GravatarValidationError);
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow(
+        'Failed to fetch avatar: Internal Server Error',
+      );
+    });
+
+    it('should throw error when fetch throws a network error', async () => {
+      // Mock a network error
+      const networkError = new Error('Network error');
+      mockFetch = vi.fn() as any;
+      (mockFetch as any).mockRejectedValue(networkError);
 
       service = createAvatarService(mockFetch);
 
       await expect(service.getAvatarById('test-hash')).rejects.toThrow('Network error');
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow(networkError);
+    });
+
+    it('should throw error when arrayBuffer() throws', async () => {
+      // Mock arrayBuffer throwing an error
+      const arrayBufferError = new Error('Failed to read array buffer');
+      mockFetch = vi.fn() as any;
+      (mockFetch as any).mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        arrayBuffer: vi.fn().mockRejectedValue(arrayBufferError),
+      });
+
+      service = createAvatarService(mockFetch);
+
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow(
+        'Failed to read array buffer',
+      );
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow(arrayBufferError);
     });
   });
 
@@ -192,8 +253,34 @@ describe('AvatarService', () => {
     });
 
     it('should return the avatar data', async () => {
+      // Mock the arrayBuffer method to return a specific value
+      const mockArrayBuffer = new ArrayBuffer(30);
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+      (mockFetch as any).mockResolvedValue(mockResponse);
+
       const result = await service.getAvatarByEmail('test@example.com');
+
+      // Verify the response handling
+      expect(mockResponse.arrayBuffer).toHaveBeenCalled();
       expect(result).toBeInstanceOf(Buffer);
+      expect(result.length).toBe(30);
+    });
+
+    it('should handle errors from getAvatarById', async () => {
+      // Create a spy on getAvatarById that throws an error
+      const getAvatarByIdSpy = vi.spyOn(service, 'getAvatarById');
+      const testError = new Error('Test error from getAvatarById');
+      getAvatarByIdSpy.mockRejectedValue(testError);
+
+      await expect(service.getAvatarByEmail('test@example.com')).rejects.toThrow(
+        'Test error from getAvatarById',
+      );
+      await expect(service.getAvatarByEmail('test@example.com')).rejects.toThrow(testError);
     });
   });
 });
@@ -212,7 +299,8 @@ describe('Avatar MCP Tools', () => {
     vi.mocked(utils.getUserAgent).mockReturnValue('mcp-server-gravatar/v1.0.0');
 
     // Create a mock fetch function
-    mockFetch = vi.fn().mockResolvedValue({
+    mockFetch = vi.fn() as any;
+    (mockFetch as any).mockResolvedValue({
       ok: true,
       arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(10)),
       statusText: 'OK',
@@ -245,7 +333,7 @@ describe('Avatar MCP Tools', () => {
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
         rating: Rating.PG,
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       const result = await tool.handler(params);
 
@@ -263,7 +351,7 @@ describe('Avatar MCP Tools', () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         hash: 'invalid-hash',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(tool.handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -287,7 +375,7 @@ describe('Avatar MCP Tools', () => {
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
         rating: Rating.PG,
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       const result = await tool.handler(params);
 
@@ -306,7 +394,7 @@ describe('Avatar MCP Tools', () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         email: 'invalid-email',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(tool.handler(params)).rejects.toThrow(GravatarValidationError);
     });

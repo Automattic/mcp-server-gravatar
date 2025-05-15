@@ -81,7 +81,7 @@ describe('Experimental MCP Tools', () => {
         { id: 2, name: 'javascript' },
         { id: 3, name: 'typescript' },
       ];
-      (mockExperimentalService.getInferredInterestsById as any).mockResolvedValue(mockInterests); // eslint-disable-line @typescript-eslint/no-explicit-any
+      (mockExperimentalService.getInferredInterestsById as any).mockResolvedValue(mockInterests);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
       vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
@@ -116,7 +116,7 @@ describe('Experimental MCP Tools', () => {
       });
 
       // Mock the service to throw an error for invalid hash
-      const mockGetInferredInterestsById = mockExperimentalService.getInferredInterestsById as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      const mockGetInferredInterestsById = mockExperimentalService.getInferredInterestsById as any;
       mockGetInferredInterestsById.mockImplementation(async (hash: string) => {
         if (!utils.validateHash(hash)) {
           throw new GravatarValidationError('Invalid hash format');
@@ -133,7 +133,7 @@ describe('Experimental MCP Tools', () => {
       // In a real application, we would use a proper type, but for testing we can use any
       const params = {
         hash: 'invalid-hash',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(experimentalTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -158,7 +158,7 @@ describe('Experimental MCP Tools', () => {
         { id: 2, name: 'javascript' },
         { id: 3, name: 'typescript' },
       ];
-      (mockExperimentalService.getInferredInterestsByEmail as any).mockResolvedValue(mockInterests); // eslint-disable-line @typescript-eslint/no-explicit-any
+      (mockExperimentalService.getInferredInterestsByEmail as any).mockResolvedValue(mockInterests);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
       vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
@@ -196,7 +196,7 @@ describe('Experimental MCP Tools', () => {
 
       // Mock the service to throw an error for invalid email
       const mockGetInferredInterestsByEmail =
-        mockExperimentalService.getInferredInterestsByEmail as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        mockExperimentalService.getInferredInterestsByEmail as any;
       mockGetInferredInterestsByEmail.mockImplementation(async (email: string) => {
         if (!utils.validateEmail(email)) {
           throw new GravatarValidationError('Invalid email format');
@@ -213,7 +213,7 @@ describe('Experimental MCP Tools', () => {
       // In a real application, we would use a proper type, but for testing we can use any
       const params = {
         email: 'invalid-email',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(experimentalTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -340,6 +340,34 @@ describe('ExperimentalService', () => {
         { id: 2, name: 'javascript' },
         { id: 3, name: 'typescript' },
       ]);
+    });
+
+    it('should handle errors from getInferredInterestsById', async () => {
+      // Create a spy on getInferredInterestsById that throws an error
+      const getInferredInterestsByIdSpy = vi.spyOn(service, 'getInferredInterestsById');
+      const testError = new Error('Test error from getInferredInterestsById');
+      getInferredInterestsByIdSpy.mockRejectedValue(testError);
+
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        'Test error from getInferredInterestsById',
+      );
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        testError,
+      );
+    });
+
+    it('should handle API errors propagated from getInferredInterestsById', async () => {
+      // Create a spy on getInferredInterestsById that throws a GravatarResourceNotFoundError
+      const getInferredInterestsByIdSpy = vi.spyOn(service, 'getInferredInterestsById');
+      const notFoundError = new GravatarResourceNotFoundError('Interests not found');
+      getInferredInterestsByIdSpy.mockRejectedValue(notFoundError);
+
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        'Interests not found',
+      );
     });
   });
 });

@@ -80,7 +80,7 @@ describe('Profile MCP Tools', () => {
         displayName: 'Test User',
         profileUrl: 'https://gravatar.com/testuser',
       };
-      (mockProfileService.getProfileById as any).mockResolvedValue(mockProfile); // eslint-disable-line @typescript-eslint/no-explicit-any
+      (mockProfileService.getProfileById as any).mockResolvedValue(mockProfile);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
       vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
@@ -115,7 +115,7 @@ describe('Profile MCP Tools', () => {
       });
 
       // Mock the service to throw an error for invalid hash
-      const mockGetProfileById = mockProfileService.getProfileById as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      const mockGetProfileById = mockProfileService.getProfileById as any;
       mockGetProfileById.mockImplementation(async (hash: string) => {
         if (!utils.validateHash(hash)) {
           throw new GravatarValidationError('Invalid hash format');
@@ -130,7 +130,7 @@ describe('Profile MCP Tools', () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         hash: 'invalid-hash',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(profileTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -153,7 +153,7 @@ describe('Profile MCP Tools', () => {
         displayName: 'Test User',
         profileUrl: 'https://gravatar.com/testuser',
       };
-      (mockProfileService.getProfileByEmail as any).mockResolvedValue(mockProfile); // eslint-disable-line @typescript-eslint/no-explicit-any
+      (mockProfileService.getProfileByEmail as any).mockResolvedValue(mockProfile);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
       vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
@@ -188,7 +188,7 @@ describe('Profile MCP Tools', () => {
       });
 
       // Mock the service to throw an error for invalid email
-      const mockGetProfileByEmail = mockProfileService.getProfileByEmail as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      const mockGetProfileByEmail = mockProfileService.getProfileByEmail as any;
       mockGetProfileByEmail.mockImplementation(async (email: string) => {
         if (!utils.validateEmail(email)) {
           throw new GravatarValidationError('Invalid email format');
@@ -203,7 +203,7 @@ describe('Profile MCP Tools', () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         email: 'invalid-email',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(profileTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -320,6 +320,32 @@ describe('ProfileService', () => {
         displayName: 'Test User',
         profileUrl: 'https://gravatar.com/testuser',
       });
+    });
+
+    it('should handle errors from getProfileById', async () => {
+      // Create a spy on getProfileById that throws an error
+      const getProfileByIdSpy = vi.spyOn(service, 'getProfileById');
+      const testError = new Error('Test error from getProfileById');
+      getProfileByIdSpy.mockRejectedValue(testError);
+
+      await expect(service.getProfileByEmail('test@example.com')).rejects.toThrow(
+        'Test error from getProfileById',
+      );
+      await expect(service.getProfileByEmail('test@example.com')).rejects.toThrow(testError);
+    });
+
+    it('should handle API errors propagated from getProfileById', async () => {
+      // Create a spy on getProfileById that throws a GravatarResourceNotFoundError
+      const getProfileByIdSpy = vi.spyOn(service, 'getProfileById');
+      const notFoundError = new GravatarResourceNotFoundError('Profile not found');
+      getProfileByIdSpy.mockRejectedValue(notFoundError);
+
+      await expect(service.getProfileByEmail('test@example.com')).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(service.getProfileByEmail('test@example.com')).rejects.toThrow(
+        'Profile not found',
+      );
     });
   });
 });

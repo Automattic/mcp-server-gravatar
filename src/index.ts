@@ -32,7 +32,6 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
 
     // We need to cast the arguments to any to avoid TypeScript errors
     // The actual validation happens inside each handler with Zod
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return await handler(request.params.arguments as any);
   } catch (error) {
     if (error instanceof McpError) throw error;

@@ -67,7 +67,6 @@ describe('MCP Server End-to-End', () => {
     );
 
     // Mock the fetch function for avatars
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
     // Create service instances with mocked dependencies
@@ -206,7 +205,6 @@ describe('MCP Server End-to-End', () => {
 
     it('should handle API errors', async () => {
       // Mock the ProfilesApi to throw a 404 error
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockRejectedValue({
         response: { status: 404 },
         message: 'Response returned an error code',
