@@ -47,6 +47,12 @@ export default [
     },
   },
   {
+    files: ['**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
     files: ['eslint.config.js', 'vitest.config.ts'],
     languageOptions: {
       globals: {

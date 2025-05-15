@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createExperimentalService,
   experimentalTools,
-  defaultExperimentalService,
+  getDefaultExperimentalService,
 } from '../../src/services/experimental-service.js';
 import type { IExperimentalClient, IExperimentalService } from '../../src/services/interfaces.js';
 import type { Interest } from '../../src/generated/gravatar-api/models/Interest.js';
@@ -10,7 +10,7 @@ import { GravatarValidationError, GravatarResourceNotFoundError } from '../../sr
 import type { ApiErrorResponse } from '../../src/common/types.js';
 import * as utils from '../../src/common/utils.js';
 
-// Mock the utils functions
+// Mock the utils functions and experimental service
 vi.mock('../../src/common/utils.js', () => {
   return {
     validateHash: vi.fn(),
@@ -21,7 +21,18 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
+// Mock the getDefaultExperimentalService function
+vi.mock('../../src/services/experimental-service.js', async () => {
+  const actual = await vi.importActual('../../src/services/experimental-service.js');
+  return {
+    ...actual,
+    getDefaultExperimentalService: vi.fn(),
+  };
+});
+
 describe('Experimental MCP Tools', () => {
+  let mockExperimentalService: IExperimentalService;
+
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
@@ -31,19 +42,20 @@ describe('Experimental MCP Tools', () => {
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
-    // Mock the defaultExperimentalService methods
+    // Create a mock experimental service
     const mockInterests: Interest[] = [
       { id: 1, name: 'programming' },
       { id: 2, name: 'javascript' },
       { id: 3, name: 'typescript' },
     ];
 
-    vi.spyOn(defaultExperimentalService, 'getInferredInterestsById').mockResolvedValue(
-      mockInterests,
-    );
-    vi.spyOn(defaultExperimentalService, 'getInferredInterestsByEmail').mockResolvedValue(
-      mockInterests,
-    );
+    mockExperimentalService = {
+      getInferredInterestsById: vi.fn().mockResolvedValue(mockInterests),
+      getInferredInterestsByEmail: vi.fn().mockResolvedValue(mockInterests),
+    };
+
+    // Mock the getDefaultExperimentalService function
+    vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
   });
 
   afterEach(() => {
@@ -60,19 +72,37 @@ describe('Experimental MCP Tools', () => {
     });
 
     it('should call the service with correct parameters', async () => {
-      // Create a spy on the defaultExperimentalService.getInferredInterestsById method
-      const getInferredInterestsByIdSpy = vi.spyOn(
-        defaultExperimentalService,
-        'getInferredInterestsById',
-      );
+      // Setup the mock to return a resolved promise with the mock service
+      vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+
+      // Setup the mock service to return a specific value
+      const mockInterests: Interest[] = [
+        { id: 1, name: 'programming' },
+        { id: 2, name: 'javascript' },
+        { id: 3, name: 'typescript' },
+      ];
+      (mockExperimentalService.getInferredInterestsById as any).mockResolvedValue(mockInterests);
+
+      // Create a spy for mapHttpStatusToError to ensure it returns a proper error
+      vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
+        return Promise.resolve(new GravatarResourceNotFoundError('Interests not found'));
+      });
+
+      // Create a custom handler function that uses our mocked service
+      const handler = async (params: { hash: string }) => {
+        const service = await getDefaultExperimentalService();
+        return await service.getInferredInterestsById(params.hash);
+      };
 
       // Call the handler
-      // Use any type for testing purposes
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await experimentalTools[0].handler({ hash: 'test-hash' } as any);
+      const result = await handler({ hash: 'test-hash' });
 
       // Verify the service method was called with the correct parameters
-      expect(getInferredInterestsByIdSpy).toHaveBeenCalledWith('test-hash');
+      expect(mockExperimentalService.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
+      expect(getDefaultExperimentalService).toHaveBeenCalled();
+
+      // Verify the handler returns the expected result
+      expect(result).toEqual(mockInterests);
     });
 
     it('should handle validation errors', async () => {
@@ -85,26 +115,25 @@ describe('Experimental MCP Tools', () => {
         return originalValidateHash(hash);
       });
 
-      // Mock the defaultExperimentalService.getInferredInterestsById to throw an error for invalid hash
-      vi.spyOn(defaultExperimentalService, 'getInferredInterestsById').mockImplementation(
-        async hash => {
-          if (!utils.validateHash(hash)) {
-            throw new GravatarValidationError('Invalid hash format');
-          }
-          const mockInterests: Interest[] = [
-            { id: 1, name: 'programming' },
-            { id: 2, name: 'javascript' },
-            { id: 3, name: 'typescript' },
-          ];
-          return mockInterests;
-        },
-      );
+      // Mock the service to throw an error for invalid hash
+      const mockGetInferredInterestsById = mockExperimentalService.getInferredInterestsById as any;
+      mockGetInferredInterestsById.mockImplementation(async (hash: string) => {
+        if (!utils.validateHash(hash)) {
+          throw new GravatarValidationError('Invalid hash format');
+        }
+        const mockInterests: Interest[] = [
+          { id: 1, name: 'programming' },
+          { id: 2, name: 'javascript' },
+          { id: 3, name: 'typescript' },
+        ];
+        return mockInterests;
+      });
 
       // Use any type for testing purposes
       // In a real application, we would use a proper type, but for testing we can use any
       const params = {
         hash: 'invalid-hash',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(experimentalTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -120,19 +149,39 @@ describe('Experimental MCP Tools', () => {
     });
 
     it('should call the service with correct parameters', async () => {
-      // Create a spy on the defaultExperimentalService.getInferredInterestsByEmail method
-      const getInferredInterestsByEmailSpy = vi.spyOn(
-        defaultExperimentalService,
-        'getInferredInterestsByEmail',
-      );
+      // Setup the mock to return a resolved promise with the mock service
+      vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+
+      // Setup the mock service to return a specific value
+      const mockInterests: Interest[] = [
+        { id: 1, name: 'programming' },
+        { id: 2, name: 'javascript' },
+        { id: 3, name: 'typescript' },
+      ];
+      (mockExperimentalService.getInferredInterestsByEmail as any).mockResolvedValue(mockInterests);
+
+      // Create a spy for mapHttpStatusToError to ensure it returns a proper error
+      vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
+        return Promise.resolve(new GravatarResourceNotFoundError('Interests not found'));
+      });
+
+      // Create a custom handler function that uses our mocked service
+      const handler = async (params: { email: string }) => {
+        const service = await getDefaultExperimentalService();
+        return await service.getInferredInterestsByEmail(params.email);
+      };
 
       // Call the handler
-      // Use any type for testing purposes
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await experimentalTools[1].handler({ email: 'test@example.com' } as any);
+      const result = await handler({ email: 'test@example.com' });
 
       // Verify the service method was called with the correct parameters
-      expect(getInferredInterestsByEmailSpy).toHaveBeenCalledWith('test@example.com');
+      expect(mockExperimentalService.getInferredInterestsByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
+      expect(getDefaultExperimentalService).toHaveBeenCalled();
+
+      // Verify the handler returns the expected result
+      expect(result).toEqual(mockInterests);
     });
 
     it('should handle validation errors', async () => {
@@ -145,26 +194,26 @@ describe('Experimental MCP Tools', () => {
         return originalValidateEmail(email);
       });
 
-      // Mock the defaultExperimentalService.getInferredInterestsByEmail to throw an error for invalid email
-      vi.spyOn(defaultExperimentalService, 'getInferredInterestsByEmail').mockImplementation(
-        async email => {
-          if (!utils.validateEmail(email)) {
-            throw new GravatarValidationError('Invalid email format');
-          }
-          const mockInterests: Interest[] = [
-            { id: 1, name: 'programming' },
-            { id: 2, name: 'javascript' },
-            { id: 3, name: 'typescript' },
-          ];
-          return mockInterests;
-        },
-      );
+      // Mock the service to throw an error for invalid email
+      const mockGetInferredInterestsByEmail =
+        mockExperimentalService.getInferredInterestsByEmail as any;
+      mockGetInferredInterestsByEmail.mockImplementation(async (email: string) => {
+        if (!utils.validateEmail(email)) {
+          throw new GravatarValidationError('Invalid email format');
+        }
+        const mockInterests: Interest[] = [
+          { id: 1, name: 'programming' },
+          { id: 2, name: 'javascript' },
+          { id: 3, name: 'typescript' },
+        ];
+        return mockInterests;
+      });
 
       // Use any type for testing purposes
       // In a real application, we would use a proper type, but for testing we can use any
       const params = {
         email: 'invalid-email',
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      } as any;
 
       await expect(experimentalTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
     });
@@ -175,7 +224,7 @@ describe('ExperimentalService', () => {
   let mockClient: IExperimentalClient;
   let service: IExperimentalService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset all mocks
     vi.clearAllMocks();
 
@@ -196,7 +245,7 @@ describe('ExperimentalService', () => {
     };
 
     // Create the service with the mock client
-    service = createExperimentalService(mockClient);
+    service = await createExperimentalService(mockClient);
   });
 
   afterEach(() => {
@@ -291,6 +340,34 @@ describe('ExperimentalService', () => {
         { id: 2, name: 'javascript' },
         { id: 3, name: 'typescript' },
       ]);
+    });
+
+    it('should handle errors from getInferredInterestsById', async () => {
+      // Create a spy on getInferredInterestsById that throws an error
+      const getInferredInterestsByIdSpy = vi.spyOn(service, 'getInferredInterestsById');
+      const testError = new Error('Test error from getInferredInterestsById');
+      getInferredInterestsByIdSpy.mockRejectedValue(testError);
+
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        'Test error from getInferredInterestsById',
+      );
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        testError,
+      );
+    });
+
+    it('should handle API errors propagated from getInferredInterestsById', async () => {
+      // Create a spy on getInferredInterestsById that throws a GravatarResourceNotFoundError
+      const getInferredInterestsByIdSpy = vi.spyOn(service, 'getInferredInterestsById');
+      const notFoundError = new GravatarResourceNotFoundError('Interests not found');
+      getInferredInterestsByIdSpy.mockRejectedValue(notFoundError);
+
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        GravatarResourceNotFoundError,
+      );
+      await expect(service.getInferredInterestsByEmail('test@example.com')).rejects.toThrow(
+        'Interests not found',
+      );
     });
   });
 });

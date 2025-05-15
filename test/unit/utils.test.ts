@@ -163,8 +163,8 @@ describe('API Configuration', () => {
     expect(userAgent).toContain('v');
   });
 
-  it('createApiConfiguration should create a configuration with User-Agent', () => {
-    const config = createApiConfiguration();
+  it('createApiConfiguration should create a configuration with User-Agent', async () => {
+    const config = await createApiConfiguration();
     expect(config).toBeInstanceOf(Configuration);
     expect(config.headers).toBeDefined();
     if (config.headers) {
@@ -173,16 +173,16 @@ describe('API Configuration', () => {
     }
   });
 
-  it('createApiConfiguration should include API key when available', () => {
+  it('createApiConfiguration should include API key when available', async () => {
     process.env.GRAVATAR_API_KEY = 'test-api-key';
-    const config = createApiConfiguration();
+    const config = await createApiConfiguration();
     expect(config).toBeInstanceOf(Configuration);
     // The accessToken is a function in the Configuration class
     expect(typeof config.accessToken).toBe('function');
   });
 
-  it('createApiConfiguration should not include API key when not available', () => {
-    const config = createApiConfiguration();
+  it('createApiConfiguration should not include API key when not available', async () => {
+    const config = await createApiConfiguration();
     expect(config).toBeInstanceOf(Configuration);
     expect(config.accessToken).toBeUndefined();
   });

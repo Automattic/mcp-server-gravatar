@@ -28,7 +28,6 @@ describe('Avatar API Integration', () => {
 
   // We need to use any here because our mock doesn't implement the full Response interface
   // This type is not used directly but helps document the code
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   type _MockResponse = any;
 
   // Create a service with the mocked fetch
@@ -50,7 +49,6 @@ describe('Avatar API Integration', () => {
   describe('getAvatarById', () => {
     it('should fetch and return avatar data', async () => {
       // Set up the mock response
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function
@@ -74,7 +72,6 @@ describe('Avatar API Integration', () => {
 
     it('should handle query parameters', async () => {
       // Set up the mock response
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function with parameters
@@ -104,7 +101,6 @@ describe('Avatar API Integration', () => {
 
     it('should handle errors', async () => {
       // Set up the mock response with an error status
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fetch).mockResolvedValue(createMockResponse(404, 'Not Found') as any);
 
       // Call the function and expect it to throw
@@ -128,7 +124,6 @@ describe('Avatar API Integration', () => {
       vi.spyOn(utils, 'generateIdentifierFromEmail').mockReturnValue(hash);
 
       // Set up the mock response
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function
@@ -156,7 +151,6 @@ describe('Avatar API Integration', () => {
       vi.spyOn(utils, 'generateIdentifierFromEmail').mockReturnValue(hash);
 
       // Set up the mock response
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function with parameters
@@ -190,7 +184,6 @@ describe('Avatar API Integration', () => {
       vi.spyOn(utils, 'generateIdentifierFromEmail').mockReturnValue(hash);
 
       // Set up the mock response with an error status
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fetch).mockResolvedValue(createMockResponse(404, 'Not Found') as any);
 
       // Call the function and expect it to throw

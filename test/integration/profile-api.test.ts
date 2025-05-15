@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as utils from '../../src/common/utils.js';
-import { defaultProfileService } from '../../src/services/index.js';
+import { getDefaultProfileService } from '../../src/services/profile-service.js';
 import { GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -16,6 +16,7 @@ describe('Profile API Integration', () => {
   // Use a valid MD5 hash (32 characters) for testing
   const hash = '00000000000000000000000000000000';
   const email = 'test@example.com';
+  let profileService;
 
   // Load the profile fixture and convert it to the proper type
   const profileJson = JSON.parse(
@@ -29,8 +30,9 @@ describe('Profile API Integration', () => {
   // Convert the JSON to a Profile object using the generated conversion function
   const profileFixture = ProfileFromJSON(profileJson);
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Setup runs before each test
+    profileService = await getDefaultProfileService();
   });
 
   afterEach(() => {
@@ -44,7 +46,7 @@ describe('Profile API Integration', () => {
       vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockResolvedValue(profileFixture);
 
       // Call the function
-      const result = await defaultProfileService.getProfileById(hash);
+      const result = await profileService.getProfileById(hash);
 
       // Verify the mock was called
       expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
@@ -68,12 +70,10 @@ describe('Profile API Integration', () => {
       });
 
       // Call the function and expect it to throw
-      await expect(defaultProfileService.getProfileById(hash)).rejects.toThrow(
+      await expect(profileService.getProfileById(hash)).rejects.toThrow(
         GravatarResourceNotFoundError,
       );
-      await expect(defaultProfileService.getProfileById(hash)).rejects.toThrow(
-        /Resource Not Found/,
-      );
+      await expect(profileService.getProfileById(hash)).rejects.toThrow(/Resource Not Found/);
 
       // Verify the mock was called
       expect(ProfilesApi.prototype.getProfileById).toHaveBeenCalledWith({
@@ -91,7 +91,7 @@ describe('Profile API Integration', () => {
       vi.spyOn(ProfilesApi.prototype, 'getProfileById').mockResolvedValue(profileFixture);
 
       // Call the function
-      const result = await defaultProfileService.getProfileByEmail(email);
+      const result = await profileService.getProfileByEmail(email);
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
@@ -119,12 +119,10 @@ describe('Profile API Integration', () => {
       });
 
       // Call the function and expect it to throw
-      await expect(defaultProfileService.getProfileByEmail(email)).rejects.toThrow(
+      await expect(profileService.getProfileByEmail(email)).rejects.toThrow(
         GravatarResourceNotFoundError,
       );
-      await expect(defaultProfileService.getProfileByEmail(email)).rejects.toThrow(
-        /Resource Not Found/,
-      );
+      await expect(profileService.getProfileByEmail(email)).rejects.toThrow(/Resource Not Found/);
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
