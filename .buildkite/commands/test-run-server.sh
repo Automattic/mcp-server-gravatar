@@ -12,7 +12,7 @@ set -e
 
 # Check for exit code 124, which indicates the timeout was reached (process was still running)
 # Also check for a successful startup message in the output
-if [ $SERVER_EXIT_CODE -eq 124 ] && echo "$SERVER_OUTPUT" | grep -q "MCP Server is listening"; then 
+if [ $SERVER_EXIT_CODE -eq 124 ] && echo "$SERVER_OUTPUT" | grep -q "Gravatar MCP Server running on stdio"; then 
   echo "✅ Server started successfully and was running when timeout occurred"
   echo "Last output before timeout:"
   echo "$SERVER_OUTPUT"
