@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+---
+# Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buidkite-agent pipeline upload`
+
+steps:
+  - group: Linters
+    steps:
+      - label: 🕵️ Lint & Format Check
+        key: quality-check
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 🛠 Lint & Format Check"
+          npm ci
+          make quality-check
+        notify:
+          - github_commit_status:
+              context: Lint & Formatting Check
+
+  - label: 🧪 Test
+    key: test
+    plugins: [$NVM_PLUGIN]
+    command: |
+      echo "--- 🧪 Running tests"
+      npm ci
+      make test
+    notify:
+      - github_commit_status:
+          context: Test
+
+  - label: 📦 Build
+    key: build
+    plugins: [$NVM_PLUGIN]
+    command: |
+      echo "--- 📦 Building the project"
+      npm ci
+      make build
+    notify:
+      - github_commit_status:
+          context: Build
+
+  - label: 🔍 Test MCP Inspector
+    key: inspector
+    plugins: [$NVM_PLUGIN]
+    command: .buildkite/commands/test-run-inspector.sh
+    notify:
+      - github_commit_status:
+          context: MCP Inspector Testing
