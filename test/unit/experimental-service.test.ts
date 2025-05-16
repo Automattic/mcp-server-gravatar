@@ -63,10 +63,8 @@ describe('Experimental MCP Tools', () => {
       getInferredInterestsByEmail: vi.fn().mockResolvedValue(mockInterests),
     };
 
-    // Mock the createExperimentalService function with type assertion
-    vi.mocked(createExperimentalService).mockResolvedValue(
-      mockExperimentalService as unknown as ExperimentalService,
-    );
+    // Mock the createExperimentalService function
+    vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
   });
 
   afterEach(() => {
@@ -84,9 +82,7 @@ describe('Experimental MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(createExperimentalService).mockResolvedValue(
-        mockExperimentalService as unknown as ExperimentalService,
-      );
+      vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
       // Setup the mock service to return a specific value
       const mockInterests: Interest[] = [
@@ -163,9 +159,7 @@ describe('Experimental MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(createExperimentalService).mockResolvedValue(
-        mockExperimentalService as unknown as ExperimentalService,
-      );
+      vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
       // Setup the mock service to return a specific value
       const mockInterests: Interest[] = [
