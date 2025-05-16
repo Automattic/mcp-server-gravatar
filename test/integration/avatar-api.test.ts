@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as utils from '../../src/common/utils.js';
-import { createAvatarService } from '../../src/services/avatar-service.js';
+import { createGravatarImageService } from '../../src/services/gravatar-image-service.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
 import fetch from 'node-fetch';
 
@@ -30,15 +30,20 @@ describe('Avatar API Integration', () => {
   // This type is not used directly but helps document the code
   type _MockResponse = any;
 
-  // Create a service with the mocked fetch
-  let avatarService;
+  // Create a service with the mocked adapter
+  let gravatarImageService;
 
   beforeEach(() => {
     // Reset the fetch mock
     vi.mocked(fetch).mockReset();
 
     // Create a new service instance for each test
-    avatarService = createAvatarService(fetch);
+    // The service will use the LegacyApiAdapter which uses fetch
+    gravatarImageService = createGravatarImageService();
+
+    // Mock the adapter's fetch function
+    const adapter = (gravatarImageService as any).adapter;
+    adapter.fetchFn = fetch;
   });
 
   afterEach(() => {
@@ -52,7 +57,7 @@ describe('Avatar API Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function
-      const result = await avatarService.getAvatarById(hash);
+      const result = await gravatarImageService.getAvatarById(hash);
 
       // Verify the mock was called
       expect(fetch).toHaveBeenCalledWith(
@@ -75,7 +80,7 @@ describe('Avatar API Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function with parameters
-      const result = await avatarService.getAvatarById(
+      const result = await gravatarImageService.getAvatarById(
         hash,
         200,
         DefaultAvatarOption.IDENTICON,
@@ -104,7 +109,7 @@ describe('Avatar API Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse(404, 'Not Found') as any);
 
       // Call the function and expect it to throw
-      await expect(avatarService.getAvatarById(hash)).rejects.toThrow();
+      await expect(gravatarImageService.getAvatarById(hash)).rejects.toThrow();
 
       // Verify the mock was called
       expect(fetch).toHaveBeenCalledWith(
@@ -127,7 +132,7 @@ describe('Avatar API Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function
-      const result = await avatarService.getAvatarByEmail(email);
+      const result = await gravatarImageService.getAvatarByEmail(email);
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
@@ -154,7 +159,7 @@ describe('Avatar API Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function with parameters
-      const result = await avatarService.getAvatarByEmail(
+      const result = await gravatarImageService.getAvatarByEmail(
         email,
         200,
         DefaultAvatarOption.IDENTICON,
@@ -187,7 +192,7 @@ describe('Avatar API Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse(404, 'Not Found') as any);
 
       // Call the function and expect it to throw
-      await expect(avatarService.getAvatarByEmail(email)).rejects.toThrow();
+      await expect(gravatarImageService.getAvatarByEmail(email)).rejects.toThrow();
 
       // Verify the mocks were called
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);

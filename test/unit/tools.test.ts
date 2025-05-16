@@ -44,8 +44,8 @@ vi.mock('../../src/services/experimental-service.js', async () => {
   };
 });
 
-vi.mock('../../src/services/avatar-service.js', async () => {
-  const actual = await vi.importActual('../../src/services/avatar-service.js');
+vi.mock('../../src/services/gravatar-image-service.js', async () => {
+  const actual = await vi.importActual('../../src/services/gravatar-image-service.js');
   return {
     ...actual,
     getDefaultAvatarService: vi.fn(),
@@ -55,7 +55,7 @@ vi.mock('../../src/services/avatar-service.js', async () => {
 // Import the mocked services
 import { getDefaultProfileService } from '../../src/services/profile-service.js';
 import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
-import { getDefaultAvatarService } from '../../src/services/avatar-service.js';
+import { getDefaultAvatarService } from '../../src/services/gravatar-image-service.js';
 
 describe('Tools Index', () => {
   it('should export all tools', () => {

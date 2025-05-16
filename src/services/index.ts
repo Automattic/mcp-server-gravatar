@@ -7,12 +7,15 @@ export * from './profile-service.js';
 // Export experimental service
 export * from './experimental-service.js';
 
-// Export avatar service
-export * from './avatar-service.js';
+// Export gravatar image service
+export * from './gravatar-image-service.js';
 
 // Export all tools
 import { profileTools } from './profile-service.js';
 import { experimentalTools } from './experimental-service.js';
-import { avatarTools } from './avatar-service.js';
+import { gravatarImageTools } from './gravatar-image-service.js';
 
-export const allTools = [...profileTools, ...experimentalTools, ...avatarTools];
+// For backward compatibility
+export const avatarTools = gravatarImageTools;
+
+export const allTools = [...profileTools, ...experimentalTools, ...gravatarImageTools];

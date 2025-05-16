@@ -1,6 +1,9 @@
 import type { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { getDefaultAvatarService, getAvatarByEmailSchema } from '../services/avatar-service.js';
+import {
+  getDefaultAvatarService,
+  getAvatarByEmailSchema,
+} from '../services/gravatar-image-service.js';
 
 // Tool definition
 export const getAvatarByEmailTool = {

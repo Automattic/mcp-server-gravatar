@@ -27,11 +27,11 @@ export interface IExperimentalApiAdapter {
 }
 
 /**
- * Interface for the Avatar API adapter
+ * Interface for the Gravatar Image API adapter
  */
-export interface IAvatarApiAdapter {
+export interface IGravatarImageApiAdapter {
   /**
-   * Get an avatar by its identifier (hash)
+   * Get a Gravatar image by its identifier (hash)
    * @param hash The avatar identifier (MD5 or SHA256 hash)
    * @param size Optional size in pixels (1-2048)
    * @param defaultOption Optional default option if no avatar exists

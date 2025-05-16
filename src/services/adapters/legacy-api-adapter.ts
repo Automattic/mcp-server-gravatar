@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import type { IAvatarApiAdapter } from './interfaces.js';
+import type { IGravatarImageApiAdapter } from './interfaces.js';
 import type { DefaultAvatarOption, Rating } from '../../common/types.js';
 import { apiConfig } from '../../config/server-config.js';
 import { getUserAgent } from '../../common/utils.js';
@@ -9,7 +9,7 @@ import { GravatarValidationError } from '../../common/errors.js';
  * Adapter for the Gravatar Legacy API
  * Implements direct fetch calls to the legacy avatar endpoint
  */
-export class LegacyApiAdapter implements IAvatarApiAdapter {
+export class LegacyApiAdapter implements IGravatarImageApiAdapter {
   constructor(private readonly fetchFn: typeof fetch = fetch) {}
 
   /**
