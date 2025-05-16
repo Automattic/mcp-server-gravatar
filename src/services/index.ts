@@ -15,7 +15,4 @@ import { profileTools } from './profile-service.js';
 import { experimentalTools } from './experimental-service.js';
 import { gravatarImageTools } from './gravatar-image-service.js';
 
-// For backward compatibility
-export const avatarTools = gravatarImageTools;
-
 export const allTools = [...profileTools, ...experimentalTools, ...gravatarImageTools];
