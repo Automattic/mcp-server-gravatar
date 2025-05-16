@@ -87,7 +87,7 @@ export class ProfileService implements IProfileService {
  * Factory function to create a ProfileService with the default adapter
  * @returns A new ProfileService instance
  */
-export async function createProfileService(): Promise<ProfileService> {
+export async function createProfileService(): Promise<IProfileService> {
   const adapter = await createRestApiAdapter();
   return new ProfileService(adapter);
 }
