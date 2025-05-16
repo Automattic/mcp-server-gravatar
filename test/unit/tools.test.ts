@@ -48,14 +48,14 @@ vi.mock('../../src/services/gravatar-image-service.js', async () => {
   const actual = await vi.importActual('../../src/services/gravatar-image-service.js');
   return {
     ...actual,
-    getDefaultAvatarService: vi.fn(),
+    getDefaultGravatarImageService: vi.fn(),
   };
 });
 
 // Import the mocked services
 import { getDefaultProfileService } from '../../src/services/profile-service.js';
 import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
-import { getDefaultAvatarService } from '../../src/services/gravatar-image-service.js';
+import { getDefaultGravatarImageService } from '../../src/services/gravatar-image-service.js';
 
 describe('Tools Index', () => {
   it('should export all tools', () => {
@@ -296,8 +296,8 @@ describe('Avatar Tool Handlers', () => {
       getAvatarByEmail: vi.fn().mockResolvedValue(Buffer.from('mock-email-avatar-data')),
     };
 
-    // Mock the getDefaultAvatarService function
-    vi.mocked(getDefaultAvatarService).mockReturnValue(mockAvatarService);
+    // Mock the getDefaultGravatarImageService function
+    vi.mocked(getDefaultGravatarImageService).mockReturnValue(mockAvatarService);
   });
 
   afterEach(() => {
@@ -316,7 +316,7 @@ describe('Avatar Tool Handlers', () => {
 
       const result = await getAvatarByIdHandler(params);
 
-      expect(getDefaultAvatarService).toHaveBeenCalled();
+      expect(getDefaultGravatarImageService).toHaveBeenCalled();
       expect(mockAvatarService.getAvatarById).toHaveBeenCalledWith(
         'test-hash',
         200,
@@ -375,7 +375,7 @@ describe('Avatar Tool Handlers', () => {
 
       const result = await getAvatarByEmailHandler(params);
 
-      expect(getDefaultAvatarService).toHaveBeenCalled();
+      expect(getDefaultGravatarImageService).toHaveBeenCalled();
       expect(mockAvatarService.getAvatarByEmail).toHaveBeenCalledWith(
         'test@example.com',
         200,
