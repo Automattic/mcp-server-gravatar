@@ -92,20 +92,12 @@ export async function createExperimentalService(): Promise<ExperimentalService> 
   return new ExperimentalService(adapter);
 }
 
-// For backward compatibility: maintain the singleton pattern
-// but use the new adapter-based implementation internally
-let _defaultExperimentalService: ExperimentalService | null = null;
-
 /**
- * Get or create the default ExperimentalService instance (singleton)
- * @returns The default ExperimentalService instance
- * @deprecated Use createExperimentalService() instead
+ * Alias for createExperimentalService for consistency with other services
+ * @returns A new ExperimentalService instance
  */
 export async function getDefaultExperimentalService(): Promise<IExperimentalService> {
-  if (!_defaultExperimentalService) {
-    _defaultExperimentalService = await createExperimentalService();
-  }
-  return _defaultExperimentalService;
+  return await createExperimentalService();
 }
 
 // Tool definitions for MCP

@@ -92,20 +92,12 @@ export async function createProfileService(): Promise<ProfileService> {
   return new ProfileService(adapter);
 }
 
-// For backward compatibility: maintain the singleton pattern
-// but use the new adapter-based implementation internally
-let _defaultProfileService: ProfileService | null = null;
-
 /**
- * Get or create the default ProfileService instance (singleton)
- * @returns The default ProfileService instance
- * @deprecated Use createProfileService() instead
+ * Alias for createProfileService for consistency with other services
+ * @returns A new ProfileService instance
  */
 export async function getDefaultProfileService(): Promise<IProfileService> {
-  if (!_defaultProfileService) {
-    _defaultProfileService = await createProfileService();
-  }
-  return _defaultProfileService;
+  return await createProfileService();
 }
 
 // Tool definitions for MCP

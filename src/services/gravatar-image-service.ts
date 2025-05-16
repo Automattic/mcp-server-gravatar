@@ -146,19 +146,12 @@ export function createGravatarImageService(): GravatarImageService {
   return new GravatarImageService(adapter);
 }
 
-// For backward compatibility: maintain the singleton pattern
-// but use the new adapter-based implementation internally
-let _defaultGravatarImageService: GravatarImageService | null = null;
-
 /**
- * Get or create the default GravatarImageService instance (singleton)
- * @returns The default GravatarImageService instance
+ * Alias for createGravatarImageService for consistency with other services
+ * @returns A new GravatarImageService instance
  */
 export function getDefaultGravatarImageService(): IAvatarService {
-  if (!_defaultGravatarImageService) {
-    _defaultGravatarImageService = createGravatarImageService();
-  }
-  return _defaultGravatarImageService;
+  return createGravatarImageService();
 }
 
 // Tool definitions for MCP
