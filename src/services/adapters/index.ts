@@ -13,7 +13,7 @@ import { ExperimentalApi } from '../../generated/gravatar-api/apis/ExperimentalA
 import { createApiConfiguration } from '../../common/utils.js';
 import { RestApiAdapter } from './rest-api-adapter.js';
 import { LegacyApiAdapter } from './legacy-api-adapter.js';
-import {
+import type {
   IProfileApiAdapter,
   IExperimentalApiAdapter,
   IGravatarImageApiAdapter,
