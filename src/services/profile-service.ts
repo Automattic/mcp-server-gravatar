@@ -45,7 +45,7 @@ export class ProfileService implements IProfileService {
       }
 
       // Use adapter to make API call
-      console.error(`Using adapter to get profile for hash: ${hash}`);
+      console.error(`Forwarding profile request to ProfileApiAdapter for has: ${hash}`);
       const response = await this.adapter.getProfileById(hash);
       console.error(`Received response for hash ${hash}:`, response);
       return response;

@@ -45,7 +45,9 @@ export class ExperimentalService implements IExperimentalService {
       }
 
       // Use adapter to make API call
-      console.error(`Using adapter to get inferred interests for hash: ${hash}`);
+      console.error(
+        `Forwarding inferred interests request to ExperimentalApiAdapter for hash: ${hash}`,
+      );
       const response = await this.adapter.getInferredInterestsById(hash);
       console.error(`Received response for hash ${hash}:`, response);
       return response;

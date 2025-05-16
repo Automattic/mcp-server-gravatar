@@ -81,7 +81,7 @@ export class GravatarImageService implements IGravatarImageService {
       }
 
       // Use adapter to fetch the avatar
-      console.error(`Using adapter to get avatar for hash: ${hash}`);
+      console.error(`Forwarding avatar request to LegacyApiAdapter for hash: ${hash}`);
       const buffer = await this.adapter.getAvatarById(
         hash,
         size,
