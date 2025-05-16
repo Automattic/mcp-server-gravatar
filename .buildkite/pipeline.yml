@@ -3,45 +3,57 @@
 # Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buidkite-agent pipeline upload`
 
 steps:
-  - group: Linters
+  - group: '✨ Code Quality Checks'
+    key: quality-checks
     steps:
-      - label: 🕵️ Lint & Format Check
+      - label: '🕵️ Linting & Formatting'
         key: quality-check
         plugins: [$NVM_PLUGIN]
         command: |
-          echo "--- 🛠 Lint & Format Check"
+          echo "--- 📦 Installing dependencies"
           npm ci
-          make quality-check
+          echo "--- 🕵️ Running linting checks"
+          npm run lint
+          echo "--- 🕵️ Running formatting checks"
+          npm run format:check
         notify:
           - github_commit_status:
-              context: Lint & Formatting Check
+              context: Linting & Formatting
 
-  - label: 🧪 Test
-    key: test
+      - label: '🔍 Type Checking'
+        key: type-check
+        plugins: [$NVM_PLUGIN]
+        command: |
+          echo "--- 📦 Installing dependencies"
+          npm ci
+          echo "--- 🔍 Running TypeScript type checking"
+          npx tsc --noEmit
+        notify:
+          - github_commit_status:
+              context: Type Checking
+
+  - label: '🧪 Tests'
+    key: tests
     plugins: [$NVM_PLUGIN]
     command: |
-      echo "--- 🧪 Running tests"
+      echo "--- 📦 Installing dependencies"
       npm ci
-      make test
+      echo "--- 🧪 Running all tests"
+      npm test
     notify:
       - github_commit_status:
-          context: Test
+          context: Tests
 
-  - label: 📦 Build
-    key: build
+  - label: '🔍 MCP Server Build & Run'
+    key: server-launch-test
+    depends_on:
+      - tests
+      - quality-checks
     plugins: [$NVM_PLUGIN]
     command: |
-      echo "--- 📦 Building the project"
+      echo "--- 📦 Installing dependencies"
       npm ci
-      make build
+      .buildkite/commands/test-run-server.sh
     notify:
       - github_commit_status:
-          context: Build
-
-  - label: 🔍 Test MCP Inspector
-    key: inspector
-    plugins: [$NVM_PLUGIN]
-    command: .buildkite/commands/test-run-inspector.sh
-    notify:
-      - github_commit_status:
-          context: MCP Inspector Testing
+          context: Build & Run
