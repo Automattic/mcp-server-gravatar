@@ -1,6 +1,9 @@
 import type { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { getDefaultAvatarService, getAvatarByIdSchema } from '../services/avatar-service.js';
+import {
+  createGravatarImageService,
+  getAvatarByIdSchema,
+} from '../services/gravatar-image-service.js';
 
 // Tool definition
 export const getAvatarByIdTool = {
@@ -11,7 +14,7 @@ export const getAvatarByIdTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByIdSchema>) {
-  const service = getDefaultAvatarService();
+  const service = createGravatarImageService();
   const avatarBuffer = await service.getAvatarById(
     params.hash,
     params.size,

@@ -1,16 +1,11 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import fetch from 'node-fetch';
-import {
-  validateEmail,
-  validateHash,
-  generateIdentifierFromEmail,
-  getUserAgent,
-} from '../common/utils.js';
-import { apiConfig } from '../config/server-config.js';
+import { validateEmail, validateHash, generateIdentifierFromEmail } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
-import type { IAvatarService } from './interfaces.js';
+import type { IGravatarImageService } from './interfaces.js';
+import type { IGravatarImageApiAdapter } from './adapters/index.js';
+import { createLegacyApiAdapter } from './adapters/index.js';
 
 // Schema for getAvatarById
 export const getAvatarByIdSchema = z.object({
@@ -51,10 +46,22 @@ export const getAvatarByEmailSchema = z.object({
   rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
 });
 
-// Implement the AvatarService
-export class AvatarService implements IAvatarService {
-  constructor(private readonly fetchFn: typeof fetch = fetch) {}
+/**
+ * Service for interacting with Gravatar images
+ * Uses the adapter pattern to abstract API implementation details
+ */
+export class GravatarImageService implements IGravatarImageService {
+  constructor(private readonly adapter: IGravatarImageApiAdapter) {}
 
+  /**
+   * Get a Gravatar image by its identifier (hash)
+   * @param hash The avatar identifier (MD5 or SHA256 hash)
+   * @param size Optional size in pixels (1-2048)
+   * @param defaultOption Optional default option if no avatar exists
+   * @param forceDefault Optional flag to force the default option
+   * @param rating Optional content rating filter
+   * @returns The avatar image as a Buffer
+   */
   async getAvatarById(
     hash: string,
     size?: number,
@@ -64,7 +71,7 @@ export class AvatarService implements IAvatarService {
   ): Promise<Buffer> {
     try {
       console.error(
-        `AvatarService.getAvatarById called with hash: ${hash}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
+        `GravatarImageService.getAvatarById called with hash: ${hash}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
       );
 
       // Validate hash
@@ -73,54 +80,16 @@ export class AvatarService implements IAvatarService {
         throw new GravatarValidationError('Invalid hash format');
       }
 
-      // Build avatar URL using the configured avatarBaseUrl
-      let url = `${apiConfig.avatarBaseUrl}/${hash}`;
-
-      // Add query parameters
-      const queryParams = new URLSearchParams();
-
-      if (size) {
-        queryParams.append('s', size.toString());
-      }
-
-      if (defaultOption) {
-        queryParams.append('d', defaultOption);
-      }
-
-      if (forceDefault) {
-        queryParams.append('f', 'y');
-      }
-
-      if (rating) {
-        queryParams.append('r', rating);
-      }
-
-      // Add query string to URL if there are any parameters
-      const queryString = queryParams.toString();
-      if (queryString) {
-        url += `?${queryString}`;
-      }
-
-      console.error(`Making request to URL: ${url}`);
-
-      // Fetch the image from the URL with User-Agent header
-      const response = await this.fetchFn(url, {
-        headers: {
-          'User-Agent': getUserAgent(),
-        },
-      });
-
-      console.error(`Received response with status: ${response.status} ${response.statusText}`);
-
-      if (!response.ok) {
-        console.error(`Failed to fetch avatar: ${response.statusText}`);
-        throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
-      }
-
-      // Convert the response to a buffer
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      console.error(`Successfully converted response to buffer of size: ${buffer.length} bytes`);
+      // Use adapter to fetch the avatar
+      console.error(`Forwarding avatar request to LegacyApiAdapter for hash: ${hash}`);
+      const buffer = await this.adapter.getAvatarById(
+        hash,
+        size,
+        defaultOption,
+        forceDefault,
+        rating,
+      );
+      console.error(`Successfully received buffer of size: ${buffer.length} bytes`);
       return buffer;
     } catch (error) {
       console.error(`Error getting avatar for hash ${hash}:`, error);
@@ -128,6 +97,15 @@ export class AvatarService implements IAvatarService {
     }
   }
 
+  /**
+   * Get a Gravatar image by email address
+   * @param email The email address
+   * @param size Optional size in pixels (1-2048)
+   * @param defaultOption Optional default option if no avatar exists
+   * @param forceDefault Optional flag to force the default option
+   * @param rating Optional content rating filter
+   * @returns The avatar image as a Buffer
+   */
   async getAvatarByEmail(
     email: string,
     size?: number,
@@ -137,7 +115,7 @@ export class AvatarService implements IAvatarService {
   ): Promise<Buffer> {
     try {
       console.error(
-        `AvatarService.getAvatarByEmail called with email: ${email}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
+        `GravatarImageService.getAvatarByEmail called with email: ${email}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
       );
 
       // Validate email
@@ -159,31 +137,24 @@ export class AvatarService implements IAvatarService {
   }
 }
 
-// Factory function to create the service with optional fetch implementation
-export function createAvatarService(fetchFn?: typeof fetch): IAvatarService {
-  return new AvatarService(fetchFn || fetch);
-}
-
-// We'll initialize this later when needed
-let _defaultAvatarService: IAvatarService | null = null;
-
-// Function to get or create the default service
-export function getDefaultAvatarService(): IAvatarService {
-  if (!_defaultAvatarService) {
-    _defaultAvatarService = createAvatarService();
-  }
-  return _defaultAvatarService;
+/**
+ * Factory function to create a GravatarImageService with the default adapter
+ * @returns A new GravatarImageService instance
+ */
+export function createGravatarImageService(): IGravatarImageService {
+  const adapter = createLegacyApiAdapter();
+  return new GravatarImageService(adapter);
 }
 
 // Tool definitions for MCP
-export const avatarTools = [
+export const gravatarImageTools = [
   {
     name: 'getAvatarById',
     description:
       'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getAvatarByIdSchema),
     handler: async (params: z.infer<typeof getAvatarByIdSchema>) => {
-      const service = getDefaultAvatarService();
+      const service = createGravatarImageService();
       return await service.getAvatarById(
         params.hash,
         params.size,
@@ -198,7 +169,7 @@ export const avatarTools = [
     description: 'Get the avatar PNG image for a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getAvatarByEmailSchema),
     handler: async (params: z.infer<typeof getAvatarByEmailSchema>) => {
-      const service = getDefaultAvatarService();
+      const service = createGravatarImageService();
       return await service.getAvatarByEmail(
         params.email,
         params.size,

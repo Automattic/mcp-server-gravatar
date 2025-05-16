@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { getDefaultProfileService, getProfileByEmailSchema } from '../services/profile-service.js';
+import { createProfileService, getProfileByEmailSchema } from '../services/profile-service.js';
 
 // Tool definition
 export const getProfileByEmailTool = {
@@ -11,7 +11,7 @@ export const getProfileByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getProfileByEmailSchema>) {
-  const profileService = await getDefaultProfileService();
+  const profileService = await createProfileService();
   const profile = await profileService.getProfileByEmail(params.email);
   return {
     content: [{ type: 'text', text: JSON.stringify(profile, null, 2) }],

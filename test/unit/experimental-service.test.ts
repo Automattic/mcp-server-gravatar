@@ -2,15 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createExperimentalService,
   experimentalTools,
-  getDefaultExperimentalService,
 } from '../../src/services/experimental-service.js';
-import type { IExperimentalClient, IExperimentalService } from '../../src/services/interfaces.js';
+import type { IExperimentalService } from '../../src/services/interfaces.js';
+import { ExperimentalService } from '../../src/services/experimental-service.js';
+import type { IExperimentalApiAdapter } from '../../src/services/adapters/interfaces.js';
 import type { Interest } from '../../src/generated/gravatar-api/models/Interest.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
-import type { ApiErrorResponse } from '../../src/common/types.js';
 import * as utils from '../../src/common/utils.js';
+import * as adapters from '../../src/services/adapters/index.js';
 
-// Mock the utils functions and experimental service
+// Mock the utils functions
 vi.mock('../../src/common/utils.js', () => {
   return {
     validateHash: vi.fn(),
@@ -21,12 +22,20 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
-// Mock the getDefaultExperimentalService function
+// Mock the adapters
+vi.mock('../../src/services/adapters/index.js', () => {
+  return {
+    createRestApiAdapter: vi.fn(),
+    createLegacyApiAdapter: vi.fn(),
+  };
+});
+
+// Mock the createExperimentalService function
 vi.mock('../../src/services/experimental-service.js', async () => {
   const actual = await vi.importActual('../../src/services/experimental-service.js');
   return {
     ...actual,
-    getDefaultExperimentalService: vi.fn(),
+    createExperimentalService: vi.fn(),
   };
 });
 
@@ -54,8 +63,8 @@ describe('Experimental MCP Tools', () => {
       getInferredInterestsByEmail: vi.fn().mockResolvedValue(mockInterests),
     };
 
-    // Mock the getDefaultExperimentalService function
-    vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+    // Mock the createExperimentalService function
+    vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
   });
 
   afterEach(() => {
@@ -73,7 +82,7 @@ describe('Experimental MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+      vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
       // Setup the mock service to return a specific value
       const mockInterests: Interest[] = [
@@ -90,7 +99,7 @@ describe('Experimental MCP Tools', () => {
 
       // Create a custom handler function that uses our mocked service
       const handler = async (params: { hash: string }) => {
-        const service = await getDefaultExperimentalService();
+        const service = await createExperimentalService();
         return await service.getInferredInterestsById(params.hash);
       };
 
@@ -99,7 +108,7 @@ describe('Experimental MCP Tools', () => {
 
       // Verify the service method was called with the correct parameters
       expect(mockExperimentalService.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
-      expect(getDefaultExperimentalService).toHaveBeenCalled();
+      expect(createExperimentalService).toHaveBeenCalled();
 
       // Verify the handler returns the expected result
       expect(result).toEqual(mockInterests);
@@ -150,7 +159,7 @@ describe('Experimental MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+      vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
       // Setup the mock service to return a specific value
       const mockInterests: Interest[] = [
@@ -167,7 +176,7 @@ describe('Experimental MCP Tools', () => {
 
       // Create a custom handler function that uses our mocked service
       const handler = async (params: { email: string }) => {
-        const service = await getDefaultExperimentalService();
+        const service = await createExperimentalService();
         return await service.getInferredInterestsByEmail(params.email);
       };
 
@@ -178,7 +187,7 @@ describe('Experimental MCP Tools', () => {
       expect(mockExperimentalService.getInferredInterestsByEmail).toHaveBeenCalledWith(
         'test@example.com',
       );
-      expect(getDefaultExperimentalService).toHaveBeenCalled();
+      expect(createExperimentalService).toHaveBeenCalled();
 
       // Verify the handler returns the expected result
       expect(result).toEqual(mockInterests);
@@ -221,7 +230,7 @@ describe('Experimental MCP Tools', () => {
 });
 
 describe('ExperimentalService', () => {
-  let mockClient: IExperimentalClient;
+  let mockAdapter: IExperimentalApiAdapter;
   let service: IExperimentalService;
 
   beforeEach(async () => {
@@ -233,19 +242,23 @@ describe('ExperimentalService', () => {
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
-    // Create a mock client
+    // Create mock interests data
     const mockInterests: Interest[] = [
       { id: 1, name: 'programming' },
       { id: 2, name: 'javascript' },
       { id: 3, name: 'typescript' },
     ];
 
-    mockClient = {
-      getProfileInferredInterestsById: vi.fn().mockResolvedValue(mockInterests),
+    // Create a mock adapter
+    mockAdapter = {
+      getInferredInterestsById: vi.fn().mockResolvedValue(mockInterests),
     };
 
-    // Create the service with the mock client
-    service = await createExperimentalService(mockClient);
+    // Mock the createRestApiAdapter function to return our mock adapter
+    vi.mocked(adapters.createRestApiAdapter).mockResolvedValue(mockAdapter as any);
+
+    // Create the service with the mock adapter directly
+    service = new ExperimentalService(mockAdapter);
   });
 
   afterEach(() => {
@@ -268,11 +281,9 @@ describe('ExperimentalService', () => {
       );
     });
 
-    it('should call the client with correct parameters', async () => {
+    it('should call the adapter with correct parameters', async () => {
       await service.getInferredInterestsById('test-hash');
-      expect(mockClient.getProfileInferredInterestsById).toHaveBeenCalledWith({
-        profileIdentifier: 'test-hash',
-      });
+      expect(mockAdapter.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
     });
 
     it('should return the inferred interests data', async () => {
@@ -285,20 +296,11 @@ describe('ExperimentalService', () => {
     });
 
     it('should handle API errors', async () => {
-      const error = new Error('API Error') as unknown as ApiErrorResponse;
-      error.response = { status: 404 };
+      const error = new Error('API Error');
 
-      mockClient.getProfileInferredInterestsById = vi.fn().mockRejectedValue(error);
-      vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
-        return Promise.resolve(new GravatarResourceNotFoundError('Interests not found'));
-      });
+      mockAdapter.getInferredInterestsById = vi.fn().mockRejectedValue(error);
 
-      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(
-        GravatarResourceNotFoundError,
-      );
-      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(
-        'Interests not found',
-      );
+      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(error);
     });
   });
 

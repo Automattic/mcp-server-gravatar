@@ -32,7 +32,7 @@ vi.mock('../../src/services/profile-service.js', async () => {
   const actual = await vi.importActual('../../src/services/profile-service.js');
   return {
     ...actual,
-    getDefaultProfileService: vi.fn(),
+    createProfileService: vi.fn(),
   };
 });
 
@@ -40,22 +40,22 @@ vi.mock('../../src/services/experimental-service.js', async () => {
   const actual = await vi.importActual('../../src/services/experimental-service.js');
   return {
     ...actual,
-    getDefaultExperimentalService: vi.fn(),
+    createExperimentalService: vi.fn(),
   };
 });
 
-vi.mock('../../src/services/avatar-service.js', async () => {
-  const actual = await vi.importActual('../../src/services/avatar-service.js');
+vi.mock('../../src/services/gravatar-image-service.js', async () => {
+  const actual = await vi.importActual('../../src/services/gravatar-image-service.js');
   return {
     ...actual,
-    getDefaultAvatarService: vi.fn(),
+    createGravatarImageService: vi.fn(),
   };
 });
 
 // Import the mocked services
-import { getDefaultProfileService } from '../../src/services/profile-service.js';
-import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
-import { getDefaultAvatarService } from '../../src/services/avatar-service.js';
+import { createProfileService } from '../../src/services/profile-service.js';
+import { createExperimentalService } from '../../src/services/experimental-service.js';
+import { createGravatarImageService } from '../../src/services/gravatar-image-service.js';
 
 describe('Tools Index', () => {
   it('should export all tools', () => {
@@ -100,8 +100,8 @@ describe('Profile Tool Handlers', () => {
       }),
     };
 
-    // Mock the getDefaultProfileService function
-    vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
+    // Mock the createProfileService function
+    vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
   });
 
   afterEach(() => {
@@ -113,7 +113,7 @@ describe('Profile Tool Handlers', () => {
       const params = { hash: 'test-hash' };
       const result = await getProfileByIdHandler(params);
 
-      expect(getDefaultProfileService).toHaveBeenCalled();
+      expect(createProfileService).toHaveBeenCalled();
       expect(mockProfileService.getProfileById).toHaveBeenCalledWith('test-hash');
 
       // Verify response format
@@ -152,7 +152,7 @@ describe('Profile Tool Handlers', () => {
       const params = { email: 'test@example.com' };
       const result = await getProfileByEmailHandler(params);
 
-      expect(getDefaultProfileService).toHaveBeenCalled();
+      expect(createProfileService).toHaveBeenCalled();
       expect(mockProfileService.getProfileByEmail).toHaveBeenCalledWith('test@example.com');
 
       // Verify response format
@@ -206,8 +206,8 @@ describe('Experimental Tool Handlers', () => {
       ]),
     };
 
-    // Mock the getDefaultExperimentalService function
-    vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+    // Mock the createExperimentalService function
+    vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
   });
 
   afterEach(() => {
@@ -219,7 +219,7 @@ describe('Experimental Tool Handlers', () => {
       const params = { hash: 'test-hash' };
       const result = await getInterestsByIdHandler(params);
 
-      expect(getDefaultExperimentalService).toHaveBeenCalled();
+      expect(createExperimentalService).toHaveBeenCalled();
       expect(mockExperimentalService.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
 
       // Verify response format is correct (without checking exact content)
@@ -252,7 +252,7 @@ describe('Experimental Tool Handlers', () => {
       const params = { email: 'test@example.com' };
       const result = await getInterestsByEmailHandler(params);
 
-      expect(getDefaultExperimentalService).toHaveBeenCalled();
+      expect(createExperimentalService).toHaveBeenCalled();
       expect(mockExperimentalService.getInferredInterestsByEmail).toHaveBeenCalledWith(
         'test@example.com',
       );
@@ -296,8 +296,8 @@ describe('Avatar Tool Handlers', () => {
       getAvatarByEmail: vi.fn().mockResolvedValue(Buffer.from('mock-email-avatar-data')),
     };
 
-    // Mock the getDefaultAvatarService function
-    vi.mocked(getDefaultAvatarService).mockReturnValue(mockAvatarService);
+    // Mock the createGravatarImageService function
+    vi.mocked(createGravatarImageService).mockReturnValue(mockAvatarService);
   });
 
   afterEach(() => {
@@ -316,7 +316,7 @@ describe('Avatar Tool Handlers', () => {
 
       const result = await getAvatarByIdHandler(params);
 
-      expect(getDefaultAvatarService).toHaveBeenCalled();
+      expect(createGravatarImageService).toHaveBeenCalled();
       expect(mockAvatarService.getAvatarById).toHaveBeenCalledWith(
         'test-hash',
         200,
@@ -375,7 +375,7 @@ describe('Avatar Tool Handlers', () => {
 
       const result = await getAvatarByEmailHandler(params);
 
-      expect(getDefaultAvatarService).toHaveBeenCalled();
+      expect(createGravatarImageService).toHaveBeenCalled();
       expect(mockAvatarService.getAvatarByEmail).toHaveBeenCalledWith(
         'test@example.com',
         200,

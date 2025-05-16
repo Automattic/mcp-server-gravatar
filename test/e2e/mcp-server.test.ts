@@ -4,9 +4,9 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { ApiErrorResponse } from '../../src/common/types.js';
-import { createAvatarService } from '../../src/services/index.js';
-import { getDefaultProfileService } from '../../src/services/profile-service.js';
-import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
+import { GravatarImageService } from '../../src/services/index.js';
+import { createProfileService } from '../../src/services/profile-service.js';
+import { createExperimentalService } from '../../src/services/experimental-service.js';
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi.js';
 import fetch from 'node-fetch';
@@ -52,7 +52,7 @@ describe('MCP Server End-to-End', () => {
   // Create custom service instances with mocked dependencies
   let profileService;
   let experimentalService;
-  let avatarService;
+  let gravatarImageService;
 
   beforeEach(async () => {
     // Reset all mocks
@@ -70,9 +70,14 @@ describe('MCP Server End-to-End', () => {
     vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
     // Create service instances with mocked dependencies
-    profileService = await getDefaultProfileService();
-    experimentalService = await getDefaultExperimentalService();
-    avatarService = createAvatarService(fetch);
+    profileService = await createProfileService();
+    experimentalService = await createExperimentalService();
+
+    // Create a gravatar image service with a mocked adapter
+    const mockAdapter = {
+      getAvatarById: vi.fn().mockResolvedValue(mockAvatarBuffer),
+    };
+    gravatarImageService = new GravatarImageService(mockAdapter);
   });
 
   afterEach(() => {
@@ -150,18 +155,10 @@ describe('MCP Server End-to-End', () => {
     });
   });
 
-  describe('Avatar Operations', () => {
+  describe('Gravatar Image Operations', () => {
     it('getAvatarById should return avatar data', async () => {
-      const result = await avatarService.getAvatarById(hash);
+      const result = await gravatarImageService.getAvatarById(hash);
 
-      expect(fetch).toHaveBeenCalledWith(
-        `https://gravatar.com/avatar/${hash}`,
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'User-Agent': expect.any(String),
-          }),
-        }),
-      );
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(Buffer);
       expect(result.length).toBeGreaterThan(0);
@@ -171,17 +168,9 @@ describe('MCP Server End-to-End', () => {
       // Mock the generateIdentifierFromEmail function to return our test hash
       vi.spyOn(utils, 'generateIdentifierFromEmail').mockReturnValue(hash);
 
-      const result = await avatarService.getAvatarByEmail(email);
+      const result = await gravatarImageService.getAvatarByEmail(email);
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
-      expect(fetch).toHaveBeenCalledWith(
-        `https://gravatar.com/avatar/${hash}`,
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'User-Agent': expect.any(String),
-          }),
-        }),
-      );
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(Buffer);
       expect(result.length).toBeGreaterThan(0);

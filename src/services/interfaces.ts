@@ -24,8 +24,8 @@ export interface IExperimentalService {
   getInferredInterestsByEmail(email: string): Promise<Interest[]>;
 }
 
-// Avatar service interface
-export interface IAvatarService {
+// Gravatar image service interface
+export interface IGravatarImageService {
   getAvatarById(
     hash: string,
     size?: number,

@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  createProfileService,
-  profileTools,
-  getDefaultProfileService,
-} from '../../src/services/profile-service.js';
-import type { IProfileClient, IProfileService } from '../../src/services/interfaces.js';
+import { createProfileService, profileTools } from '../../src/services/profile-service.js';
+import type { IProfileService } from '../../src/services/interfaces.js';
+import { ProfileService } from '../../src/services/profile-service.js';
+import type { IProfileApiAdapter } from '../../src/services/adapters/interfaces.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
-import type { ApiErrorResponse } from '../../src/common/types.js';
 import * as utils from '../../src/common/utils.js';
+import * as adapters from '../../src/services/adapters/index.js';
 
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', () => {
@@ -20,12 +18,20 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
-// Mock the getDefaultProfileService function
+// Mock the adapters
+vi.mock('../../src/services/adapters/index.js', () => {
+  return {
+    createRestApiAdapter: vi.fn(),
+    createLegacyApiAdapter: vi.fn(),
+  };
+});
+
+// Mock the createProfileService function
 vi.mock('../../src/services/profile-service.js', async () => {
   const actual = await vi.importActual('../../src/services/profile-service.js');
   return {
     ...actual,
-    getDefaultProfileService: vi.fn(),
+    createProfileService: vi.fn(),
   };
 });
 
@@ -55,8 +61,8 @@ describe('Profile MCP Tools', () => {
       }),
     };
 
-    // Mock the getDefaultProfileService function
-    vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
+    // Mock the createProfileService function
+    vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
   });
 
   afterEach(() => {
@@ -72,7 +78,7 @@ describe('Profile MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
+      vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
       // Setup the mock service to return a specific value
       const mockProfile = {
@@ -89,7 +95,7 @@ describe('Profile MCP Tools', () => {
 
       // Create a custom handler function that uses our mocked service
       const handler = async (params: { hash: string }) => {
-        const service = await getDefaultProfileService();
+        const service = await createProfileService();
         return await service.getProfileById(params.hash);
       };
 
@@ -98,7 +104,7 @@ describe('Profile MCP Tools', () => {
 
       // Verify the service method was called with the correct parameters
       expect(mockProfileService.getProfileById).toHaveBeenCalledWith('test-hash');
-      expect(getDefaultProfileService).toHaveBeenCalled();
+      expect(createProfileService).toHaveBeenCalled();
 
       // Verify the handler returns the expected result
       expect(result).toEqual(mockProfile);
@@ -145,7 +151,7 @@ describe('Profile MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(getDefaultProfileService).mockResolvedValue(mockProfileService);
+      vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
       // Setup the mock service to return a specific value
       const mockProfile = {
@@ -162,7 +168,7 @@ describe('Profile MCP Tools', () => {
 
       // Create a custom handler function that uses our mocked service
       const handler = async (params: { email: string }) => {
-        const service = await getDefaultProfileService();
+        const service = await createProfileService();
         return await service.getProfileByEmail(params.email);
       };
 
@@ -171,7 +177,7 @@ describe('Profile MCP Tools', () => {
 
       // Verify the service method was called with the correct parameters
       expect(mockProfileService.getProfileByEmail).toHaveBeenCalledWith('test@example.com');
-      expect(getDefaultProfileService).toHaveBeenCalled();
+      expect(createProfileService).toHaveBeenCalled();
 
       // Verify the handler returns the expected result
       expect(result).toEqual(mockProfile);
@@ -211,7 +217,7 @@ describe('Profile MCP Tools', () => {
 });
 
 describe('ProfileService', () => {
-  let mockClient: IProfileClient;
+  let mockAdapter: IProfileApiAdapter;
   let service: IProfileService;
 
   beforeEach(async () => {
@@ -223,8 +229,8 @@ describe('ProfileService', () => {
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
-    // Create a mock client
-    mockClient = {
+    // Create a mock adapter
+    mockAdapter = {
       getProfileById: vi.fn().mockResolvedValue({
         hash: 'test-hash',
         displayName: 'Test User',
@@ -232,8 +238,11 @@ describe('ProfileService', () => {
       }),
     };
 
-    // Create the service with the mock client
-    service = await createProfileService(mockClient);
+    // Mock the createRestApiAdapter function to return our mock adapter
+    vi.mocked(adapters.createRestApiAdapter).mockResolvedValue(mockAdapter as any);
+
+    // Create the service with the mock adapter directly
+    service = new ProfileService(mockAdapter);
   });
 
   afterEach(() => {
@@ -252,9 +261,9 @@ describe('ProfileService', () => {
       await expect(service.getProfileById('invalid-hash')).rejects.toThrow('Invalid hash format');
     });
 
-    it('should call the client with correct parameters', async () => {
+    it('should call the adapter with correct parameters', async () => {
       await service.getProfileById('test-hash');
-      expect(mockClient.getProfileById).toHaveBeenCalledWith({ profileIdentifier: 'test-hash' });
+      expect(mockAdapter.getProfileById).toHaveBeenCalledWith('test-hash');
     });
 
     it('should return the profile data', async () => {
@@ -267,18 +276,11 @@ describe('ProfileService', () => {
     });
 
     it('should handle API errors', async () => {
-      const error = new Error('API Error') as unknown as ApiErrorResponse;
-      error.response = { status: 404 };
+      const error = new Error('API Error');
 
-      mockClient.getProfileById = vi.fn().mockRejectedValue(error);
-      vi.mocked(utils.mapHttpStatusToError).mockImplementation((_status, _message) => {
-        return Promise.resolve(new GravatarResourceNotFoundError('Profile not found'));
-      });
+      mockAdapter.getProfileById = vi.fn().mockRejectedValue(error);
 
-      await expect(service.getProfileById('test-hash')).rejects.toThrow(
-        GravatarResourceNotFoundError,
-      );
-      await expect(service.getProfileById('test-hash')).rejects.toThrow('Profile not found');
+      await expect(service.getProfileById('test-hash')).rejects.toThrow(error);
     });
   });
 
