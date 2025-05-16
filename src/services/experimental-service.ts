@@ -87,7 +87,7 @@ export class ExperimentalService implements IExperimentalService {
  * Factory function to create an ExperimentalService with the default adapter
  * @returns A new ExperimentalService instance
  */
-export async function createExperimentalService(): Promise<ExperimentalService> {
+export async function createExperimentalService(): Promise<IExperimentalService> {
   const adapter = await createRestApiAdapter();
   return new ExperimentalService(adapter);
 }
