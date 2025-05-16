@@ -146,14 +146,6 @@ export function createGravatarImageService(): GravatarImageService {
   return new GravatarImageService(adapter);
 }
 
-/**
- * Alias for createGravatarImageService for consistency with other services
- * @returns A new GravatarImageService instance
- */
-export function getDefaultGravatarImageService(): IAvatarService {
-  return createGravatarImageService();
-}
-
 // Tool definitions for MCP
 export const gravatarImageTools = [
   {
@@ -162,7 +154,7 @@ export const gravatarImageTools = [
       'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getAvatarByIdSchema),
     handler: async (params: z.infer<typeof getAvatarByIdSchema>) => {
-      const service = getDefaultGravatarImageService();
+      const service = createGravatarImageService();
       return await service.getAvatarById(
         params.hash,
         params.size,
@@ -177,7 +169,7 @@ export const gravatarImageTools = [
     description: 'Get the avatar PNG image for a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getAvatarByEmailSchema),
     handler: async (params: z.infer<typeof getAvatarByEmailSchema>) => {
-      const service = getDefaultGravatarImageService();
+      const service = createGravatarImageService();
       return await service.getAvatarByEmail(
         params.email,
         params.size,

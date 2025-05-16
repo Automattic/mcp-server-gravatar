@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as utils from '../../src/common/utils.js';
-import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
+import { createExperimentalService } from '../../src/services/experimental-service.js';
 import { GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -26,7 +26,7 @@ describe('Experimental API Integration', () => {
 
   beforeEach(async () => {
     // Setup runs before each test
-    experimentalService = await getDefaultExperimentalService();
+    experimentalService = await createExperimentalService();
   });
 
   afterEach(() => {

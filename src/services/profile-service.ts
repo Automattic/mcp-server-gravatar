@@ -92,14 +92,6 @@ export async function createProfileService(): Promise<ProfileService> {
   return new ProfileService(adapter);
 }
 
-/**
- * Alias for createProfileService for consistency with other services
- * @returns A new ProfileService instance
- */
-export async function getDefaultProfileService(): Promise<IProfileService> {
-  return await createProfileService();
-}
-
 // Tool definitions for MCP
 export const profileTools = [
   {
@@ -107,7 +99,7 @@ export const profileTools = [
     description: 'Fetch a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getProfileByIdSchema),
     handler: async (params: z.infer<typeof getProfileByIdSchema>) => {
-      const service = await getDefaultProfileService();
+      const service = await createProfileService();
       return await service.getProfileById(params.hash);
     },
   },
@@ -116,7 +108,7 @@ export const profileTools = [
     description: 'Fetch a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getProfileByEmailSchema),
     handler: async (params: z.infer<typeof getProfileByEmailSchema>) => {
-      const service = await getDefaultProfileService();
+      const service = await createProfileService();
       return await service.getProfileByEmail(params.email);
     },
   },

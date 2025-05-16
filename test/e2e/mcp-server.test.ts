@@ -5,8 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { ApiErrorResponse } from '../../src/common/types.js';
 import { GravatarImageService } from '../../src/services/index.js';
-import { getDefaultProfileService } from '../../src/services/profile-service.js';
-import { getDefaultExperimentalService } from '../../src/services/experimental-service.js';
+import { createProfileService } from '../../src/services/profile-service.js';
+import { createExperimentalService } from '../../src/services/experimental-service.js';
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi.js';
 import fetch from 'node-fetch';
@@ -70,8 +70,8 @@ describe('MCP Server End-to-End', () => {
     vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
     // Create service instances with mocked dependencies
-    profileService = await getDefaultProfileService();
-    experimentalService = await getDefaultExperimentalService();
+    profileService = await createProfileService();
+    experimentalService = await createExperimentalService();
 
     // Create a gravatar image service with a mocked adapter
     const mockAdapter = {

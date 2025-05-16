@@ -92,14 +92,6 @@ export async function createExperimentalService(): Promise<ExperimentalService> 
   return new ExperimentalService(adapter);
 }
 
-/**
- * Alias for createExperimentalService for consistency with other services
- * @returns A new ExperimentalService instance
- */
-export async function getDefaultExperimentalService(): Promise<IExperimentalService> {
-  return await createExperimentalService();
-}
-
 // Tool definitions for MCP
 export const experimentalTools = [
   {
@@ -108,7 +100,7 @@ export const experimentalTools = [
       'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
     inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
     handler: async (params: z.infer<typeof getInferredInterestsByIdSchema>) => {
-      const service = await getDefaultExperimentalService();
+      const service = await createExperimentalService();
       return await service.getInferredInterestsById(params.hash);
     },
   },
@@ -117,7 +109,7 @@ export const experimentalTools = [
     description: 'Fetch inferred interests for a Gravatar profile using an email address.',
     inputSchema: zodToJsonSchema(getInferredInterestsByEmailSchema),
     handler: async (params: z.infer<typeof getInferredInterestsByEmailSchema>) => {
-      const service = await getDefaultExperimentalService();
+      const service = await createExperimentalService();
       return await service.getInferredInterestsByEmail(params.email);
     },
   },

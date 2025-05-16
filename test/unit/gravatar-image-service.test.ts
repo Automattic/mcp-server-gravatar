@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createGravatarImageService,
   gravatarImageTools,
-  getDefaultGravatarImageService,
+  GravatarImageService,
 } from '../../src/services/gravatar-image-service.js';
 import type { IAvatarService } from '../../src/services/interfaces.js';
 import type { IGravatarImageApiAdapter } from '../../src/services/adapters/interfaces.js';
@@ -18,12 +18,12 @@ vi.mock('../../src/services/adapters/index.js', () => {
   };
 });
 
-// Mock the getDefaultGravatarImageService function
+// Mock the createGravatarImageService function
 vi.mock('../../src/services/gravatar-image-service.js', async () => {
   const actual = await vi.importActual('../../src/services/gravatar-image-service.js');
   return {
     ...actual,
-    getDefaultGravatarImageService: vi.fn(),
+    createGravatarImageService: vi.fn(),
     gravatarImageTools: [
       {
         name: 'getAvatarById',
@@ -54,7 +54,7 @@ vi.mock('../../src/common/utils.js', () => {
 
 describe('GravatarImageService', () => {
   let mockAdapter: IGravatarImageApiAdapter;
-  let service: IAvatarService;
+  let service: GravatarImageService;
 
   beforeEach(() => {
     // Reset all mocks
@@ -74,8 +74,8 @@ describe('GravatarImageService', () => {
     // Mock the createLegacyApiAdapter function to return our mock adapter
     vi.mocked(adapters.createLegacyApiAdapter).mockReturnValue(mockAdapter as any);
 
-    // Create the service with the mock adapter (via the factory function)
-    service = createGravatarImageService();
+    // Create the service with the mock adapter directly
+    service = new GravatarImageService(mockAdapter);
   });
 
   afterEach(() => {
@@ -270,12 +270,12 @@ describe('Gravatar Image MCP Tools', () => {
       getAvatarByEmail: vi.fn().mockResolvedValue(mockBuffer),
     };
 
-    // Mock the getDefaultGravatarImageService function to return our mock service
-    vi.mocked(getDefaultGravatarImageService).mockReturnValue(mockService);
+    // Mock the createGravatarImageService function to return our mock service
+    vi.mocked(createGravatarImageService).mockReturnValue(mockService as GravatarImageService);
 
     // Mock the tool handlers
     vi.mocked(gravatarImageTools[0].handler).mockImplementation(async (params: any) => {
-      const service = getDefaultGravatarImageService();
+      const service = createGravatarImageService();
       return await service.getAvatarById(
         params.hash,
         params.size,
@@ -286,7 +286,7 @@ describe('Gravatar Image MCP Tools', () => {
     });
 
     vi.mocked(gravatarImageTools[1].handler).mockImplementation(async (params: any) => {
-      const service = getDefaultGravatarImageService();
+      const service = createGravatarImageService();
       return await service.getAvatarByEmail(
         params.email,
         params.size,

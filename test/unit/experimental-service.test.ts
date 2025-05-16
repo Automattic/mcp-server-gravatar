@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createExperimentalService,
   experimentalTools,
-  getDefaultExperimentalService,
 } from '../../src/services/experimental-service.js';
 import type { IExperimentalService } from '../../src/services/interfaces.js';
+import { ExperimentalService } from '../../src/services/experimental-service.js';
 import type { IExperimentalApiAdapter } from '../../src/services/adapters/interfaces.js';
 import type { Interest } from '../../src/generated/gravatar-api/models/Interest.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
@@ -30,12 +30,12 @@ vi.mock('../../src/services/adapters/index.js', () => {
   };
 });
 
-// Mock the getDefaultExperimentalService function
+// Mock the createExperimentalService function
 vi.mock('../../src/services/experimental-service.js', async () => {
   const actual = await vi.importActual('../../src/services/experimental-service.js');
   return {
     ...actual,
-    getDefaultExperimentalService: vi.fn(),
+    createExperimentalService: vi.fn(),
   };
 });
 
@@ -63,8 +63,10 @@ describe('Experimental MCP Tools', () => {
       getInferredInterestsByEmail: vi.fn().mockResolvedValue(mockInterests),
     };
 
-    // Mock the getDefaultExperimentalService function
-    vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+    // Mock the createExperimentalService function with type assertion
+    vi.mocked(createExperimentalService).mockResolvedValue(
+      mockExperimentalService as unknown as ExperimentalService,
+    );
   });
 
   afterEach(() => {
@@ -82,7 +84,9 @@ describe('Experimental MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+      vi.mocked(createExperimentalService).mockResolvedValue(
+        mockExperimentalService as unknown as ExperimentalService,
+      );
 
       // Setup the mock service to return a specific value
       const mockInterests: Interest[] = [
@@ -99,7 +103,7 @@ describe('Experimental MCP Tools', () => {
 
       // Create a custom handler function that uses our mocked service
       const handler = async (params: { hash: string }) => {
-        const service = await getDefaultExperimentalService();
+        const service = await createExperimentalService();
         return await service.getInferredInterestsById(params.hash);
       };
 
@@ -108,7 +112,7 @@ describe('Experimental MCP Tools', () => {
 
       // Verify the service method was called with the correct parameters
       expect(mockExperimentalService.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
-      expect(getDefaultExperimentalService).toHaveBeenCalled();
+      expect(createExperimentalService).toHaveBeenCalled();
 
       // Verify the handler returns the expected result
       expect(result).toEqual(mockInterests);
@@ -159,7 +163,9 @@ describe('Experimental MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(getDefaultExperimentalService).mockResolvedValue(mockExperimentalService);
+      vi.mocked(createExperimentalService).mockResolvedValue(
+        mockExperimentalService as unknown as ExperimentalService,
+      );
 
       // Setup the mock service to return a specific value
       const mockInterests: Interest[] = [
@@ -176,7 +182,7 @@ describe('Experimental MCP Tools', () => {
 
       // Create a custom handler function that uses our mocked service
       const handler = async (params: { email: string }) => {
-        const service = await getDefaultExperimentalService();
+        const service = await createExperimentalService();
         return await service.getInferredInterestsByEmail(params.email);
       };
 
@@ -187,7 +193,7 @@ describe('Experimental MCP Tools', () => {
       expect(mockExperimentalService.getInferredInterestsByEmail).toHaveBeenCalledWith(
         'test@example.com',
       );
-      expect(getDefaultExperimentalService).toHaveBeenCalled();
+      expect(createExperimentalService).toHaveBeenCalled();
 
       // Verify the handler returns the expected result
       expect(result).toEqual(mockInterests);
@@ -257,8 +263,8 @@ describe('ExperimentalService', () => {
     // Mock the createRestApiAdapter function to return our mock adapter
     vi.mocked(adapters.createRestApiAdapter).mockResolvedValue(mockAdapter as any);
 
-    // Create the service with the mock adapter (via the factory function)
-    service = await createExperimentalService();
+    // Create the service with the mock adapter directly
+    service = new ExperimentalService(mockAdapter);
   });
 
   afterEach(() => {
