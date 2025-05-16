@@ -3,7 +3,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateEmail, validateHash, generateIdentifierFromEmail } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
-import type { IAvatarService } from './interfaces.js';
+import type { IGravatarImageService } from './interfaces.js';
 import type { IGravatarImageApiAdapter } from './adapters/index.js';
 import { createLegacyApiAdapter } from './adapters/index.js';
 
@@ -50,7 +50,7 @@ export const getAvatarByEmailSchema = z.object({
  * Service for interacting with Gravatar images
  * Uses the adapter pattern to abstract API implementation details
  */
-export class GravatarImageService implements IAvatarService {
+export class GravatarImageService implements IGravatarImageService {
   constructor(private readonly adapter: IGravatarImageApiAdapter) {}
 
   /**
@@ -141,7 +141,7 @@ export class GravatarImageService implements IAvatarService {
  * Factory function to create a GravatarImageService with the default adapter
  * @returns A new GravatarImageService instance
  */
-export function createGravatarImageService(): GravatarImageService {
+export function createGravatarImageService(): IGravatarImageService {
   const adapter = createLegacyApiAdapter();
   return new GravatarImageService(adapter);
 }

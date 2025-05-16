@@ -4,7 +4,7 @@ import {
   gravatarImageTools,
   GravatarImageService,
 } from '../../src/services/gravatar-image-service.js';
-import type { IAvatarService } from '../../src/services/interfaces.js';
+import type { IGravatarImageService } from '../../src/services/interfaces.js';
 import type { IGravatarImageApiAdapter } from '../../src/services/adapters/interfaces.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
@@ -249,7 +249,7 @@ describe('GravatarImageService', () => {
 });
 
 describe('Gravatar Image MCP Tools', () => {
-  let mockService: IAvatarService;
+  let mockService: IGravatarImageService;
   let mockBuffer: Buffer;
 
   beforeEach(() => {
