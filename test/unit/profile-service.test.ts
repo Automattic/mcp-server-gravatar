@@ -61,10 +61,8 @@ describe('Profile MCP Tools', () => {
       }),
     };
 
-    // Mock the createProfileService function with type assertion
-    vi.mocked(createProfileService).mockResolvedValue(
-      mockProfileService as unknown as ProfileService,
-    );
+    // Mock the createProfileService function
+    vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
   });
 
   afterEach(() => {
@@ -80,9 +78,7 @@ describe('Profile MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(createProfileService).mockResolvedValue(
-        mockProfileService as unknown as ProfileService,
-      );
+      vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
       // Setup the mock service to return a specific value
       const mockProfile = {
@@ -155,9 +151,7 @@ describe('Profile MCP Tools', () => {
 
     it('should call the service with correct parameters', async () => {
       // Setup the mock to return a resolved promise with the mock service
-      vi.mocked(createProfileService).mockResolvedValue(
-        mockProfileService as unknown as ProfileService,
-      );
+      vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
       // Setup the mock service to return a specific value
       const mockProfile = {
