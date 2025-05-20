@@ -28,8 +28,8 @@ export function createTestProfileService(options?: {
 export function createTestExperimentalService(options?: {
   mockExperimentalApi?: ReturnType<typeof createMockExperimentalApi>;
 }): IExperimentalService {
-  const mockApi = options?.mockExperimentalApi || createMockExperimentalApi();
-  return new ExperimentalService(mockApi);
+  const mockExperimentalApiClient = options?.mockExperimentalApi || createMockExperimentalApi();
+  return new ExperimentalService(mockExperimentalApiClient);
 }
 
 /**

@@ -7,15 +7,14 @@ export interface IProfilesApiClient {
   getProfileById(params: { profileIdentifier: string }): Promise<Profile>;
 }
 
+export interface IExperimentalApiClient {
+  getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
+}
+
 // Profile service interface
 export interface IProfileService {
   getProfileById(hash: string): Promise<Profile>;
   getProfileByEmail(email: string): Promise<Profile>;
-}
-
-// Experimental client interface
-export interface IExperimentalClient {
-  getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
 }
 
 // Experimental service interface
