@@ -1,0 +1,43 @@
+import { ProfileService } from '../../src/services/profile-service';
+import { ExperimentalService } from '../../src/services/experimental-service';
+import { GravatarImageService } from '../../src/services/gravatar-image-service';
+import {
+  createMockProfilesApi,
+  createMockExperimentalApi,
+  createMockFetch,
+} from './mock-api-clients';
+import type {
+  IProfileService,
+  IExperimentalService,
+  IGravatarImageService,
+} from '../../src/services/interfaces';
+
+/**
+ * Creates a ProfileService with mocked dependencies for testing
+ */
+export function createTestProfileService(options?: {
+  mockProfilesApi?: ReturnType<typeof createMockProfilesApi>;
+}): IProfileService {
+  const mockApi = options?.mockProfilesApi || createMockProfilesApi();
+  return new ProfileService(mockApi);
+}
+
+/**
+ * Creates an ExperimentalService with mocked dependencies for testing
+ */
+export function createTestExperimentalService(options?: {
+  mockExperimentalApi?: ReturnType<typeof createMockExperimentalApi>;
+}): IExperimentalService {
+  const mockApi = options?.mockExperimentalApi || createMockExperimentalApi();
+  return new ExperimentalService(mockApi);
+}
+
+/**
+ * Creates a GravatarImageService with mocked dependencies for testing
+ */
+export function createTestGravatarImageService(options?: {
+  mockFetch?: ReturnType<typeof createMockFetch>;
+}): IGravatarImageService {
+  const mockFetch = options?.mockFetch || createMockFetch();
+  return new GravatarImageService(mockFetch);
+}
