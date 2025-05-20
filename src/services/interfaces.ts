@@ -2,20 +2,22 @@ import type { DefaultAvatarOption, Rating } from '../common/types.js';
 import type { Profile } from '../generated/gravatar-api/models/Profile.js';
 import type { Interest } from '../generated/gravatar-api/models/Interest.js';
 
-// Profile client interface
-export interface IProfileClient {
+// API Client Interfaces
+export interface IProfilesApiClient {
   getProfileById(params: { profileIdentifier: string }): Promise<Profile>;
 }
+
+export interface IExperimentalApiClient {
+  getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
+}
+
+// Fetch type for GravatarImageService
+export type FetchFunction = typeof fetch;
 
 // Profile service interface
 export interface IProfileService {
   getProfileById(hash: string): Promise<Profile>;
   getProfileByEmail(email: string): Promise<Profile>;
-}
-
-// Experimental client interface
-export interface IExperimentalClient {
-  getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
 }
 
 // Experimental service interface

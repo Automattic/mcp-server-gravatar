@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 // Mock the fetch function
 vi.mock('node-fetch');
 
-describe('Avatar API Integration', () => {
+describe('GravatarImageService Integration', () => {
   // Use a valid MD5 hash (32 characters) for testing
   const hash = '00000000000000000000000000000000';
   const email = 'test@example.com';
@@ -30,7 +30,7 @@ describe('Avatar API Integration', () => {
   // This type is not used directly but helps document the code
   type _MockResponse = any;
 
-  // Create a service with the mocked adapter
+  // Create a service instance for testing
   let gravatarImageService;
 
   beforeEach(() => {
@@ -38,12 +38,10 @@ describe('Avatar API Integration', () => {
     vi.mocked(fetch).mockReset();
 
     // Create a new service instance for each test
-    // The service will use the LegacyApiAdapter which uses fetch
     gravatarImageService = createGravatarImageService();
 
-    // Mock the adapter's fetch function
-    const adapter = (gravatarImageService as any).adapter;
-    adapter.fetchFn = fetch;
+    // Directly mock the gravatarImageApiClient property
+    (gravatarImageService as any).gravatarImageApiClient = fetch;
   });
 
   afterEach(() => {

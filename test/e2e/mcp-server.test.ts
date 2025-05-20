@@ -73,11 +73,14 @@ describe('MCP Server End-to-End', () => {
     profileService = await createProfileService();
     experimentalService = await createExperimentalService();
 
-    // Create a gravatar image service with a mocked adapter
-    const mockAdapter = {
-      getAvatarById: vi.fn().mockResolvedValue(mockAvatarBuffer),
-    };
-    gravatarImageService = new GravatarImageService(mockAdapter);
+    // Create a gravatar image service with a mocked fetch function
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      arrayBuffer: vi.fn().mockResolvedValue(mockAvatarBuffer),
+    });
+    gravatarImageService = new GravatarImageService(mockFetch);
   });
 
   afterEach(() => {

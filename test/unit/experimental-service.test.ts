@@ -5,11 +5,11 @@ import {
 } from '../../src/services/experimental-service.js';
 import type { IExperimentalService } from '../../src/services/interfaces.js';
 import { ExperimentalService } from '../../src/services/experimental-service.js';
-import type { IExperimentalApiAdapter } from '../../src/services/adapters/interfaces.js';
-import type { Interest } from '../../src/generated/gravatar-api/models/Interest.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
-import * as adapters from '../../src/services/adapters/index.js';
+import * as types from '../../src/common/types.js';
+import { createMockExperimentalApi } from '../helpers/mock-api-clients.js';
+import { createMockInterests } from '../helpers/mock-responses.js';
 
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', () => {
@@ -22,11 +22,17 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
-// Mock the adapters
-vi.mock('../../src/services/adapters/index.js', () => {
+// Mock the types module
+vi.mock('../../src/common/types.js', () => {
   return {
-    createRestApiAdapter: vi.fn(),
-    createLegacyApiAdapter: vi.fn(),
+    isApiErrorResponse: vi.fn(),
+  };
+});
+
+// Mock the ExperimentalApi constructor
+vi.mock('../../src/generated/gravatar-api/apis/ExperimentalApi.js', () => {
+  return {
+    ExperimentalApi: vi.fn(),
   };
 });
 
@@ -52,11 +58,7 @@ describe('Experimental MCP Tools', () => {
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
     // Create a mock experimental service
-    const mockInterests: Interest[] = [
-      { id: 1, name: 'programming' },
-      { id: 2, name: 'javascript' },
-      { id: 3, name: 'typescript' },
-    ];
+    const mockInterests = createMockInterests(3);
 
     mockExperimentalService = {
       getInferredInterestsById: vi.fn().mockResolvedValue(mockInterests),
@@ -85,11 +87,7 @@ describe('Experimental MCP Tools', () => {
       vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
       // Setup the mock service to return a specific value
-      const mockInterests: Interest[] = [
-        { id: 1, name: 'programming' },
-        { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' },
-      ];
+      const mockInterests = createMockInterests(3);
       (mockExperimentalService.getInferredInterestsById as any).mockResolvedValue(mockInterests);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
@@ -130,16 +128,10 @@ describe('Experimental MCP Tools', () => {
         if (!utils.validateHash(hash)) {
           throw new GravatarValidationError('Invalid hash format');
         }
-        const mockInterests: Interest[] = [
-          { id: 1, name: 'programming' },
-          { id: 2, name: 'javascript' },
-          { id: 3, name: 'typescript' },
-        ];
-        return mockInterests;
+        return createMockInterests(3);
       });
 
-      // Use any type for testing purposes
-      // In a real application, we would use a proper type, but for testing we can use any
+      // Use type assertion to tell TypeScript this is the correct type
       const params = {
         hash: 'invalid-hash',
       } as any;
@@ -162,11 +154,7 @@ describe('Experimental MCP Tools', () => {
       vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
       // Setup the mock service to return a specific value
-      const mockInterests: Interest[] = [
-        { id: 1, name: 'programming' },
-        { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' },
-      ];
+      const mockInterests = createMockInterests(3);
       (mockExperimentalService.getInferredInterestsByEmail as any).mockResolvedValue(mockInterests);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
@@ -210,16 +198,10 @@ describe('Experimental MCP Tools', () => {
         if (!utils.validateEmail(email)) {
           throw new GravatarValidationError('Invalid email format');
         }
-        const mockInterests: Interest[] = [
-          { id: 1, name: 'programming' },
-          { id: 2, name: 'javascript' },
-          { id: 3, name: 'typescript' },
-        ];
-        return mockInterests;
+        return createMockInterests(3);
       });
 
-      // Use any type for testing purposes
-      // In a real application, we would use a proper type, but for testing we can use any
+      // Use type assertion to tell TypeScript this is the correct type
       const params = {
         email: 'invalid-email',
       } as any;
@@ -230,7 +212,7 @@ describe('Experimental MCP Tools', () => {
 });
 
 describe('ExperimentalService', () => {
-  let mockAdapter: IExperimentalApiAdapter;
+  let mockApiClient: ReturnType<typeof createMockExperimentalApi>;
   let service: IExperimentalService;
 
   beforeEach(async () => {
@@ -242,23 +224,13 @@ describe('ExperimentalService', () => {
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
-    // Create mock interests data
-    const mockInterests: Interest[] = [
-      { id: 1, name: 'programming' },
-      { id: 2, name: 'javascript' },
-      { id: 3, name: 'typescript' },
-    ];
+    // Create a mock API client
+    mockApiClient = createMockExperimentalApi({
+      getProfileInferredInterestsByIdResponse: createMockInterests(3),
+    });
 
-    // Create a mock adapter
-    mockAdapter = {
-      getInferredInterestsById: vi.fn().mockResolvedValue(mockInterests),
-    };
-
-    // Mock the createRestApiAdapter function to return our mock adapter
-    vi.mocked(adapters.createRestApiAdapter).mockResolvedValue(mockAdapter as any);
-
-    // Create the service with the mock adapter directly
-    service = new ExperimentalService(mockAdapter);
+    // Create the service with the mock API client
+    service = new ExperimentalService(mockApiClient);
   });
 
   afterEach(() => {
@@ -281,26 +253,42 @@ describe('ExperimentalService', () => {
       );
     });
 
-    it('should call the adapter with correct parameters', async () => {
+    it('should call the API client with correct parameters', async () => {
       await service.getInferredInterestsById('test-hash');
-      expect(mockAdapter.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
+      expect(mockApiClient.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: 'test-hash',
+      });
     });
 
     it('should return the inferred interests data', async () => {
+      const mockInterests = createMockInterests(3);
+      mockApiClient.getProfileInferredInterestsById = vi.fn().mockResolvedValue(mockInterests);
+
       const result = await service.getInferredInterestsById('test-hash');
-      expect(result).toEqual([
-        { id: 1, name: 'programming' },
-        { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' },
-      ]);
+      expect(result).toEqual(mockInterests);
     });
 
     it('should handle API errors', async () => {
       const error = new Error('API Error');
-
-      mockAdapter.getInferredInterestsById = vi.fn().mockRejectedValue(error);
+      mockApiClient.getProfileInferredInterestsById = vi.fn().mockRejectedValue(error);
 
       await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(error);
+    });
+
+    it('should map API error responses', async () => {
+      // Setup isApiErrorResponse to return true for our error
+      const apiError = new Error('API Error');
+      (apiError as any).response = { status: 404 };
+      mockApiClient.getProfileInferredInterestsById = vi.fn().mockRejectedValue(apiError);
+
+      vi.mocked(types.isApiErrorResponse).mockReturnValue(true);
+
+      // Setup mapHttpStatusToError to return a specific error
+      const mappedError = new GravatarResourceNotFoundError('Interests not found');
+      vi.mocked(utils.mapHttpStatusToError).mockResolvedValue(mappedError);
+
+      await expect(service.getInferredInterestsById('test-hash')).rejects.toThrow(mappedError);
+      expect(utils.mapHttpStatusToError).toHaveBeenCalledWith(404, 'API Error');
     });
   });
 
@@ -336,12 +324,12 @@ describe('ExperimentalService', () => {
     });
 
     it('should return the inferred interests data', async () => {
+      const mockInterests = createMockInterests(3);
+      const getInferredInterestsByIdSpy = vi.spyOn(service, 'getInferredInterestsById');
+      getInferredInterestsByIdSpy.mockResolvedValue(mockInterests);
+
       const result = await service.getInferredInterestsByEmail('test@example.com');
-      expect(result).toEqual([
-        { id: 1, name: 'programming' },
-        { id: 2, name: 'javascript' },
-        { id: 3, name: 'typescript' },
-      ]);
+      expect(result).toEqual(mockInterests);
     });
 
     it('should handle errors from getInferredInterestsById', async () => {

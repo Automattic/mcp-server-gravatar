@@ -2,21 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createGravatarImageService,
   gravatarImageTools,
-  GravatarImageService,
 } from '../../src/services/gravatar-image-service.js';
 import type { IGravatarImageService } from '../../src/services/interfaces.js';
-import type { IGravatarImageApiAdapter } from '../../src/services/adapters/interfaces.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
-import * as adapters from '../../src/services/adapters/index.js';
-
-// Mock the adapters
-vi.mock('../../src/services/adapters/index.js', () => {
-  return {
-    createLegacyApiAdapter: vi.fn(),
-  };
-});
+import { createMockFetch } from '../helpers/mock-api-clients.js';
+import { createMockAvatarBuffer } from '../helpers/mock-responses.js';
+import { createTestGravatarImageService } from '../helpers/test-setup.js';
 
 // Mock the createGravatarImageService function
 vi.mock('../../src/services/gravatar-image-service.js', async () => {
@@ -52,9 +45,18 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
+// Mock the config
+vi.mock('../../src/config/server-config.js', () => {
+  return {
+    apiConfig: {
+      avatarBaseUrl: 'https://gravatar.com/avatar',
+    },
+  };
+});
+
 describe('GravatarImageService', () => {
-  let mockAdapter: IGravatarImageApiAdapter;
-  let service: GravatarImageService;
+  let mockFetch: ReturnType<typeof createMockFetch>;
+  let service: IGravatarImageService;
 
   beforeEach(() => {
     // Reset all mocks
@@ -66,16 +68,13 @@ describe('GravatarImageService', () => {
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
     vi.mocked(utils.getUserAgent).mockReturnValue('mcp-server-gravatar/v1.0.0');
 
-    // Create a mock adapter
-    mockAdapter = {
-      getAvatarById: vi.fn().mockResolvedValue(Buffer.from(new ArrayBuffer(10))),
-    };
+    // Create a mock fetch function
+    mockFetch = createMockFetch({
+      responseBuffer: createMockAvatarBuffer(10),
+    });
 
-    // Mock the createLegacyApiAdapter function to return our mock adapter
-    vi.mocked(adapters.createLegacyApiAdapter).mockReturnValue(mockAdapter as any);
-
-    // Create the service with the mock adapter directly
-    service = new GravatarImageService(mockAdapter);
+    // Create the service with the mock fetch function
+    service = createTestGravatarImageService({ mockFetch });
   });
 
   afterEach(() => {
@@ -94,75 +93,69 @@ describe('GravatarImageService', () => {
       await expect(service.getAvatarById('invalid-hash')).rejects.toThrow('Invalid hash format');
     });
 
-    it('should call the adapter with correct parameters for basic request', async () => {
+    it('should call fetch with correct URL for basic request', async () => {
       await service.getAvatarById('test-hash');
-      expect(mockAdapter.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash', {
+        headers: {
+          'User-Agent': 'mcp-server-gravatar/v1.0.0',
+        },
+      });
     });
 
-    it('should pass size parameter to adapter when provided', async () => {
+    it('should include size parameter in URL when provided', async () => {
       await service.getAvatarById('test-hash', 200);
-      expect(mockAdapter.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        200,
-        undefined,
-        undefined,
-        undefined,
-      );
+      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?s=200', {
+        headers: {
+          'User-Agent': 'mcp-server-gravatar/v1.0.0',
+        },
+      });
     });
 
-    it('should pass default option parameter to adapter when provided', async () => {
+    it('should include default option parameter in URL when provided', async () => {
       await service.getAvatarById('test-hash', undefined, DefaultAvatarOption.IDENTICON);
-      expect(mockAdapter.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        undefined,
-        DefaultAvatarOption.IDENTICON,
-        undefined,
-        undefined,
-      );
+      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?d=identicon', {
+        headers: {
+          'User-Agent': 'mcp-server-gravatar/v1.0.0',
+        },
+      });
     });
 
-    it('should pass force default parameter to adapter when true', async () => {
+    it('should include force default parameter in URL when true', async () => {
       await service.getAvatarById('test-hash', undefined, undefined, true);
-      expect(mockAdapter.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        undefined,
-        undefined,
-        true,
-        undefined,
-      );
+      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?f=y', {
+        headers: {
+          'User-Agent': 'mcp-server-gravatar/v1.0.0',
+        },
+      });
     });
 
-    it('should pass rating parameter to adapter when provided', async () => {
+    it('should include rating parameter in URL when provided', async () => {
       await service.getAvatarById('test-hash', undefined, undefined, undefined, Rating.PG);
-      expect(mockAdapter.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        undefined,
-        undefined,
-        undefined,
-        Rating.PG,
-      );
+      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?r=pg', {
+        headers: {
+          'User-Agent': 'mcp-server-gravatar/v1.0.0',
+        },
+      });
     });
 
-    it('should pass all parameters to adapter when provided', async () => {
+    it('should include all parameters in URL when provided', async () => {
       await service.getAvatarById('test-hash', 100, DefaultAvatarOption.ROBOHASH, true, Rating.G);
-      expect(mockAdapter.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        100,
-        DefaultAvatarOption.ROBOHASH,
-        true,
-        Rating.G,
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://gravatar.com/avatar/test-hash?s=100&d=robohash&f=y&r=g',
+        {
+          headers: {
+            'User-Agent': 'mcp-server-gravatar/v1.0.0',
+          },
+        },
       );
     });
 
     it('should return a buffer with the avatar data', async () => {
-      const mockBuffer = Buffer.from(new ArrayBuffer(20));
-      mockAdapter.getAvatarById = vi.fn().mockResolvedValue(mockBuffer);
+      const mockBuffer = createMockAvatarBuffer(20);
+      mockFetch = createMockFetch({
+        responseBuffer: mockBuffer,
+      });
+      service = createTestGravatarImageService({ mockFetch });
 
       const result = await service.getAvatarById('test-hash');
 
@@ -171,12 +164,25 @@ describe('GravatarImageService', () => {
       expect(result).toEqual(mockBuffer);
     });
 
-    it('should handle adapter errors', async () => {
-      const error = new Error('Adapter error');
-      mockAdapter.getAvatarById = vi.fn().mockRejectedValue(error);
+    it('should handle fetch errors', async () => {
+      const error = new Error('Fetch error');
+      mockFetch = createMockFetch({
+        responseError: error,
+      });
+      service = createTestGravatarImageService({ mockFetch });
 
-      await expect(service.getAvatarById('test-hash')).rejects.toThrow('Adapter error');
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow('Fetch error');
       await expect(service.getAvatarById('test-hash')).rejects.toThrow(error);
+    });
+
+    it('should handle non-ok responses', async () => {
+      mockFetch = createMockFetch({
+        responseStatus: 404,
+      });
+      service = createTestGravatarImageService({ mockFetch });
+
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow(GravatarValidationError);
+      await expect(service.getAvatarById('test-hash')).rejects.toThrow('Failed to fetch avatar');
     });
   });
 
@@ -224,8 +230,11 @@ describe('GravatarImageService', () => {
     });
 
     it('should return the avatar data', async () => {
-      const mockBuffer = Buffer.from(new ArrayBuffer(30));
-      mockAdapter.getAvatarById = vi.fn().mockResolvedValue(mockBuffer);
+      const mockBuffer = createMockAvatarBuffer(30);
+      mockFetch = createMockFetch({
+        responseBuffer: mockBuffer,
+      });
+      service = createTestGravatarImageService({ mockFetch });
 
       const result = await service.getAvatarByEmail('test@example.com');
 
@@ -262,7 +271,7 @@ describe('Gravatar Image MCP Tools', () => {
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
     // Create a mock buffer
-    mockBuffer = Buffer.from(new ArrayBuffer(10));
+    mockBuffer = createMockAvatarBuffer(10);
 
     // Create a mock service
     mockService = {
@@ -271,7 +280,7 @@ describe('Gravatar Image MCP Tools', () => {
     };
 
     // Mock the createGravatarImageService function to return our mock service
-    vi.mocked(createGravatarImageService).mockReturnValue(mockService as GravatarImageService);
+    vi.mocked(createGravatarImageService).mockReturnValue(mockService);
 
     // Mock the tool handlers
     vi.mocked(gravatarImageTools[0].handler).mockImplementation(async (params: any) => {

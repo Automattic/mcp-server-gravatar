@@ -12,7 +12,7 @@ import { ProfileFromJSON } from '../../src/generated/gravatar-api/models/Profile
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-describe('Profile API Integration', () => {
+describe('ProfileService Integration', () => {
   // Use a valid MD5 hash (32 characters) for testing
   const hash = '00000000000000000000000000000000';
   const email = 'test@example.com';

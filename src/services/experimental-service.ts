@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail, validateHash, generateIdentifierFromEmail } from '../common/utils.js';
+import {
+  validateEmail,
+  validateHash,
+  generateIdentifierFromEmail,
+  createApiConfiguration,
+} from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import type { IExperimentalService } from './interfaces.js';
+import type { IExperimentalService, IExperimentalApiClient } from './interfaces.js';
 import type { Interest } from '../generated/gravatar-api/models/Interest.js';
-import type { IExperimentalApiAdapter } from './adapters/index.js';
-import { createRestApiAdapter } from './adapters/index.js';
+import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
+import { isApiErrorResponse } from '../common/types.js';
+import { mapHttpStatusToError } from '../common/utils.js';
 
 // Schema for getInferredInterestsById
 export const getInferredInterestsByIdSchema = z.object({
@@ -24,10 +30,10 @@ export const getInferredInterestsByEmailSchema = z.object({
 
 /**
  * Service for interacting with Gravatar experimental features
- * Uses the adapter pattern to abstract API implementation details
+ * Uses the ExperimentalApi client directly
  */
 export class ExperimentalService implements IExperimentalService {
-  constructor(private readonly adapter: IExperimentalApiAdapter) {}
+  constructor(private readonly experimentalApiClient: IExperimentalApiClient) {}
 
   /**
    * Get inferred interests for a profile by its identifier (hash)
@@ -44,15 +50,26 @@ export class ExperimentalService implements IExperimentalService {
         throw new GravatarValidationError('Invalid hash format');
       }
 
-      // Use adapter to make API call
-      console.error(
-        `Forwarding inferred interests request to ExperimentalApiAdapter for hash: ${hash}`,
-      );
-      const response = await this.adapter.getInferredInterestsById(hash);
+      // Use API client directly
+      console.error(`Calling ExperimentalApi.getProfileInferredInterestsById for hash: ${hash}`);
+      const response = await this.experimentalApiClient.getProfileInferredInterestsById({
+        profileIdentifier: hash,
+      });
       console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
       console.error(`Error getting inferred interests for hash ${hash}:`, error);
+
+      // Handle API errors (moved from adapter)
+      if (isApiErrorResponse(error)) {
+        const mappedError = await mapHttpStatusToError(
+          error.response?.status || 500,
+          error.message || 'Failed to fetch inferred interests',
+        );
+        console.error(`Mapped error:`, mappedError);
+        throw mappedError;
+      }
+
       throw error;
     }
   }
@@ -86,12 +103,12 @@ export class ExperimentalService implements IExperimentalService {
 }
 
 /**
- * Factory function to create an ExperimentalService with the default adapter
+ * Factory function to create an ExperimentalService with the default API client
  * @returns A new ExperimentalService instance
  */
 export async function createExperimentalService(): Promise<IExperimentalService> {
-  const adapter = await createRestApiAdapter();
-  return new ExperimentalService(adapter);
+  const config = await createApiConfiguration();
+  return new ExperimentalService(new ExperimentalApi(config));
 }
 
 // Tool definitions for MCP
