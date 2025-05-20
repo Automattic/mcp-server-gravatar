@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createProfileService, profileTools } from '../../src/services/profile-service.js';
 import type { IProfileService } from '../../src/services/interfaces.js';
 import { ProfileService } from '../../src/services/profile-service.js';
-import type { IProfileApiAdapter } from '../../src/services/adapters/interfaces.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
-import * as adapters from '../../src/services/adapters/index.js';
+import * as types from '../../src/common/types.js';
+import { createMockProfilesApi } from '../helpers/mock-api-clients.js';
+import { createMockProfile } from '../helpers/mock-responses.js';
 
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', () => {
@@ -18,11 +19,17 @@ vi.mock('../../src/common/utils.js', () => {
   };
 });
 
-// Mock the adapters
-vi.mock('../../src/services/adapters/index.js', () => {
+// Mock the types module
+vi.mock('../../src/common/types.js', () => {
   return {
-    createRestApiAdapter: vi.fn(),
-    createLegacyApiAdapter: vi.fn(),
+    isApiErrorResponse: vi.fn(),
+  };
+});
+
+// Mock the ProfilesApi constructor
+vi.mock('../../src/generated/gravatar-api/apis/ProfilesApi.js', () => {
+  return {
+    ProfilesApi: vi.fn(),
   };
 });
 
@@ -49,16 +56,8 @@ describe('Profile MCP Tools', () => {
 
     // Create a mock profile service
     mockProfileService = {
-      getProfileById: vi.fn().mockResolvedValue({
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      }),
-      getProfileByEmail: vi.fn().mockResolvedValue({
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      }),
+      getProfileById: vi.fn().mockResolvedValue(createMockProfile()),
+      getProfileByEmail: vi.fn().mockResolvedValue(createMockProfile()),
     };
 
     // Mock the createProfileService function
@@ -81,11 +80,7 @@ describe('Profile MCP Tools', () => {
       vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
       // Setup the mock service to return a specific value
-      const mockProfile = {
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      };
+      const mockProfile = createMockProfile({ displayName: 'Test User' });
       (mockProfileService.getProfileById as any).mockResolvedValue(mockProfile);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
@@ -126,11 +121,7 @@ describe('Profile MCP Tools', () => {
         if (!utils.validateHash(hash)) {
           throw new GravatarValidationError('Invalid hash format');
         }
-        return {
-          hash: 'test-hash',
-          displayName: 'Test User',
-          profileUrl: 'https://gravatar.com/testuser',
-        };
+        return createMockProfile();
       });
 
       // Use type assertion to tell TypeScript this is the correct type
@@ -154,11 +145,7 @@ describe('Profile MCP Tools', () => {
       vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
       // Setup the mock service to return a specific value
-      const mockProfile = {
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      };
+      const mockProfile = createMockProfile({ displayName: 'Test User' });
       (mockProfileService.getProfileByEmail as any).mockResolvedValue(mockProfile);
 
       // Create a spy for mapHttpStatusToError to ensure it returns a proper error
@@ -199,11 +186,7 @@ describe('Profile MCP Tools', () => {
         if (!utils.validateEmail(email)) {
           throw new GravatarValidationError('Invalid email format');
         }
-        return {
-          hash: 'test-hash',
-          displayName: 'Test User',
-          profileUrl: 'https://gravatar.com/testuser',
-        };
+        return createMockProfile();
       });
 
       // Use type assertion to tell TypeScript this is the correct type
@@ -217,7 +200,7 @@ describe('Profile MCP Tools', () => {
 });
 
 describe('ProfileService', () => {
-  let mockAdapter: IProfileApiAdapter;
+  let mockApi: ReturnType<typeof createMockProfilesApi>;
   let service: IProfileService;
 
   beforeEach(async () => {
@@ -229,20 +212,13 @@ describe('ProfileService', () => {
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
 
-    // Create a mock adapter
-    mockAdapter = {
-      getProfileById: vi.fn().mockResolvedValue({
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      }),
-    };
+    // Create a mock API client
+    mockApi = createMockProfilesApi({
+      getProfileByIdResponse: createMockProfile(),
+    });
 
-    // Mock the createRestApiAdapter function to return our mock adapter
-    vi.mocked(adapters.createRestApiAdapter).mockResolvedValue(mockAdapter as any);
-
-    // Create the service with the mock adapter directly
-    service = new ProfileService(mockAdapter);
+    // Create the service with the mock API client
+    service = new ProfileService(mockApi);
   });
 
   afterEach(() => {
@@ -261,26 +237,40 @@ describe('ProfileService', () => {
       await expect(service.getProfileById('invalid-hash')).rejects.toThrow('Invalid hash format');
     });
 
-    it('should call the adapter with correct parameters', async () => {
+    it('should call the API client with correct parameters', async () => {
       await service.getProfileById('test-hash');
-      expect(mockAdapter.getProfileById).toHaveBeenCalledWith('test-hash');
+      expect(mockApi.getProfileById).toHaveBeenCalledWith({ profileIdentifier: 'test-hash' });
     });
 
     it('should return the profile data', async () => {
+      const mockProfile = createMockProfile({ displayName: 'Custom Name' });
+      mockApi.getProfileById = vi.fn().mockResolvedValue(mockProfile);
+
       const result = await service.getProfileById('test-hash');
-      expect(result).toEqual({
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      });
+      expect(result).toEqual(mockProfile);
     });
 
     it('should handle API errors', async () => {
       const error = new Error('API Error');
-
-      mockAdapter.getProfileById = vi.fn().mockRejectedValue(error);
+      mockApi.getProfileById = vi.fn().mockRejectedValue(error);
 
       await expect(service.getProfileById('test-hash')).rejects.toThrow(error);
+    });
+
+    it('should map API error responses', async () => {
+      // Setup isApiErrorResponse to return true for our error
+      const apiError = new Error('API Error');
+      (apiError as any).response = { status: 404 };
+      mockApi.getProfileById = vi.fn().mockRejectedValue(apiError);
+
+      vi.mocked(types.isApiErrorResponse).mockReturnValue(true);
+
+      // Setup mapHttpStatusToError to return a specific error
+      const mappedError = new GravatarResourceNotFoundError('Profile not found');
+      vi.mocked(utils.mapHttpStatusToError).mockResolvedValue(mappedError);
+
+      await expect(service.getProfileById('test-hash')).rejects.toThrow(mappedError);
+      expect(utils.mapHttpStatusToError).toHaveBeenCalledWith(404, 'API Error');
     });
   });
 
@@ -316,12 +306,12 @@ describe('ProfileService', () => {
     });
 
     it('should return the profile data', async () => {
+      const mockProfile = createMockProfile({ displayName: 'Email User' });
+      const getProfileByIdSpy = vi.spyOn(service, 'getProfileById');
+      getProfileByIdSpy.mockResolvedValue(mockProfile);
+
       const result = await service.getProfileByEmail('test@example.com');
-      expect(result).toEqual({
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      });
+      expect(result).toEqual(mockProfile);
     });
 
     it('should handle errors from getProfileById', async () => {

@@ -2,8 +2,8 @@ import type { DefaultAvatarOption, Rating } from '../common/types.js';
 import type { Profile } from '../generated/gravatar-api/models/Profile.js';
 import type { Interest } from '../generated/gravatar-api/models/Interest.js';
 
-// Profile client interface
-export interface IProfileClient {
+// API Client Interfaces
+export interface IProfilesApiClient {
   getProfileById(params: { profileIdentifier: string }): Promise<Profile>;
 }
 

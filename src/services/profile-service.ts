@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail, validateHash, generateIdentifierFromEmail } from '../common/utils.js';
+import {
+  validateEmail,
+  validateHash,
+  generateIdentifierFromEmail,
+  createApiConfiguration,
+} from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import type { IProfileService } from './interfaces.js';
+import type { IProfileService, IProfilesApiClient } from './interfaces.js';
 import type { Profile } from '../generated/gravatar-api/models/Profile.js';
-import type { IProfileApiAdapter } from './adapters/index.js';
-import { createRestApiAdapter } from './adapters/index.js';
+import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
+import { isApiErrorResponse } from '../common/types.js';
+import { mapHttpStatusToError } from '../common/utils.js';
 
 // Schema for getProfileById
 export const getProfileByIdSchema = z.object({
@@ -24,10 +30,10 @@ export const getProfileByEmailSchema = z.object({
 
 /**
  * Service for interacting with Gravatar profiles
- * Uses the adapter pattern to abstract API implementation details
+ * Uses the ProfilesApi client directly
  */
 export class ProfileService implements IProfileService {
-  constructor(private readonly adapter: IProfileApiAdapter) {}
+  constructor(private readonly profilesApiClient: IProfilesApiClient) {}
 
   /**
    * Get a profile by its identifier (hash)
@@ -44,13 +50,24 @@ export class ProfileService implements IProfileService {
         throw new GravatarValidationError('Invalid hash format');
       }
 
-      // Use adapter to make API call
-      console.error(`Forwarding profile request to ProfileApiAdapter for has: ${hash}`);
-      const response = await this.adapter.getProfileById(hash);
+      // Use API client directly
+      console.error(`Calling ProfilesApi.getProfileById for hash: ${hash}`);
+      const response = await this.profilesApiClient.getProfileById({ profileIdentifier: hash });
       console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
       console.error(`Error getting profile for hash ${hash}:`, error);
+
+      // Handle API errors (moved from adapter)
+      if (isApiErrorResponse(error)) {
+        const mappedError = await mapHttpStatusToError(
+          error.response?.status || 500,
+          error.message || 'Failed to fetch profile',
+        );
+        console.error(`Mapped error:`, mappedError);
+        throw mappedError;
+      }
+
       throw error;
     }
   }
@@ -84,12 +101,12 @@ export class ProfileService implements IProfileService {
 }
 
 /**
- * Factory function to create a ProfileService with the default adapter
+ * Factory function to create a ProfileService with the default API client
  * @returns A new ProfileService instance
  */
 export async function createProfileService(): Promise<IProfileService> {
-  const adapter = await createRestApiAdapter();
-  return new ProfileService(adapter);
+  const config = await createApiConfiguration();
+  return new ProfileService(new ProfilesApi(config));
 }
 
 // Tool definitions for MCP

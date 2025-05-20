@@ -18,8 +18,8 @@ import type {
 export function createTestProfileService(options?: {
   mockProfilesApi?: ReturnType<typeof createMockProfilesApi>;
 }): IProfileService {
-  const mockApi = options?.mockProfilesApi || createMockProfilesApi();
-  return new ProfileService(mockApi);
+  const mockProfilesApiClient = options?.mockProfilesApi || createMockProfilesApi();
+  return new ProfileService(mockProfilesApiClient);
 }
 
 /**
