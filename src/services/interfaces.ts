@@ -11,6 +11,9 @@ export interface IExperimentalApiClient {
   getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
 }
 
+// Fetch type for GravatarImageService
+export type FetchFunction = typeof fetch;
+
 // Profile service interface
 export interface IProfileService {
   getProfileById(hash: string): Promise<Profile>;

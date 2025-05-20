@@ -1,11 +1,15 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail, validateHash, generateIdentifierFromEmail } from '../common/utils.js';
+import {
+  validateEmail,
+  validateHash,
+  generateIdentifierFromEmail,
+  getUserAgent,
+} from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
-import type { IGravatarImageService } from './interfaces.js';
-import type { IGravatarImageApiAdapter } from './adapters/index.js';
-import { createLegacyApiAdapter } from './adapters/index.js';
+import type { IGravatarImageService, FetchFunction } from './interfaces.js';
+import { apiConfig } from '../config/server-config.js';
 
 // Schema for getAvatarById
 export const getAvatarByIdSchema = z.object({
@@ -48,10 +52,10 @@ export const getAvatarByEmailSchema = z.object({
 
 /**
  * Service for interacting with Gravatar images
- * Uses the adapter pattern to abstract API implementation details
+ * Uses fetch directly to get avatar images
  */
 export class GravatarImageService implements IGravatarImageService {
-  constructor(private readonly adapter: IGravatarImageApiAdapter) {}
+  constructor(private readonly gravatarImageApiClient: FetchFunction = fetch) {}
 
   /**
    * Get a Gravatar image by its identifier (hash)
@@ -80,16 +84,54 @@ export class GravatarImageService implements IGravatarImageService {
         throw new GravatarValidationError('Invalid hash format');
       }
 
-      // Use adapter to fetch the avatar
-      console.error(`Forwarding avatar request to LegacyApiAdapter for hash: ${hash}`);
-      const buffer = await this.adapter.getAvatarById(
-        hash,
-        size,
-        defaultOption,
-        forceDefault,
-        rating,
-      );
-      console.error(`Successfully received buffer of size: ${buffer.length} bytes`);
+      // Build avatar URL using the configured avatarBaseUrl
+      let url = `${apiConfig.avatarBaseUrl}/${hash}`;
+
+      // Add query parameters
+      const queryParams = new URLSearchParams();
+
+      if (size) {
+        queryParams.append('s', size.toString());
+      }
+
+      if (defaultOption) {
+        queryParams.append('d', defaultOption);
+      }
+
+      if (forceDefault) {
+        queryParams.append('f', 'y');
+      }
+
+      if (rating) {
+        queryParams.append('r', rating);
+      }
+
+      // Add query string to URL if there are any parameters
+      const queryString = queryParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+
+      console.error(`Making request to URL: ${url}`);
+
+      // Fetch the image from the URL with User-Agent header
+      const response = await this.gravatarImageApiClient(url, {
+        headers: {
+          'User-Agent': getUserAgent(),
+        },
+      });
+
+      console.error(`Received response with status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        console.error(`Failed to fetch avatar: ${response.statusText}`);
+        throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
+      }
+
+      // Convert the response to a buffer
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      console.error(`Successfully converted response to buffer of size: ${buffer.length} bytes`);
       return buffer;
     } catch (error) {
       console.error(`Error getting avatar for hash ${hash}:`, error);
@@ -138,12 +180,11 @@ export class GravatarImageService implements IGravatarImageService {
 }
 
 /**
- * Factory function to create a GravatarImageService with the default adapter
+ * Factory function to create a GravatarImageService with the default fetch implementation
  * @returns A new GravatarImageService instance
  */
 export function createGravatarImageService(): IGravatarImageService {
-  const adapter = createLegacyApiAdapter();
-  return new GravatarImageService(adapter);
+  return new GravatarImageService(fetch);
 }
 
 // Tool definitions for MCP

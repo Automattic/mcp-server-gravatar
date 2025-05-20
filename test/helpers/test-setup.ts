@@ -38,6 +38,6 @@ export function createTestExperimentalService(options?: {
 export function createTestGravatarImageService(options?: {
   mockFetch?: ReturnType<typeof createMockFetch>;
 }): IGravatarImageService {
-  const mockFetch = options?.mockFetch || createMockFetch();
-  return new GravatarImageService(mockFetch);
+  const mockGravatarImageApiClient = options?.mockFetch || createMockFetch();
+  return new GravatarImageService(mockGravatarImageApiClient);
 }
