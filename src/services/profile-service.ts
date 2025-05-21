@@ -42,29 +42,21 @@ export class ProfileService implements IProfileService {
    */
   async getProfileById(hash: string): Promise<Profile> {
     try {
-      console.error(`ProfileService.getProfileById called with hash: ${hash}`);
-
       // Validate hash
       if (!validateHash(hash)) {
-        console.error(`Invalid hash format: ${hash}`);
         throw new GravatarValidationError('Invalid hash format');
       }
 
       // Use API client directly
-      console.error(`Calling ProfilesApi.getProfileById for hash: ${hash}`);
       const response = await this.profilesApiClient.getProfileById({ profileIdentifier: hash });
-      console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
-      console.error(`Error getting profile for hash ${hash}:`, error);
-
       // Handle API errors (moved from adapter)
       if (isApiErrorResponse(error)) {
         const mappedError = await mapHttpStatusToError(
           error.response?.status || 500,
           error.message || 'Failed to fetch profile',
         );
-        console.error(`Mapped error:`, mappedError);
         throw mappedError;
       }
 
@@ -79,22 +71,17 @@ export class ProfileService implements IProfileService {
    */
   async getProfileByEmail(email: string): Promise<Profile> {
     try {
-      console.error(`ProfileService.getProfileByEmail called with email: ${email}`);
-
       // Validate email
       if (!validateEmail(email)) {
-        console.error(`Invalid email format: ${email}`);
         throw new GravatarValidationError('Invalid email format');
       }
 
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
-      console.error(`Generated identifier from email: ${identifier}`);
 
       // Use getProfileById to fetch the profile
       return await this.getProfileById(identifier);
     } catch (error) {
-      console.error(`Error getting profile for email ${email}:`, error);
       throw error;
     }
   }

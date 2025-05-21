@@ -52,8 +52,6 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
 async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Gravatar MCP Server running on stdio');
-  console.error(`Version: ${serverInfo.version}`);
 }
 
 runServer().catch(error => {

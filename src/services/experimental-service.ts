@@ -42,31 +42,23 @@ export class ExperimentalService implements IExperimentalService {
    */
   async getInferredInterestsById(hash: string): Promise<Interest[]> {
     try {
-      console.error(`ExperimentalService.getInferredInterestsById called with hash: ${hash}`);
-
       // Validate hash
       if (!validateHash(hash)) {
-        console.error(`Invalid hash format: ${hash}`);
         throw new GravatarValidationError('Invalid hash format');
       }
 
       // Use API client directly
-      console.error(`Calling ExperimentalApi.getProfileInferredInterestsById for hash: ${hash}`);
       const response = await this.experimentalApiClient.getProfileInferredInterestsById({
         profileIdentifier: hash,
       });
-      console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
-      console.error(`Error getting inferred interests for hash ${hash}:`, error);
-
       // Handle API errors (moved from adapter)
       if (isApiErrorResponse(error)) {
         const mappedError = await mapHttpStatusToError(
           error.response?.status || 500,
           error.message || 'Failed to fetch inferred interests',
         );
-        console.error(`Mapped error:`, mappedError);
         throw mappedError;
       }
 
@@ -81,22 +73,17 @@ export class ExperimentalService implements IExperimentalService {
    */
   async getInferredInterestsByEmail(email: string): Promise<Interest[]> {
     try {
-      console.error(`ExperimentalService.getInferredInterestsByEmail called with email: ${email}`);
-
       // Validate email
       if (!validateEmail(email)) {
-        console.error(`Invalid email format: ${email}`);
         throw new GravatarValidationError('Invalid email format');
       }
 
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
-      console.error(`Generated identifier from email: ${identifier}`);
 
       // Use getInferredInterestsById to fetch the inferred interests
       return await this.getInferredInterestsById(identifier);
     } catch (error) {
-      console.error(`Error getting inferred interests for email ${email}:`, error);
       throw error;
     }
   }

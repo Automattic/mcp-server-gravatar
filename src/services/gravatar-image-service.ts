@@ -74,13 +74,8 @@ export class GravatarImageService implements IGravatarImageService {
     rating?: Rating,
   ): Promise<Buffer> {
     try {
-      console.error(
-        `GravatarImageService.getAvatarById called with hash: ${hash}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
-      );
-
       // Validate hash
       if (!validateHash(hash)) {
-        console.error(`Invalid hash format: ${hash}`);
         throw new GravatarValidationError('Invalid hash format');
       }
 
@@ -112,8 +107,6 @@ export class GravatarImageService implements IGravatarImageService {
         url += `?${queryString}`;
       }
 
-      console.error(`Making request to URL: ${url}`);
-
       // Fetch the image from the URL with User-Agent header
       const response = await this.gravatarImageApiClient(url, {
         headers: {
@@ -121,20 +114,15 @@ export class GravatarImageService implements IGravatarImageService {
         },
       });
 
-      console.error(`Received response with status: ${response.status} ${response.statusText}`);
-
       if (!response.ok) {
-        console.error(`Failed to fetch avatar: ${response.statusText}`);
         throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
       }
 
       // Convert the response to a buffer
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      console.error(`Successfully converted response to buffer of size: ${buffer.length} bytes`);
       return buffer;
     } catch (error) {
-      console.error(`Error getting avatar for hash ${hash}:`, error);
       throw error;
     }
   }
@@ -156,24 +144,17 @@ export class GravatarImageService implements IGravatarImageService {
     rating?: Rating,
   ): Promise<Buffer> {
     try {
-      console.error(
-        `GravatarImageService.getAvatarByEmail called with email: ${email}, size: ${size}, defaultOption: ${defaultOption}, forceDefault: ${forceDefault}, rating: ${rating}`,
-      );
-
       // Validate email
       if (!validateEmail(email)) {
-        console.error(`Invalid email format: ${email}`);
         throw new GravatarValidationError('Invalid email format');
       }
 
       // Generate identifier from email
       const identifier = generateIdentifierFromEmail(email);
-      console.error(`Generated identifier from email: ${identifier}`);
 
       // Use getAvatarById to get the avatar
       return await this.getAvatarById(identifier, size, defaultOption, forceDefault, rating);
     } catch (error) {
-      console.error(`Error getting avatar for email ${email}:`, error);
       throw error;
     }
   }
