@@ -72,20 +72,16 @@ export class ExperimentalService implements IExperimentalService {
    * @returns The inferred interests
    */
   async getInferredInterestsByEmail(email: string): Promise<Interest[]> {
-    try {
-      // Validate email
-      if (!validateEmail(email)) {
-        throw new GravatarValidationError('Invalid email format');
-      }
-
-      // Generate identifier from email
-      const identifier = generateIdentifierFromEmail(email);
-
-      // Use getInferredInterestsById to fetch the inferred interests
-      return await this.getInferredInterestsById(identifier);
-    } catch (error) {
-      throw error;
+    // Validate email
+    if (!validateEmail(email)) {
+      throw new GravatarValidationError('Invalid email format');
     }
+
+    // Generate identifier from email
+    const identifier = generateIdentifierFromEmail(email);
+
+    // Use getInferredInterestsById to fetch the inferred interests
+    return await this.getInferredInterestsById(identifier);
   }
 }
 

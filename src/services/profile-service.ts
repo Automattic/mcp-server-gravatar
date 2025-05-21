@@ -70,20 +70,16 @@ export class ProfileService implements IProfileService {
    * @returns The profile data
    */
   async getProfileByEmail(email: string): Promise<Profile> {
-    try {
-      // Validate email
-      if (!validateEmail(email)) {
-        throw new GravatarValidationError('Invalid email format');
-      }
-
-      // Generate identifier from email
-      const identifier = generateIdentifierFromEmail(email);
-
-      // Use getProfileById to fetch the profile
-      return await this.getProfileById(identifier);
-    } catch (error) {
-      throw error;
+    // Validate email
+    if (!validateEmail(email)) {
+      throw new GravatarValidationError('Invalid email format');
     }
+
+    // Generate identifier from email
+    const identifier = generateIdentifierFromEmail(email);
+
+    // Use getProfileById to fetch the profile
+    return await this.getProfileById(identifier);
   }
 }
 

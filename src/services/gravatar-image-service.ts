@@ -73,58 +73,54 @@ export class GravatarImageService implements IGravatarImageService {
     forceDefault?: boolean,
     rating?: Rating,
   ): Promise<Buffer> {
-    try {
-      // Validate hash
-      if (!validateHash(hash)) {
-        throw new GravatarValidationError('Invalid hash format');
-      }
-
-      // Build avatar URL using the configured avatarBaseUrl
-      let url = `${apiConfig.avatarBaseUrl}/${hash}`;
-
-      // Add query parameters
-      const queryParams = new URLSearchParams();
-
-      if (size) {
-        queryParams.append('s', size.toString());
-      }
-
-      if (defaultOption) {
-        queryParams.append('d', defaultOption);
-      }
-
-      if (forceDefault) {
-        queryParams.append('f', 'y');
-      }
-
-      if (rating) {
-        queryParams.append('r', rating);
-      }
-
-      // Add query string to URL if there are any parameters
-      const queryString = queryParams.toString();
-      if (queryString) {
-        url += `?${queryString}`;
-      }
-
-      // Fetch the image from the URL with User-Agent header
-      const response = await this.gravatarImageApiClient(url, {
-        headers: {
-          'User-Agent': getUserAgent(),
-        },
-      });
-
-      if (!response.ok) {
-        throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
-      }
-
-      // Convert the response to a buffer
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      return buffer;
-    } catch (error) {
-      throw error;
+    // Validate hash
+    if (!validateHash(hash)) {
+      throw new GravatarValidationError('Invalid hash format');
     }
+
+    // Build avatar URL using the configured avatarBaseUrl
+    let url = `${apiConfig.avatarBaseUrl}/${hash}`;
+
+    // Add query parameters
+    const queryParams = new URLSearchParams();
+
+    if (size) {
+      queryParams.append('s', size.toString());
+    }
+
+    if (defaultOption) {
+      queryParams.append('d', defaultOption);
+    }
+
+    if (forceDefault) {
+      queryParams.append('f', 'y');
+    }
+
+    if (rating) {
+      queryParams.append('r', rating);
+    }
+
+    // Add query string to URL if there are any parameters
+    const queryString = queryParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    // Fetch the image from the URL with User-Agent header
+    const response = await this.gravatarImageApiClient(url, {
+      headers: {
+        'User-Agent': getUserAgent(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
+    }
+
+    // Convert the response to a buffer
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return buffer;
   }
 
   /**
@@ -143,20 +139,16 @@ export class GravatarImageService implements IGravatarImageService {
     forceDefault?: boolean,
     rating?: Rating,
   ): Promise<Buffer> {
-    try {
-      // Validate email
-      if (!validateEmail(email)) {
-        throw new GravatarValidationError('Invalid email format');
-      }
-
-      // Generate identifier from email
-      const identifier = generateIdentifierFromEmail(email);
-
-      // Use getAvatarById to get the avatar
-      return await this.getAvatarById(identifier, size, defaultOption, forceDefault, rating);
-    } catch (error) {
-      throw error;
+    // Validate email
+    if (!validateEmail(email)) {
+      throw new GravatarValidationError('Invalid email format');
     }
+
+    // Generate identifier from email
+    const identifier = generateIdentifierFromEmail(email);
+
+    // Use getAvatarById to get the avatar
+    return await this.getAvatarById(identifier, size, defaultOption, forceDefault, rating);
   }
 }
 
