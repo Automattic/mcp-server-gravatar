@@ -50,8 +50,18 @@ vi.mock('../../src/services/profile-service.js', async () => {
   };
 });
 
+// Mock the API client
+vi.mock('../../src/apis/api-client.js', () => ({
+  createApiClient: vi.fn(),
+}));
+
+// Import the API client and helpers
+import { createApiClient } from '../../src/apis/api-client.js';
+import { createMockApiClient } from '../helpers/mock-api-client.js';
+
 describe('Profile MCP Tools', () => {
   let mockProfileService: IProfileService;
+  let mockApiClient: any;
 
   beforeEach(() => {
     // Reset all mocks
@@ -68,8 +78,14 @@ describe('Profile MCP Tools', () => {
       getProfileByEmail: vi.fn().mockResolvedValue(createMockProfile()),
     };
 
+    // Create a mock API client using the helper
+    mockApiClient = createMockApiClient();
+
     // Mock the createProfileService function
     vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
+
+    // Mock the createApiClient function
+    vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
   });
 
   afterEach(() => {
@@ -123,13 +139,9 @@ describe('Profile MCP Tools', () => {
         return originalValidateHash(hash);
       });
 
-      // Mock the service to throw an error for invalid hash
-      const mockGetProfileById = mockProfileService.getProfileById as any;
-      mockGetProfileById.mockImplementation(async (hash: string) => {
-        if (!utils.validateHash(hash)) {
-          throw new GravatarValidationError('Invalid hash format');
-        }
-        return createMockProfile();
+      // Mock the API client to throw an error for invalid hash
+      mockApiClient.profiles.getProfileById.mockImplementation(() => {
+        throw new GravatarValidationError('Invalid hash format');
       });
 
       // Use type assertion to tell TypeScript this is the correct type

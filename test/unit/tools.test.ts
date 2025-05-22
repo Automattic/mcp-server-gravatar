@@ -73,11 +73,12 @@ vi.mock('../../src/apis/api-client.js', () => ({
   createApiClient: vi.fn(),
 }));
 
-// Import the mocked services and API client
+// Import the mocked services, API client, and helpers
 import { createProfileService } from '../../src/services/profile-service.js';
 import { createExperimentalService } from '../../src/services/experimental-service.js';
 import { createGravatarImageService } from '../../src/services/gravatar-image-service.js';
 import { createApiClient } from '../../src/apis/api-client.js';
+import { createMockApiClient } from '../helpers/mock-api-client.js';
 
 describe('Tools Index', () => {
   it('should export all tools', () => {
@@ -103,12 +104,13 @@ describe('Tools Index', () => {
 
 describe('Profile Tool Handlers', () => {
   let mockProfileService: any;
+  let mockApiClient: any;
 
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
 
-    // Create a mock profile service
+    // Create a mock profile service (for backward compatibility)
     mockProfileService = {
       getProfileById: vi.fn().mockResolvedValue({
         hash: 'test-hash',
@@ -122,8 +124,33 @@ describe('Profile Tool Handlers', () => {
       }),
     };
 
+    // Create a mock API client with custom implementations
+    mockApiClient = createMockApiClient({
+      // Custom implementation for profiles.getProfileById
+      profilesGetProfileByIdImpl: vi.fn().mockImplementation(params => {
+        if (params.profileIdentifier === 'email-hash') {
+          return Promise.resolve({
+            hash: 'email-hash',
+            displayName: 'Email User',
+            profileUrl: 'https://gravatar.com/emailuser',
+          });
+        }
+        return Promise.resolve({
+          hash: 'test-hash',
+          displayName: 'Test User',
+          profileUrl: 'https://gravatar.com/testuser',
+        });
+      }),
+
+      // Custom implementation for avatars.getAvatarById
+      avatarsGetAvatarByIdImpl: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
+    });
+
     // Mock the createProfileService function
     vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
+
+    // Mock the createApiClient function
+    vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
   });
 
   afterEach(() => {
@@ -135,8 +162,10 @@ describe('Profile Tool Handlers', () => {
       const params = { hash: 'test-hash' };
       const result = await getProfileByIdHandler(params);
 
-      expect(createProfileService).toHaveBeenCalled();
-      expect(mockProfileService.getProfileById).toHaveBeenCalledWith('test-hash');
+      expect(createApiClient).toHaveBeenCalled();
+      expect(mockApiClient.profiles.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: 'test-hash',
+      });
 
       // Verify response format
       expect(result).toEqual({
@@ -158,8 +187,8 @@ describe('Profile Tool Handlers', () => {
     });
 
     it('should handle service errors', async () => {
-      // Setup the service to throw an error
-      mockProfileService.getProfileById.mockRejectedValue(
+      // Setup the API client to throw an error
+      mockApiClient.profiles.getProfileById.mockRejectedValue(
         new GravatarValidationError('Invalid hash format'),
       );
 
@@ -171,11 +200,18 @@ describe('Profile Tool Handlers', () => {
 
   describe('getProfileByEmail handler', () => {
     it('should call the service with correct parameters', async () => {
+      // Reset the mocks for this test
+      vi.mocked(utils.validateEmail).mockReturnValue(true);
+      vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
+
       const params = { email: 'test@example.com' };
       const result = await getProfileByEmailHandler(params);
 
-      expect(createProfileService).toHaveBeenCalled();
-      expect(mockProfileService.getProfileByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(createApiClient).toHaveBeenCalled();
+      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockApiClient.profiles.getProfileById).toHaveBeenCalledWith({
+        profileIdentifier: 'email-hash',
+      });
 
       // Verify response format
       expect(result).toEqual({
@@ -197,8 +233,8 @@ describe('Profile Tool Handlers', () => {
     });
 
     it('should handle service errors', async () => {
-      // Setup the service to throw an error
-      mockProfileService.getProfileByEmail.mockRejectedValue(
+      // Setup the API client to throw an error
+      mockApiClient.profiles.getProfileById.mockRejectedValue(
         new GravatarValidationError('Invalid email format'),
       );
 
@@ -319,12 +355,27 @@ describe('Avatar Tool Handlers', () => {
       getAvatarByEmail: vi.fn().mockResolvedValue(Buffer.from('mock-email-avatar-data')),
     };
 
-    // Create a mock API client
-    mockApiClient = {
-      avatars: {
-        getAvatarById: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
-      },
-    };
+    // Create a mock API client with custom implementations
+    mockApiClient = createMockApiClient({
+      // Custom implementation for avatars.getAvatarById
+      avatarsGetAvatarByIdImpl: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
+
+      // Custom implementation for profiles.getProfileById (for consistency)
+      profilesGetProfileByIdImpl: vi.fn().mockImplementation(params => {
+        if (params.profileIdentifier === 'email-hash') {
+          return Promise.resolve({
+            hash: 'email-hash',
+            displayName: 'Email User',
+            profileUrl: 'https://gravatar.com/emailuser',
+          });
+        }
+        return Promise.resolve({
+          hash: 'test-hash',
+          displayName: 'Test User',
+          profileUrl: 'https://gravatar.com/testuser',
+        });
+      }),
+    });
 
     // Mock the createGravatarImageService function
     vi.mocked(createGravatarImageService).mockReturnValue(mockAvatarService);
