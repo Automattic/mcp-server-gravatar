@@ -15,6 +15,7 @@ import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
 import { createMockFetch } from '../helpers/mock-api-clients.js';
 import { createMockAvatarBuffer } from '../helpers/mock-responses.js';
 import { createTestGravatarImageService } from '../helpers/test-setup.js';
+import { createApiClient } from '../../src/apis/api-client.js';
 
 // Mock the createGravatarImageService function
 vi.mock('../../src/services/gravatar-image-service.js', async () => {
@@ -41,6 +42,15 @@ vi.mock('../../src/tools/get-avatar-by-email.js', async () => {
     handler: vi.fn(),
   };
 });
+
+// Mock the API client
+vi.mock('../../src/apis/api-client.js', () => ({
+  createApiClient: vi.fn().mockResolvedValue({
+    avatars: {
+      getAvatarById: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
+    },
+  }),
+}));
 
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', () => {
@@ -266,6 +276,7 @@ describe('GravatarImageService', () => {
 
 describe('Gravatar Image MCP Tools', () => {
   let mockService: IGravatarImageService;
+  let mockApiClient: any;
   let mockBuffer: Buffer;
 
   beforeEach(() => {
@@ -286,10 +297,20 @@ describe('Gravatar Image MCP Tools', () => {
       getAvatarByEmail: vi.fn().mockResolvedValue(mockBuffer),
     };
 
+    // Create a mock API client
+    mockApiClient = {
+      avatars: {
+        getAvatarById: vi.fn().mockResolvedValue(mockBuffer),
+      },
+    };
+
     // Mock the createGravatarImageService function to return our mock service
     vi.mocked(createGravatarImageService).mockReturnValue(mockService);
 
-    // Mock the tool handlers
+    // Mock the createApiClient function
+    vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
+
+    // Mock the tool handlers to use the service (for test compatibility)
     vi.mocked(getAvatarByIdHandler).mockImplementation(async (params: any) => {
       const service = createGravatarImageService();
       const avatarBuffer = await service.getAvatarById(
