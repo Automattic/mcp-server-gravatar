@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { createProfileService } from '../services/profile-service.js';
-import { validateEmail } from '../common/utils.js';
+import { createApiClient } from '../apis/api-client.js';
+import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
+import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition (moved from service)
 export const getProfileByEmailSchema = z.object({
@@ -19,8 +20,20 @@ export const getProfileByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getProfileByEmailSchema>) {
-  const profileService = await createProfileService();
-  const profile = await profileService.getProfileByEmail(params.email);
+  // Validate email
+  if (!validateEmail(params.email)) {
+    throw new GravatarValidationError('Invalid email format');
+  }
+
+  // Generate identifier from email
+  const hash = generateIdentifierFromEmail(params.email);
+
+  // Use API client to get profile by ID
+  const apiClient = await createApiClient();
+  const profile = await apiClient.profiles.getProfileById({
+    profileIdentifier: hash,
+  });
+
   return {
     content: [{ type: 'text', text: JSON.stringify(profile, null, 2) }],
   };
