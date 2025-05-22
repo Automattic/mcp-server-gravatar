@@ -1,5 +1,3 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
   validateEmail,
   validateHash,
@@ -12,21 +10,6 @@ import type { Profile } from '../generated/gravatar-api/models/Profile.js';
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { isApiErrorResponse } from '../common/types.js';
 import { mapHttpStatusToError } from '../common/utils.js';
-
-// Schema for getProfileById
-export const getProfileByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
-    message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
-  }),
-});
-
-// Schema for getProfileByEmail
-export const getProfileByEmailSchema = z.object({
-  email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.',
-  }),
-});
 
 /**
  * Service for interacting with Gravatar profiles
@@ -91,25 +74,3 @@ export async function createProfileService(): Promise<IProfileService> {
   const config = await createApiConfiguration();
   return new ProfileService(new ProfilesApi(config));
 }
-
-// Tool definitions for MCP
-export const profileTools = [
-  {
-    name: 'getProfileById',
-    description: 'Fetch a Gravatar profile using a profile identifier (hash).',
-    inputSchema: zodToJsonSchema(getProfileByIdSchema),
-    handler: async (params: z.infer<typeof getProfileByIdSchema>) => {
-      const service = await createProfileService();
-      return await service.getProfileById(params.hash);
-    },
-  },
-  {
-    name: 'getProfileByEmail',
-    description: 'Fetch a Gravatar profile using an email address.',
-    inputSchema: zodToJsonSchema(getProfileByEmailSchema),
-    handler: async (params: z.infer<typeof getProfileByEmailSchema>) => {
-      const service = await createProfileService();
-      return await service.getProfileByEmail(params.email);
-    },
-  },
-];

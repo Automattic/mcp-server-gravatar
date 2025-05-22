@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createProfileService, profileTools } from '../../src/services/profile-service.js';
+import { createProfileService } from '../../src/services/profile-service.js';
+import {
+  getProfileByIdTool,
+  handler as getProfileByIdHandler,
+} from '../../src/tools/get-profile-by-id.js';
+import {
+  getProfileByEmailTool,
+  handler as getProfileByEmailHandler,
+} from '../../src/tools/get-profile-by-email.js';
 import type { IProfileService } from '../../src/services/interfaces.js';
 import { ProfileService } from '../../src/services/profile-service.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
@@ -70,8 +78,8 @@ describe('Profile MCP Tools', () => {
 
   describe('getProfileById tool', () => {
     it('should have the correct name and description', () => {
-      const tool = profileTools[0];
-      expect(tool.name).toBe('getProfileById');
+      const tool = getProfileByIdTool;
+      expect(tool.name).toBe('get_profile_by_id');
       expect(tool.description).toBe('Fetch a Gravatar profile using a profile identifier (hash).');
     });
 
@@ -129,14 +137,14 @@ describe('Profile MCP Tools', () => {
         hash: 'invalid-hash',
       } as any;
 
-      await expect(profileTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
+      await expect(getProfileByIdHandler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 
   describe('getProfileByEmail tool', () => {
     it('should have the correct name and description', () => {
-      const tool = profileTools[1];
-      expect(tool.name).toBe('getProfileByEmail');
+      const tool = getProfileByEmailTool;
+      expect(tool.name).toBe('get_profile_by_email');
       expect(tool.description).toBe('Fetch a Gravatar profile using an email address.');
     });
 
@@ -194,7 +202,7 @@ describe('Profile MCP Tools', () => {
         email: 'invalid-email',
       } as any;
 
-      await expect(profileTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
+      await expect(getProfileByEmailHandler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 });

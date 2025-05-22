@@ -1,6 +1,15 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { createProfileService, getProfileByIdSchema } from '../services/profile-service.js';
+import { createProfileService } from '../services/profile-service.js';
+import { validateHash } from '../common/utils.js';
+
+// Schema definition (moved from service)
+export const getProfileByIdSchema = z.object({
+  hash: z.string().refine(validateHash, {
+    message:
+      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+  }),
+});
 
 // Tool definition
 export const getProfileByIdTool = {
