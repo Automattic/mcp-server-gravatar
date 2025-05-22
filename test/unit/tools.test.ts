@@ -27,31 +27,6 @@ import {
 import { GravatarValidationError } from '../../src/common/errors.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
 
-// Mock the service modules
-vi.mock('../../src/services/profile-service.js', async () => {
-  const actual = await vi.importActual('../../src/services/profile-service.js');
-  return {
-    ...actual,
-    createProfileService: vi.fn(),
-  };
-});
-
-vi.mock('../../src/services/experimental-service.js', async () => {
-  const actual = await vi.importActual('../../src/services/experimental-service.js');
-  return {
-    ...actual,
-    createExperimentalService: vi.fn(),
-  };
-});
-
-vi.mock('../../src/services/gravatar-image-service.js', async () => {
-  const actual = await vi.importActual('../../src/services/gravatar-image-service.js');
-  return {
-    ...actual,
-    createGravatarImageService: vi.fn(),
-  };
-});
-
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', async () => {
   const actual = await vi.importActual('../../src/common/utils.js');
@@ -73,10 +48,7 @@ vi.mock('../../src/apis/api-client.js', () => ({
   createApiClient: vi.fn(),
 }));
 
-// Import the mocked services, API client, and helpers
-import { createProfileService } from '../../src/services/profile-service.js';
-import { createExperimentalService } from '../../src/services/experimental-service.js';
-import { createGravatarImageService } from '../../src/services/gravatar-image-service.js';
+// Import the mocked API client and helpers
 import { createApiClient } from '../../src/apis/api-client.js';
 import { createMockApiClient } from '../helpers/mock-api-client.js';
 
@@ -103,26 +75,11 @@ describe('Tools Index', () => {
 });
 
 describe('Profile Tool Handlers', () => {
-  let mockProfileService: any;
   let mockApiClient: any;
 
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
-
-    // Create a mock profile service (for backward compatibility)
-    mockProfileService = {
-      getProfileById: vi.fn().mockResolvedValue({
-        hash: 'test-hash',
-        displayName: 'Test User',
-        profileUrl: 'https://gravatar.com/testuser',
-      }),
-      getProfileByEmail: vi.fn().mockResolvedValue({
-        hash: 'email-hash',
-        displayName: 'Email User',
-        profileUrl: 'https://gravatar.com/emailuser',
-      }),
-    };
 
     // Create a mock API client with custom implementations
     mockApiClient = createMockApiClient({
@@ -145,9 +102,6 @@ describe('Profile Tool Handlers', () => {
       // Custom implementation for avatars.getAvatarById
       avatarsGetAvatarByIdImpl: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
     });
-
-    // Mock the createProfileService function
-    vi.mocked(createProfileService).mockResolvedValue(mockProfileService);
 
     // Mock the createApiClient function
     vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
@@ -246,24 +200,11 @@ describe('Profile Tool Handlers', () => {
 });
 
 describe('Experimental Tool Handlers', () => {
-  let mockExperimentalService: any;
   let mockApiClient: any;
 
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
-
-    // Create a mock experimental service (for backward compatibility)
-    mockExperimentalService = {
-      getInferredInterestsById: vi.fn().mockResolvedValue([
-        { id: 1, name: 'programming' },
-        { id: 2, name: 'javascript' },
-      ]),
-      getInferredInterestsByEmail: vi.fn().mockResolvedValue([
-        { id: 3, name: 'typescript' },
-        { id: 4, name: 'react' },
-      ]),
-    };
 
     // Create a mock API client with custom implementations
     mockApiClient = createMockApiClient({
@@ -283,9 +224,6 @@ describe('Experimental Tool Handlers', () => {
         profileUrl: 'https://gravatar.com/testuser',
       }),
     });
-
-    // Mock the createExperimentalService function
-    vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
 
     // Mock the createApiClient function
     vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
@@ -376,18 +314,11 @@ describe('Experimental Tool Handlers', () => {
 });
 
 describe('Avatar Tool Handlers', () => {
-  let mockAvatarService: any;
   let mockApiClient: any;
 
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
-
-    // Create a mock avatar service (for backward compatibility)
-    mockAvatarService = {
-      getAvatarById: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
-      getAvatarByEmail: vi.fn().mockResolvedValue(Buffer.from('mock-email-avatar-data')),
-    };
 
     // Create a mock API client with custom implementations
     mockApiClient = createMockApiClient({
@@ -410,9 +341,6 @@ describe('Avatar Tool Handlers', () => {
         });
       }),
     });
-
-    // Mock the createGravatarImageService function
-    vi.mocked(createGravatarImageService).mockReturnValue(mockAvatarService);
 
     // Mock the createApiClient function
     vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
