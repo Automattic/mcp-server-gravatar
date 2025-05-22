@@ -247,12 +247,13 @@ describe('Profile Tool Handlers', () => {
 
 describe('Experimental Tool Handlers', () => {
   let mockExperimentalService: any;
+  let mockApiClient: any;
 
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
 
-    // Create a mock experimental service
+    // Create a mock experimental service (for backward compatibility)
     mockExperimentalService = {
       getInferredInterestsById: vi.fn().mockResolvedValue([
         { id: 1, name: 'programming' },
@@ -264,8 +265,34 @@ describe('Experimental Tool Handlers', () => {
       ]),
     };
 
+    // Create a mock API client with custom implementations
+    mockApiClient = createMockApiClient({
+      // Custom implementation for experimental.getProfileInferredInterestsById
+      experimentalGetProfileInferredInterestsByIdImpl: vi.fn().mockImplementation(params => {
+        if (params.profileIdentifier === 'email-hash') {
+          return Promise.resolve([{ name: 'typescript' }, { name: 'react' }]);
+        }
+        return Promise.resolve([{ name: 'programming' }, { name: 'javascript' }]);
+      }),
+
+      // Custom implementation for validateHash and validateEmail
+      // to ensure they return true in the tests
+      profilesGetProfileByIdImpl: vi.fn().mockResolvedValue({
+        hash: 'test-hash',
+        displayName: 'Test User',
+        profileUrl: 'https://gravatar.com/testuser',
+      }),
+    });
+
     // Mock the createExperimentalService function
     vi.mocked(createExperimentalService).mockResolvedValue(mockExperimentalService);
+
+    // Mock the createApiClient function
+    vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
+
+    // Ensure validateHash and validateEmail return true for tests
+    vi.mocked(utils.validateHash).mockReturnValue(true);
+    vi.mocked(utils.validateEmail).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -277,8 +304,10 @@ describe('Experimental Tool Handlers', () => {
       const params = { hash: 'test-hash' };
       const result = await getInterestsByIdHandler(params);
 
-      expect(createExperimentalService).toHaveBeenCalled();
-      expect(mockExperimentalService.getInferredInterestsById).toHaveBeenCalledWith('test-hash');
+      expect(createApiClient).toHaveBeenCalled();
+      expect(mockApiClient.experimental.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: 'test-hash',
+      });
 
       // Verify response format is correct (without checking exact content)
       expect(result).toHaveProperty('content');
@@ -294,8 +323,8 @@ describe('Experimental Tool Handlers', () => {
     });
 
     it('should handle service errors', async () => {
-      // Setup the service to throw an error
-      mockExperimentalService.getInferredInterestsById.mockRejectedValue(
+      // Setup the API client to throw an error
+      mockApiClient.experimental.getProfileInferredInterestsById.mockRejectedValue(
         new GravatarValidationError('Invalid hash format'),
       );
 
@@ -307,13 +336,18 @@ describe('Experimental Tool Handlers', () => {
 
   describe('getInterestsByEmail handler', () => {
     it('should call the service with correct parameters', async () => {
+      // Reset the mocks for this test
+      vi.mocked(utils.validateEmail).mockReturnValue(true);
+      vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
+
       const params = { email: 'test@example.com' };
       const result = await getInterestsByEmailHandler(params);
 
-      expect(createExperimentalService).toHaveBeenCalled();
-      expect(mockExperimentalService.getInferredInterestsByEmail).toHaveBeenCalledWith(
-        'test@example.com',
-      );
+      expect(createApiClient).toHaveBeenCalled();
+      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockApiClient.experimental.getProfileInferredInterestsById).toHaveBeenCalledWith({
+        profileIdentifier: 'email-hash',
+      });
 
       // Verify response format is correct (without checking exact content)
       expect(result).toHaveProperty('content');
@@ -329,8 +363,8 @@ describe('Experimental Tool Handlers', () => {
     });
 
     it('should handle service errors', async () => {
-      // Setup the service to throw an error
-      mockExperimentalService.getInferredInterestsByEmail.mockRejectedValue(
+      // Setup the API client to throw an error
+      mockApiClient.experimental.getProfileInferredInterestsById.mockRejectedValue(
         new GravatarValidationError('Invalid email format'),
       );
 

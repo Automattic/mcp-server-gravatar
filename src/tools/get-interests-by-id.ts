@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateHash } from '../common/utils.js';
-import { createExperimentalService } from '../services/experimental-service.js';
+import { createApiClient } from '../apis/api-client.js';
+import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
 export const getInferredInterestsByIdSchema = z.object({
@@ -20,8 +21,17 @@ export const getInterestsByIdTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getInferredInterestsByIdSchema>) {
-  const experimentalService = await createExperimentalService();
-  const interests = await experimentalService.getInferredInterestsById(params.hash);
+  // Validate hash
+  if (!validateHash(params.hash)) {
+    throw new GravatarValidationError('Invalid hash format');
+  }
+
+  // Use API client to get interests by ID
+  const apiClient = await createApiClient();
+  const interests = await apiClient.experimental.getProfileInferredInterestsById({
+    profileIdentifier: params.hash,
+  });
+
   // Extract just the name field from each interest
   const interestNames = interests.map((interest: { name: string }) => interest.name);
   return {
