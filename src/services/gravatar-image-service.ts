@@ -1,5 +1,3 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
   validateEmail,
   validateHash,
@@ -7,48 +5,10 @@ import {
   getUserAgent,
 } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import { DefaultAvatarOption, Rating } from '../common/types.js';
+import type { DefaultAvatarOption, Rating } from '../common/types.js';
 import type { IGravatarImageService, FetchFunction } from './interfaces.js';
 import { apiConfig } from '../config/server-config.js';
 
-// Schema for getAvatarById
-export const getAvatarByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
-    message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
-  }),
-  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
-  defaultOption: z.preprocess(
-    val => (val === '' ? undefined : val),
-    z.nativeEnum(DefaultAvatarOption).optional(),
-  ),
-  forceDefault: z.preprocess(val => {
-    if (val === '') return undefined;
-    if (val === 'true') return true;
-    if (val === 'false') return false;
-    return val;
-  }, z.boolean().optional()),
-  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
-});
-
-// Schema for getAvatarByEmail
-export const getAvatarByEmailSchema = z.object({
-  email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.',
-  }),
-  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
-  defaultOption: z.preprocess(
-    val => (val === '' ? undefined : val),
-    z.nativeEnum(DefaultAvatarOption).optional(),
-  ),
-  forceDefault: z.preprocess(val => {
-    if (val === '') return undefined;
-    if (val === 'true') return true;
-    if (val === 'false') return false;
-    return val;
-  }, z.boolean().optional()),
-  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
-});
 
 /**
  * Service for interacting with Gravatar images
@@ -159,38 +119,3 @@ export class GravatarImageService implements IGravatarImageService {
 export function createGravatarImageService(): IGravatarImageService {
   return new GravatarImageService(fetch);
 }
-
-// Tool definitions for MCP
-export const gravatarImageTools = [
-  {
-    name: 'getAvatarById',
-    description:
-      'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
-    inputSchema: zodToJsonSchema(getAvatarByIdSchema),
-    handler: async (params: z.infer<typeof getAvatarByIdSchema>) => {
-      const service = createGravatarImageService();
-      return await service.getAvatarById(
-        params.hash,
-        params.size,
-        params.defaultOption,
-        params.forceDefault,
-        params.rating,
-      );
-    },
-  },
-  {
-    name: 'getAvatarByEmail',
-    description: 'Get the avatar PNG image for a Gravatar profile using an email address.',
-    inputSchema: zodToJsonSchema(getAvatarByEmailSchema),
-    handler: async (params: z.infer<typeof getAvatarByEmailSchema>) => {
-      const service = createGravatarImageService();
-      return await service.getAvatarByEmail(
-        params.email,
-        params.size,
-        params.defaultOption,
-        params.forceDefault,
-        params.rating,
-      );
-    },
-  },
-];

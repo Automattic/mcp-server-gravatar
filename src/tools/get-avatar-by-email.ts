@@ -1,9 +1,27 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import {
-  createGravatarImageService,
-  getAvatarByEmailSchema,
-} from '../services/gravatar-image-service.js';
+import { validateEmail } from '../common/utils.js';
+import { DefaultAvatarOption, Rating } from '../common/types.js';
+import { createGravatarImageService } from '../services/gravatar-image-service.js';
+
+// Schema definition
+export const getAvatarByEmailSchema = z.object({
+  email: z.string().refine(validateEmail, {
+    message: 'Invalid email format.',
+  }),
+  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
+  defaultOption: z.preprocess(
+    val => (val === '' ? undefined : val),
+    z.nativeEnum(DefaultAvatarOption).optional(),
+  ),
+  forceDefault: z.preprocess(val => {
+    if (val === '') return undefined;
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    return val;
+  }, z.boolean().optional()),
+  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
+});
 
 // Tool definition
 export const getAvatarByEmailTool = {

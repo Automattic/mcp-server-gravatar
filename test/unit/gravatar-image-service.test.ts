@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createGravatarImageService } from '../../src/services/gravatar-image-service.js';
 import {
-  createGravatarImageService,
-  gravatarImageTools,
-} from '../../src/services/gravatar-image-service.js';
+  getAvatarByIdTool,
+  handler as getAvatarByIdHandler,
+} from '../../src/tools/get-avatar-by-id.js';
+import {
+  getAvatarByEmailTool,
+  handler as getAvatarByEmailHandler,
+} from '../../src/tools/get-avatar-by-email.js';
 import type { IGravatarImageService } from '../../src/services/interfaces.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
@@ -17,21 +22,23 @@ vi.mock('../../src/services/gravatar-image-service.js', async () => {
   return {
     ...actual,
     createGravatarImageService: vi.fn(),
-    gravatarImageTools: [
-      {
-        name: 'getAvatarById',
-        description:
-          'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
-        inputSchema: {},
-        handler: vi.fn(),
-      },
-      {
-        name: 'getAvatarByEmail',
-        description: 'Get the avatar PNG image for a Gravatar profile using an email address.',
-        inputSchema: {},
-        handler: vi.fn(),
-      },
-    ],
+  };
+});
+
+// Mock the tool handlers
+vi.mock('../../src/tools/get-avatar-by-id.js', async () => {
+  const actual = await vi.importActual('../../src/tools/get-avatar-by-id.js');
+  return {
+    ...actual,
+    handler: vi.fn(),
+  };
+});
+
+vi.mock('../../src/tools/get-avatar-by-email.js', async () => {
+  const actual = await vi.importActual('../../src/tools/get-avatar-by-email.js');
+  return {
+    ...actual,
+    handler: vi.fn(),
   };
 });
 
@@ -283,26 +290,44 @@ describe('Gravatar Image MCP Tools', () => {
     vi.mocked(createGravatarImageService).mockReturnValue(mockService);
 
     // Mock the tool handlers
-    vi.mocked(gravatarImageTools[0].handler).mockImplementation(async (params: any) => {
+    vi.mocked(getAvatarByIdHandler).mockImplementation(async (params: any) => {
       const service = createGravatarImageService();
-      return await service.getAvatarById(
+      const avatarBuffer = await service.getAvatarById(
         params.hash,
         params.size,
         params.defaultOption,
         params.forceDefault,
         params.rating,
       );
+      return {
+        content: [
+          {
+            type: 'image',
+            data: avatarBuffer.toString('base64'),
+            mimeType: 'image/png',
+          },
+        ],
+      };
     });
 
-    vi.mocked(gravatarImageTools[1].handler).mockImplementation(async (params: any) => {
+    vi.mocked(getAvatarByEmailHandler).mockImplementation(async (params: any) => {
       const service = createGravatarImageService();
-      return await service.getAvatarByEmail(
+      const avatarBuffer = await service.getAvatarByEmail(
         params.email,
         params.size,
         params.defaultOption,
         params.forceDefault,
         params.rating,
       );
+      return {
+        content: [
+          {
+            type: 'image',
+            data: avatarBuffer.toString('base64'),
+            mimeType: 'image/png',
+          },
+        ],
+      };
     });
   });
 
@@ -312,8 +337,8 @@ describe('Gravatar Image MCP Tools', () => {
 
   describe('getAvatarById tool', () => {
     it('should have the correct name and description', () => {
-      const tool = gravatarImageTools[0];
-      expect(tool.name).toBe('getAvatarById');
+      const tool = getAvatarByIdTool;
+      expect(tool.name).toBe('get_avatar_by_id');
       expect(tool.description).toContain(
         'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash)',
       );
@@ -329,7 +354,7 @@ describe('Gravatar Image MCP Tools', () => {
         rating: Rating.PG,
       } as any;
 
-      await gravatarImageTools[0].handler(params);
+      await getAvatarByIdHandler(params);
 
       expect(mockService.getAvatarById).toHaveBeenCalledWith(
         'test-hash',
@@ -354,14 +379,14 @@ describe('Gravatar Image MCP Tools', () => {
         hash: 'invalid-hash',
       } as any;
 
-      await expect(gravatarImageTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
+      await expect(getAvatarByIdHandler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 
   describe('getAvatarByEmail tool', () => {
     it('should have the correct name and description', () => {
-      const tool = gravatarImageTools[1];
-      expect(tool.name).toBe('getAvatarByEmail');
+      const tool = getAvatarByEmailTool;
+      expect(tool.name).toBe('get_avatar_by_email');
       expect(tool.description).toContain(
         'Get the avatar PNG image for a Gravatar profile using an email address',
       );
@@ -377,7 +402,7 @@ describe('Gravatar Image MCP Tools', () => {
         rating: Rating.PG,
       } as any;
 
-      await gravatarImageTools[1].handler(params);
+      await getAvatarByEmailHandler(params);
 
       expect(mockService.getAvatarByEmail).toHaveBeenCalledWith(
         'test@example.com',
@@ -402,7 +427,7 @@ describe('Gravatar Image MCP Tools', () => {
         email: 'invalid-email',
       } as any;
 
-      await expect(gravatarImageTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
+      await expect(getAvatarByEmailHandler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 });
