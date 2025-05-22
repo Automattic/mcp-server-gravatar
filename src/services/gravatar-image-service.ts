@@ -9,7 +9,6 @@ import type { DefaultAvatarOption, Rating } from '../common/types.js';
 import type { IGravatarImageService, FetchFunction } from './interfaces.js';
 import { apiConfig } from '../config/server-config.js';
 
-
 /**
  * Service for interacting with Gravatar images
  * Uses fetch directly to get avatar images
