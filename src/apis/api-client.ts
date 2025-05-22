@@ -2,10 +2,11 @@ import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
 import { AvatarImageApi } from './avatar-image-api.js';
 import { createApiConfiguration } from '../common/utils.js';
+import type { IProfilesApiClient, IExperimentalApiClient } from './interfaces.js';
 
 export interface ApiClient {
-  profiles: ProfilesApi;
-  experimental: ExperimentalApi;
+  profiles: IProfilesApiClient;
+  experimental: IExperimentalApiClient;
   avatars: AvatarImageApi;
 }
 

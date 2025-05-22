@@ -1,8 +1,7 @@
 import { vi } from 'vitest';
 import type { ApiClient } from '../../src/apis/api-client';
 import { createMockAvatarBuffer } from './mock-responses';
-import type { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi';
-import type { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi';
+import type { IProfilesApiClient, IExperimentalApiClient } from '../../src/apis/interfaces';
 import type { AvatarImageApi } from '../../src/apis/avatar-image-api';
 
 /**
@@ -28,7 +27,7 @@ export function createMockApiClient(options?: {
         displayName: 'Test User',
         profileUrl: 'https://gravatar.com/testuser',
       }),
-  } as unknown as ProfilesApi;
+  } as unknown as IProfilesApiClient;
 
   const mockExperimentalApi = {
     getProfileInferredInterestsById:
@@ -37,7 +36,7 @@ export function createMockApiClient(options?: {
         { name: 'programming', confidence: 0.9 },
         { name: 'javascript', confidence: 0.8 },
       ]),
-  } as unknown as ExperimentalApi;
+  } as unknown as IExperimentalApiClient;
 
   const mockAvatarImageApi = {
     getAvatarById: options?.avatarsGetAvatarByIdImpl || vi.fn().mockResolvedValue(mockAvatarBuffer),
