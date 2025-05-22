@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateHash } from '../common/utils.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
-import { createGravatarImageService } from '../services/gravatar-image-service.js';
+import { createApiClient } from '../apis/api-client.js';
 
 // Schema definition
 export const getAvatarByIdSchema = z.object({
@@ -33,14 +33,14 @@ export const getAvatarByIdTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByIdSchema>) {
-  const service = createGravatarImageService();
-  const avatarBuffer = await service.getAvatarById(
-    params.hash,
-    params.size,
-    params.defaultOption,
-    params.forceDefault,
-    params.rating,
-  );
+  const apiClient = await createApiClient();
+  const avatarBuffer = await apiClient.avatars.getAvatarById({
+    hash: params.hash,
+    size: params.size,
+    defaultOption: params.defaultOption,
+    forceDefault: params.forceDefault,
+    rating: params.rating,
+  });
   return {
     content: [
       {
