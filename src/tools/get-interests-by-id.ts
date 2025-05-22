@@ -1,9 +1,15 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import {
-  createExperimentalService,
-  getInferredInterestsByIdSchema,
-} from '../services/experimental-service.js';
+import { validateHash } from '../common/utils.js';
+import { createExperimentalService } from '../services/experimental-service.js';
+
+// Schema definition
+export const getInferredInterestsByIdSchema = z.object({
+  hash: z.string().refine(validateHash, {
+    message:
+      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+  }),
+});
 
 // Tool definition
 export const getInterestsByIdTool = {

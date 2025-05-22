@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createExperimentalService } from '../../src/services/experimental-service.js';
 import {
-  createExperimentalService,
-  experimentalTools,
-} from '../../src/services/experimental-service.js';
+  getInterestsByIdTool,
+  handler as getInterestsByIdHandler,
+} from '../../src/tools/get-interests-by-id.js';
+import {
+  getInterestsByEmailTool,
+  handler as getInterestsByEmailHandler,
+} from '../../src/tools/get-interests-by-email.js';
 import type { IExperimentalService } from '../../src/services/interfaces.js';
 import { ExperimentalService } from '../../src/services/experimental-service.js';
 import { GravatarValidationError, GravatarResourceNotFoundError } from '../../src/common/errors.js';
@@ -75,8 +80,8 @@ describe('Experimental MCP Tools', () => {
 
   describe('getInferredInterestsById tool', () => {
     it('should have the correct name and description', () => {
-      const tool = experimentalTools[0];
-      expect(tool.name).toBe('getInferredInterestsById');
+      const tool = getInterestsByIdTool;
+      expect(tool.name).toBe('get_inferred_interests_by_id');
       expect(tool.description).toBe(
         'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
       );
@@ -136,14 +141,14 @@ describe('Experimental MCP Tools', () => {
         hash: 'invalid-hash',
       } as any;
 
-      await expect(experimentalTools[0].handler(params)).rejects.toThrow(GravatarValidationError);
+      await expect(getInterestsByIdHandler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 
   describe('getInferredInterestsByEmail tool', () => {
     it('should have the correct name and description', () => {
-      const tool = experimentalTools[1];
-      expect(tool.name).toBe('getInferredInterestsByEmail');
+      const tool = getInterestsByEmailTool;
+      expect(tool.name).toBe('get_inferred_interests_by_email');
       expect(tool.description).toBe(
         'Fetch inferred interests for a Gravatar profile using an email address.',
       );
@@ -206,7 +211,7 @@ describe('Experimental MCP Tools', () => {
         email: 'invalid-email',
       } as any;
 
-      await expect(experimentalTools[1].handler(params)).rejects.toThrow(GravatarValidationError);
+      await expect(getInterestsByEmailHandler(params)).rejects.toThrow(GravatarValidationError);
     });
   });
 });

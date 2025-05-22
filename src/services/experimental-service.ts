@@ -1,5 +1,3 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
   validateEmail,
   validateHash,
@@ -12,21 +10,6 @@ import type { Interest } from '../generated/gravatar-api/models/Interest.js';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
 import { isApiErrorResponse } from '../common/types.js';
 import { mapHttpStatusToError } from '../common/utils.js';
-
-// Schema for getInferredInterestsById
-export const getInferredInterestsByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
-    message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
-  }),
-});
-
-// Schema for getInferredInterestsByEmail
-export const getInferredInterestsByEmailSchema = z.object({
-  email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.',
-  }),
-});
 
 /**
  * Service for interacting with Gravatar experimental features
@@ -93,26 +76,3 @@ export async function createExperimentalService(): Promise<IExperimentalService>
   const config = await createApiConfiguration();
   return new ExperimentalService(new ExperimentalApi(config));
 }
-
-// Tool definitions for MCP
-export const experimentalTools = [
-  {
-    name: 'getInferredInterestsById',
-    description:
-      'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
-    inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
-    handler: async (params: z.infer<typeof getInferredInterestsByIdSchema>) => {
-      const service = await createExperimentalService();
-      return await service.getInferredInterestsById(params.hash);
-    },
-  },
-  {
-    name: 'getInferredInterestsByEmail',
-    description: 'Fetch inferred interests for a Gravatar profile using an email address.',
-    inputSchema: zodToJsonSchema(getInferredInterestsByEmailSchema),
-    handler: async (params: z.infer<typeof getInferredInterestsByEmailSchema>) => {
-      const service = await createExperimentalService();
-      return await service.getInferredInterestsByEmail(params.email);
-    },
-  },
-];
