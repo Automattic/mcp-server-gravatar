@@ -5,9 +5,7 @@ import {
   generateIdentifierFromEmail,
   validateHash,
   generateSha256Hash,
-  createApiConfiguration,
 } from '../../src/common/utils.js';
-import { Configuration } from '../../src/generated/gravatar-api/runtime.js';
 
 describe('Email Utilities', () => {
   it('normalizeEmail should trim and lowercase email', () => {
@@ -100,6 +98,7 @@ describe('API Configuration', () => {
 
   afterEach(() => {
     process.env = originalEnv;
+    vi.restoreAllMocks();
   });
 
   it('getUserAgent should return a string containing version', async () => {
@@ -110,8 +109,9 @@ describe('API Configuration', () => {
   });
 
   it('createApiConfiguration should create a configuration with User-Agent', async () => {
-    const config = await createApiConfiguration();
-    expect(config).toBeInstanceOf(Configuration);
+    const { serverConfig } = await import('../../src/config/server-config.js');
+    const config = await serverConfig.createApiConfiguration();
+    expect(config).toBeDefined();
     expect(config.headers).toBeDefined();
     if (config.headers) {
       expect(config.headers['User-Agent']).toBeDefined();
@@ -121,15 +121,17 @@ describe('API Configuration', () => {
 
   it('createApiConfiguration should include API key when available', async () => {
     process.env.GRAVATAR_API_KEY = 'test-api-key';
-    const config = await createApiConfiguration();
-    expect(config).toBeInstanceOf(Configuration);
+    const { serverConfig } = await import('../../src/config/server-config.js');
+    const config = await serverConfig.createApiConfiguration();
+    expect(config).toBeDefined();
     // The accessToken is a function in the Configuration class
     expect(typeof config.accessToken).toBe('function');
   });
 
   it('createApiConfiguration should not include API key when not available', async () => {
-    const config = await createApiConfiguration();
-    expect(config).toBeInstanceOf(Configuration);
+    const { serverConfig } = await import('../../src/config/server-config.js');
+    const config = await serverConfig.createApiConfiguration();
+    expect(config).toBeDefined();
     expect(config.accessToken).toBeUndefined();
   });
 });

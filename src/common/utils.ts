@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { Configuration } from '../generated/gravatar-api/runtime.js';
 import { GravatarValidationError } from './errors.js';
 
 /**
@@ -59,32 +58,4 @@ export function validateHash(hash: string): boolean {
 export function generateSha256Hash(email: string): string {
   const normalizedEmail = normalizeEmail(email);
   return crypto.createHash('sha256').update(normalizedEmail).digest('hex');
-}
-
-/**
- * Creates a configuration object for API clients
- * Uses the API key from environment variables
- * @returns Configuration object with API key and User-Agent header
- */
-export async function createApiConfiguration(): Promise<Configuration> {
-  // Get API key and user agent from serverConfig
-  const { serverConfig } = await import('../config/server-config.js');
-  const apiKey = await serverConfig.security.apiKey;
-
-  // Create configuration with headers
-  const config: {
-    headers: { 'User-Agent': string };
-    accessToken?: () => Promise<string>;
-  } = {
-    headers: {
-      'User-Agent': serverConfig.userAgent,
-    },
-  };
-
-  // Add API key if available (as function format expected by generated client)
-  if (apiKey) {
-    config.accessToken = async () => apiKey;
-  }
-
-  return new Configuration(config);
 }

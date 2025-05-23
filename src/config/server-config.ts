@@ -8,6 +8,7 @@
 
 import { VERSION } from '../common/version.js';
 import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
+import { Configuration } from '../generated/gravatar-api/runtime.js';
 
 /**
  * Gets the API key from the environment variables
@@ -24,6 +25,33 @@ async function getApiKey(): Promise<string | undefined> {
  */
 function getUserAgent(): string {
   return `mcp-server-gravatar/v${VERSION} ${getUniversalUserAgent()}`;
+}
+
+/**
+ * Creates a configuration object for API clients
+ * Uses the API key from environment variables
+ * @returns Configuration object with API key and User-Agent header
+ */
+async function createApiConfiguration(): Promise<Configuration> {
+  // Get API key from environment variables
+  const apiKey = await getApiKey();
+
+  // Create configuration with headers
+  const config: {
+    headers: { 'User-Agent': string };
+    accessToken?: () => Promise<string>;
+  } = {
+    headers: {
+      'User-Agent': getUserAgent(),
+    },
+  };
+
+  // Add API key if available (as function format expected by generated client)
+  if (apiKey) {
+    config.accessToken = async () => apiKey;
+  }
+
+  return new Configuration(config);
 }
 
 /**
@@ -92,4 +120,5 @@ export const serverConfig = {
   get userAgent() {
     return getUserAgent();
   },
+  createApiConfiguration,
 };

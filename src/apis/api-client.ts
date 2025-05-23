@@ -1,7 +1,7 @@
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
 import { AvatarImageApi } from './avatar-image-api.js';
-import { createApiConfiguration } from '../common/utils.js';
+import { serverConfig } from '../config/server-config.js';
 import type { IProfilesApiClient, IExperimentalApiClient } from './interfaces.js';
 
 export interface ApiClient {
@@ -15,7 +15,7 @@ export interface ApiClient {
  * @returns An object containing all configured API clients
  */
 export async function createApiClient(): Promise<ApiClient> {
-  const config = await createApiConfiguration();
+  const config = await serverConfig.createApiConfiguration();
   return {
     profiles: new ProfilesApi(config),
     experimental: new ExperimentalApi(config),

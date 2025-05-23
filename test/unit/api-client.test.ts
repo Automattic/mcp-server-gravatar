@@ -1,20 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createApiClient } from '../../src/apis/api-client.js';
-import * as utils from '../../src/common/utils.js';
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi.js';
 import { AvatarImageApi } from '../../src/apis/avatar-image-api.js';
 
-// Mock the utils functions
-vi.mock('../../src/common/utils.js', async () => {
-  const actual = await vi.importActual('../../src/common/utils.js');
-  return {
-    ...actual,
+// Mock the server config
+vi.mock('../../src/config/server-config.js', () => ({
+  serverConfig: {
     createApiConfiguration: vi.fn().mockResolvedValue({
       basePath: 'https://api.example.com',
     } as any),
-  };
-});
+  },
+}));
 
 // Mock the API classes
 vi.mock('../../src/generated/gravatar-api/apis/ProfilesApi.js', () => ({
@@ -68,13 +65,15 @@ describe('API Client', () => {
       const mockConfig = {
         basePath: 'https://api.example.com',
       } as any;
-      vi.mocked(utils.createApiConfiguration).mockResolvedValue(mockConfig);
+
+      const { serverConfig } = await import('../../src/config/server-config.js');
+      vi.mocked(serverConfig.createApiConfiguration).mockResolvedValue(mockConfig);
 
       // Call the function
       await createApiClient();
 
       // Verify the configuration was used
-      expect(utils.createApiConfiguration).toHaveBeenCalled();
+      expect(serverConfig.createApiConfiguration).toHaveBeenCalled();
       expect(ProfilesApi).toHaveBeenCalledWith(mockConfig);
       expect(ExperimentalApi).toHaveBeenCalledWith(mockConfig);
       expect(AvatarImageApi).toHaveBeenCalled();
