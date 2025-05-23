@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { serverConfig, ApiConfigType } from '../../src/config/server-config.js';
+import { serverConfig, ApiConfigType, type ClientInfo } from '../../src/config/server-config.js';
 import { Configuration } from '../../src/generated/gravatar-api/runtime.js';
 
 describe('Server Configuration', () => {
@@ -22,38 +22,12 @@ describe('Server Configuration', () => {
       expect(ApiConfigType.AvatarImageApi).toBe(1);
     });
 
-    it('should work with switch statements', () => {
-      // Test with a variable to avoid TypeScript comparison errors
-      const testRestApi = ApiConfigType.RestApi;
-      const testAvatarApi = ApiConfigType.AvatarImageApi;
-
-      let result: string;
-
-      switch (testRestApi) {
-        case ApiConfigType.RestApi:
-          result = 'rest';
-          break;
-        case ApiConfigType.AvatarImageApi:
-          result = 'avatar';
-          break;
-        default:
-          result = 'unknown';
-      }
-
-      expect(result).toBe('rest');
-
-      switch (testAvatarApi) {
-        case ApiConfigType.RestApi:
-          result = 'rest';
-          break;
-        case ApiConfigType.AvatarImageApi:
-          result = 'avatar';
-          break;
-        default:
-          result = 'unknown';
-      }
-
-      expect(result).toBe('avatar');
+    it('should be usable in conditional logic', () => {
+      // Test that enum values can be used in conditional logic
+      expect(ApiConfigType.RestApi === 0).toBe(true);
+      expect(ApiConfigType.AvatarImageApi === 1).toBe(true);
+      // Test that different enum values are different
+      expect(ApiConfigType.RestApi).not.toBe(ApiConfigType.AvatarImageApi);
     });
   });
 
@@ -121,6 +95,22 @@ describe('Server Configuration', () => {
       expect(config).toBeInstanceOf(Configuration);
       expect(config.basePath).toBe('https://api.gravatar.com/v3'); // Uses default behavior
       expect(config.headers?.['User-Agent']).toContain('mcp-server-gravatar');
+    });
+
+    it('should include client headers in configuration', async () => {
+      // Test without client info
+      const config1 = await serverConfig.createApiConfiguration(ApiConfigType.RestApi);
+
+      expect(config1.headers?.['X-Platform']).toBe('mcp-server-gravatar-stdio');
+      expect(config1.headers?.['X-Source']).toBe('unknown-client');
+
+      // Test with client info
+      serverConfig.client.setInfo({ name: 'TestClient', version: '1.0.0' });
+      const config2 = await serverConfig.createApiConfiguration(ApiConfigType.RestApi);
+
+      expect(config2.headers?.['X-Platform']).toBe('mcp-server-gravatar-stdio');
+      expect(config2.headers?.['X-Source']).toBe('TestClient');
+      expect(config2.headers?.['User-Agent']).toContain('(client: TestClient/1.0.0)');
     });
   });
 
@@ -210,6 +200,117 @@ describe('Server Configuration', () => {
       expect(config1.basePath).toBe(config2.basePath);
       expect(config1.headers?.['User-Agent']).toBe(config2.headers?.['User-Agent']);
       expect(typeof config1.accessToken).toBe(typeof config2.accessToken);
+    });
+  });
+
+  describe('Client Configuration', () => {
+    beforeEach(() => {
+      // Reset client info before each test by setting to null
+      // We need to access the internal setClientInfo to set it to null
+      // Since we can't directly set to null via the public API, we'll use a workaround
+      serverConfig.client.setInfo({ name: '', version: '' });
+      // Then we'll test the behavior with meaningful vs empty values
+    });
+
+    it('should expose client configuration properties', () => {
+      expect(serverConfig).toHaveProperty('client');
+      expect(serverConfig.client).toHaveProperty('setInfo');
+      expect(serverConfig.client).toHaveProperty('info');
+      expect(serverConfig.client).toHaveProperty('name');
+      expect(serverConfig.client).toHaveProperty('version');
+      expect(serverConfig.client).toHaveProperty('userAgent');
+    });
+
+    it('should store and retrieve client information', () => {
+      const testClientInfo: ClientInfo = {
+        name: 'TestClient',
+        version: '2.1.0',
+      };
+
+      serverConfig.client.setInfo(testClientInfo);
+      const retrieved = serverConfig.client.info;
+
+      expect(retrieved).toEqual(testClientInfo);
+      expect(retrieved?.name).toBe('TestClient');
+      expect(retrieved?.version).toBe('2.1.0');
+    });
+
+    it('should provide fallback values for client name', () => {
+      // Test with no client info set (empty values from beforeEach)
+      expect(serverConfig.client.name).toBe('unknown-client');
+
+      // Test with client info set
+      serverConfig.client.setInfo({ name: 'Claude-Desktop', version: '1.0.0' });
+      expect(serverConfig.client.name).toBe('Claude-Desktop');
+
+      // Test with empty name
+      serverConfig.client.setInfo({ name: '', version: '1.0.0' });
+      expect(serverConfig.client.name).toBe('unknown-client');
+    });
+
+    it('should provide fallback values for client version', () => {
+      // Test with no client info set (empty values from beforeEach)
+      expect(serverConfig.client.version).toBe('unknown-version');
+
+      // Test with client info set
+      serverConfig.client.setInfo({ name: 'Claude-Desktop', version: '2.5.1' });
+      expect(serverConfig.client.version).toBe('2.5.1');
+
+      // Test with empty version
+      serverConfig.client.setInfo({ name: 'Claude-Desktop', version: '' });
+      expect(serverConfig.client.version).toBe('unknown-version');
+    });
+
+    it('should handle multiple client info updates', () => {
+      // Set initial client info
+      serverConfig.client.setInfo({ name: 'Client1', version: '1.0.0' });
+      expect(serverConfig.client.name).toBe('Client1');
+      expect(serverConfig.client.version).toBe('1.0.0');
+
+      // Update client info
+      serverConfig.client.setInfo({ name: 'Client2', version: '2.0.0' });
+      expect(serverConfig.client.name).toBe('Client2');
+      expect(serverConfig.client.version).toBe('2.0.0');
+
+      // Verify the stored object is updated
+      const info = serverConfig.client.info;
+      expect(info?.name).toBe('Client2');
+      expect(info?.version).toBe('2.0.0');
+    });
+
+    it('should handle client info with special characters', () => {
+      const specialClientInfo: ClientInfo = {
+        name: 'Test-Client_v2',
+        version: '1.0.0-beta.1',
+      };
+
+      serverConfig.client.setInfo(specialClientInfo);
+      expect(serverConfig.client.name).toBe('Test-Client_v2');
+      expect(serverConfig.client.version).toBe('1.0.0-beta.1');
+    });
+
+    it('should enhance User-Agent with client info', () => {
+      // Test without client info
+      expect(serverConfig.client.userAgent).toContain('mcp-server-gravatar');
+      expect(serverConfig.client.userAgent).not.toContain('(client:');
+
+      // Test with client info
+      serverConfig.client.setInfo({ name: 'TestClient', version: '1.0.0' });
+      expect(serverConfig.client.userAgent).toContain('mcp-server-gravatar');
+      expect(serverConfig.client.userAgent).toContain('(client: TestClient/1.0.0)');
+    });
+
+    it('should maintain client info independence from other config', () => {
+      // Set client info
+      serverConfig.client.setInfo({ name: 'TestClient', version: '1.0.0' });
+
+      // Verify other config is unaffected
+      expect(serverConfig.name).toBe('gravatar');
+      expect(serverConfig.version).not.toBe('1.0.0'); // Should be the server version
+
+      // Verify client info is separate
+      expect(serverConfig.client.name).toBe('TestClient');
+      expect(serverConfig.client.version).toBe('1.0.0');
     });
   });
 });
