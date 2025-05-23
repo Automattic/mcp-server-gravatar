@@ -9,7 +9,7 @@ import {
 import { z } from 'zod';
 
 import { tools, handlers } from './tools/index.js';
-import { serverInfo, capabilities, serverConfig } from './config/server-config.js';
+import { serverInfo, capabilities, setClientInfo } from './config/server-config.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Create MCP server
@@ -19,10 +19,7 @@ const server = new Server(serverInfo, { capabilities });
 server.setRequestHandler(InitializeRequestSchema, async request => {
   // Store client information if provided
   if (request.params.clientInfo) {
-    serverConfig.client.setInfo({
-      name: request.params.clientInfo.name,
-      version: request.params.clientInfo.version,
-    });
+    setClientInfo(request.params.clientInfo.name, request.params.clientInfo.version);
 
     console.error(
       `MCP Client connected: ${request.params.clientInfo.name} v${request.params.clientInfo.version}`,
