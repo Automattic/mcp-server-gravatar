@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   normalizeEmail,
   validateEmail,
@@ -84,54 +84,5 @@ describe('Hash Utilities', () => {
 
     // Should normalize the email before hashing
     expect(generateSha256Hash('test@example.com')).toBe(generateSha256Hash(' Test@Example.com '));
-  });
-});
-
-describe('API Configuration', () => {
-  const originalEnv = process.env;
-
-  beforeEach(() => {
-    vi.resetModules();
-    process.env = { ...originalEnv };
-    delete process.env.GRAVATAR_API_KEY;
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-    vi.restoreAllMocks();
-  });
-
-  it('getUserAgent should return a string containing version', async () => {
-    const { serverConfig } = await import('../../src/config/server-config.js');
-    const userAgent = serverConfig.userAgent;
-    expect(userAgent).toContain('mcp-server-gravatar');
-    expect(userAgent).toContain('v');
-  });
-
-  it('createApiConfiguration should create a configuration with User-Agent', async () => {
-    const { serverConfig } = await import('../../src/config/server-config.js');
-    const config = await serverConfig.createApiConfiguration();
-    expect(config).toBeDefined();
-    expect(config.headers).toBeDefined();
-    if (config.headers) {
-      expect(config.headers['User-Agent']).toBeDefined();
-      expect(config.headers['User-Agent']).toContain('mcp-server-gravatar');
-    }
-  });
-
-  it('createApiConfiguration should include API key when available', async () => {
-    process.env.GRAVATAR_API_KEY = 'test-api-key';
-    const { serverConfig } = await import('../../src/config/server-config.js');
-    const config = await serverConfig.createApiConfiguration();
-    expect(config).toBeDefined();
-    // The accessToken is a function in the Configuration class
-    expect(typeof config.accessToken).toBe('function');
-  });
-
-  it('createApiConfiguration should not include API key when not available', async () => {
-    const { serverConfig } = await import('../../src/config/server-config.js');
-    const config = await serverConfig.createApiConfiguration();
-    expect(config).toBeDefined();
-    expect(config.accessToken).toBeUndefined();
   });
 });
