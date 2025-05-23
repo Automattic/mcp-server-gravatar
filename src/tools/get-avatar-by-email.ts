@@ -3,8 +3,8 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
 import { DefaultAvatarOption } from '../common/types.js';
 import { Rating } from '../generated/gravatar-api/models/Rating.js';
-import { getUserAgent } from '../config/server-config.js';
 import { GravatarValidationError } from '../common/errors.js';
+import { fetchAvatar } from './avatar-utils.js';
 
 // Schema definition
 export const getAvatarByEmailSchema = z.object({
@@ -38,59 +38,23 @@ export const getAvatarByEmailTool = {
   inputSchema: zodToJsonSchema(getAvatarByEmailSchema),
 };
 
-// Direct avatar fetching function
-async function fetchAvatarByEmail(params: z.infer<typeof getAvatarByEmailSchema>): Promise<Buffer> {
+// Tool handler
+export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
   if (!validateEmail(params.email)) {
     throw new GravatarValidationError('Invalid email format');
   }
 
   const avatarIdentifier = generateIdentifierFromEmail(params.email);
 
-  // Build avatar URL
-  let url = `https://gravatar.com/avatar/${avatarIdentifier}`;
-  const queryParams = new URLSearchParams();
-
-  if (params.size) {
-    queryParams.append('s', params.size.toString());
-  }
-
-  if (params.defaultOption) {
-    queryParams.append('d', params.defaultOption);
-  }
-
-  if (params.forceDefault) {
-    queryParams.append('f', 'y');
-  }
-
-  if (params.rating) {
-    queryParams.append('r', params.rating);
-  }
-
-  // Add query string to URL if there are any parameters
-  const queryString = queryParams.toString();
-  if (queryString) {
-    url += `?${queryString}`;
-  }
-
-  // Fetch the image
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': getUserAgent(),
-    },
+  // Use shared avatar fetching utility
+  const avatarBuffer = await fetchAvatar({
+    avatarIdentifier,
+    size: params.size,
+    defaultOption: params.defaultOption,
+    forceDefault: params.forceDefault,
+    rating: params.rating,
   });
 
-  if (!response.ok) {
-    throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
-  }
-
-  // Convert the response to a buffer
-  const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
-}
-
-// Tool handler
-export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
-  const avatarBuffer = await fetchAvatarByEmail(params);
   return {
     content: [
       {

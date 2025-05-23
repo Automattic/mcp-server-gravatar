@@ -1,9 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
-import { createRestApiConfig } from '../config/server-config.js';
 import { validateHash } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
+import { fetchInterestsById } from './experimental-utils.js';
 
 // Schema definition
 export const getInferredInterestsByIdSchema = z.object({
@@ -27,16 +26,6 @@ export async function handler(params: z.infer<typeof getInferredInterestsByIdSch
     throw new GravatarValidationError('Invalid identifier format');
   }
 
-  // Use direct API client to get interests by ID
-  const config = createRestApiConfig();
-  const experimentalApi = new ExperimentalApi(config);
-  const interests = await experimentalApi.getProfileInferredInterestsById({
-    profileIdentifier: params.profileIdentifier,
-  });
-
-  // Extract just the name field from each interest
-  const interestNames = interests.map((interest: { name: string }) => interest.name);
-  return {
-    content: [{ type: 'text', text: JSON.stringify(interestNames, null, 2) }],
-  };
+  // Use shared interests fetching utility
+  return await fetchInterestsById(params.profileIdentifier);
 }
