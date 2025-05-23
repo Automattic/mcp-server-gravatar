@@ -4,7 +4,7 @@ import type { DefaultAvatarOption, Rating } from '../common/types.js';
 import { apiConfig } from '../config/server-config.js';
 
 export interface GetAvatarByIdParams {
-  hash: string;
+  avatarIdentifier: string;
   size?: number;
   defaultOption?: DefaultAvatarOption;
   forceDefault?: boolean;
@@ -19,12 +19,12 @@ export class AvatarImageApi {
    * Get a Gravatar image by its identifier
    */
   async getAvatarById(params: GetAvatarByIdParams): Promise<Buffer> {
-    if (!validateHash(params.hash)) {
-      throw new GravatarValidationError('Invalid hash format');
+    if (!validateHash(params.avatarIdentifier)) {
+      throw new GravatarValidationError('Invalid identifier format');
     }
 
     // Build avatar URL
-    let url = `${apiConfig.avatarBaseUrl}/${params.hash}`;
+    let url = `${apiConfig.avatarBaseUrl}/${params.avatarIdentifier}`;
     const queryParams = new URLSearchParams();
 
     if (params.size) {

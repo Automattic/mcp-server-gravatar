@@ -39,12 +39,12 @@ export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
   }
 
   // Generate identifier from email
-  const hash = generateIdentifierFromEmail(params.email);
+  const avatarIdentifier = generateIdentifierFromEmail(params.email);
 
   // Use API client to get avatar by ID
   const apiClient = await createApiClient();
   const avatarBuffer = await apiClient.avatars.getAvatarById({
-    hash,
+    avatarIdentifier: avatarIdentifier,
     size: params.size,
     defaultOption: params.defaultOption,
     forceDefault: params.forceDefault,

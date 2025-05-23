@@ -6,9 +6,9 @@ import { createApiClient } from '../apis/api-client.js';
 
 // Schema definition
 export const getAvatarByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
+  avatarIdentifier: z.string().refine(validateHash, {
     message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+      'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
   }),
   size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
   defaultOption: z.preprocess(
@@ -27,7 +27,7 @@ export const getAvatarByIdSchema = z.object({
 // Tool definition
 export const getAvatarByIdTool = {
   name: 'get_avatar_by_id',
-  description: 'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).',
+  description: 'Get the avatar PNG image for a Gravatar profile using an avatar identifier.',
   inputSchema: zodToJsonSchema(getAvatarByIdSchema),
 };
 
@@ -35,7 +35,7 @@ export const getAvatarByIdTool = {
 export async function handler(params: z.infer<typeof getAvatarByIdSchema>) {
   const apiClient = await createApiClient();
   const avatarBuffer = await apiClient.avatars.getAvatarById({
-    hash: params.hash,
+    avatarIdentifier: params.avatarIdentifier,
     size: params.size,
     defaultOption: params.defaultOption,
     forceDefault: params.forceDefault,

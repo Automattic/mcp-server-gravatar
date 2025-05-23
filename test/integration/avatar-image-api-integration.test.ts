@@ -53,7 +53,7 @@ describe('AvatarImageApi Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse() as any);
 
       // Call the function
-      const result = await avatarImageApi.getAvatarById({ hash });
+      const result = await avatarImageApi.getAvatarById({ avatarIdentifier: hash });
 
       // Verify the mock was called
       expect(fetch).toHaveBeenCalledWith(
@@ -77,7 +77,7 @@ describe('AvatarImageApi Integration', () => {
 
       // Call the function with parameters
       const result = await avatarImageApi.getAvatarById({
-        hash,
+        avatarIdentifier: hash,
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
@@ -105,7 +105,7 @@ describe('AvatarImageApi Integration', () => {
       vi.mocked(fetch).mockResolvedValue(createMockResponse(404, 'Not Found') as any);
 
       // Call the function and expect it to throw
-      await expect(avatarImageApi.getAvatarById({ hash })).rejects.toThrow();
+      await expect(avatarImageApi.getAvatarById({ avatarIdentifier: hash })).rejects.toThrow();
 
       // Verify the mock was called
       expect(fetch).toHaveBeenCalledWith(

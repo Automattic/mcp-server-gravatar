@@ -113,7 +113,7 @@ describe('Profile Tool Handlers', () => {
 
   describe('getProfileById handler', () => {
     it('should call the service with correct parameters', async () => {
-      const params = { hash: 'test-hash' };
+      const params = { profileIdentifier: 'test-hash' };
       const result = await getProfileByIdHandler(params);
 
       expect(createApiClient).toHaveBeenCalled();
@@ -143,12 +143,12 @@ describe('Profile Tool Handlers', () => {
     it('should handle service errors', async () => {
       // Setup the API client to throw an error
       mockApiClient.profiles.getProfileById.mockRejectedValue(
-        new GravatarValidationError('Invalid hash format'),
+        new GravatarValidationError('Invalid identifier format'),
       );
 
-      const params = { hash: 'invalid-hash' };
+      const params = { profileIdentifier: 'invalid-identifier' };
       await expect(getProfileByIdHandler(params)).rejects.toThrow(GravatarValidationError);
-      await expect(getProfileByIdHandler(params)).rejects.toThrow('Invalid hash format');
+      await expect(getProfileByIdHandler(params)).rejects.toThrow('Invalid identifier format');
     });
   });
 
@@ -239,7 +239,7 @@ describe('Experimental Tool Handlers', () => {
 
   describe('getInterestsById handler', () => {
     it('should call the service with correct parameters', async () => {
-      const params = { hash: 'test-hash' };
+      const params = { profileIdentifier: 'test-hash' };
       const result = await getInterestsByIdHandler(params);
 
       expect(createApiClient).toHaveBeenCalled();
@@ -263,12 +263,12 @@ describe('Experimental Tool Handlers', () => {
     it('should handle service errors', async () => {
       // Setup the API client to throw an error
       mockApiClient.experimental.getProfileInferredInterestsById.mockRejectedValue(
-        new GravatarValidationError('Invalid hash format'),
+        new GravatarValidationError('Invalid identifier format'),
       );
 
-      const params = { hash: 'invalid-hash' };
+      const params = { profileIdentifier: 'invalid-identifier' };
       await expect(getInterestsByIdHandler(params)).rejects.toThrow(GravatarValidationError);
-      await expect(getInterestsByIdHandler(params)).rejects.toThrow('Invalid hash format');
+      await expect(getInterestsByIdHandler(params)).rejects.toThrow('Invalid identifier format');
     });
   });
 
@@ -353,7 +353,7 @@ describe('Avatar Tool Handlers', () => {
   describe('getAvatarById handler', () => {
     it('should call the API client with correct parameters', async () => {
       const params = {
-        hash: 'test-hash',
+        avatarIdentifier: 'test-hash',
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
@@ -364,7 +364,7 @@ describe('Avatar Tool Handlers', () => {
 
       expect(createApiClient).toHaveBeenCalled();
       expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
-        hash: 'test-hash',
+        avatarIdentifier: 'test-hash',
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
@@ -384,12 +384,12 @@ describe('Avatar Tool Handlers', () => {
     });
 
     it('should handle minimal parameters', async () => {
-      const params = { hash: 'test-hash' };
+      const params = { avatarIdentifier: 'test-hash' };
 
       await getAvatarByIdHandler(params);
 
       expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
-        hash: 'test-hash',
+        avatarIdentifier: 'test-hash',
         size: undefined,
         defaultOption: undefined,
         forceDefault: undefined,
@@ -400,12 +400,12 @@ describe('Avatar Tool Handlers', () => {
     it('should handle service errors', async () => {
       // Setup the API client to throw an error
       mockApiClient.avatars.getAvatarById.mockRejectedValue(
-        new GravatarValidationError('Invalid hash format'),
+        new GravatarValidationError('Invalid identifier format'),
       );
 
-      const params = { hash: 'invalid-hash' };
+      const params = { avatarIdentifier: 'invalid-identifier' };
       await expect(getAvatarByIdHandler(params)).rejects.toThrow(GravatarValidationError);
-      await expect(getAvatarByIdHandler(params)).rejects.toThrow('Invalid hash format');
+      await expect(getAvatarByIdHandler(params)).rejects.toThrow('Invalid identifier format');
     });
   });
 
@@ -427,7 +427,7 @@ describe('Avatar Tool Handlers', () => {
 
       expect(createApiClient).toHaveBeenCalled();
       expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
-        hash: 'email-hash',
+        avatarIdentifier: 'email-hash',
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
@@ -456,7 +456,7 @@ describe('Avatar Tool Handlers', () => {
       await getAvatarByEmailHandler(params);
 
       expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
-        hash: 'email-hash',
+        avatarIdentifier: 'email-hash',
         size: undefined,
         defaultOption: undefined,
         forceDefault: undefined,

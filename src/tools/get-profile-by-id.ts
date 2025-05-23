@@ -5,16 +5,16 @@ import { validateHash } from '../common/utils.js';
 
 // Schema definition (moved from service)
 export const getProfileByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
+  profileIdentifier: z.string().refine(validateHash, {
     message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+      'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
   }),
 });
 
 // Tool definition
 export const getProfileByIdTool = {
   name: 'get_profile_by_id',
-  description: 'Fetch a Gravatar profile using a profile identifier (hash).',
+  description: 'Fetch a Gravatar profile using a profile identifier.',
   inputSchema: zodToJsonSchema(getProfileByIdSchema),
 };
 
@@ -22,7 +22,7 @@ export const getProfileByIdTool = {
 export async function handler(params: z.infer<typeof getProfileByIdSchema>) {
   const apiClient = await createApiClient();
   const profile = await apiClient.profiles.getProfileById({
-    profileIdentifier: params.hash,
+    profileIdentifier: params.profileIdentifier,
   });
   return {
     content: [{ type: 'text', text: JSON.stringify(profile, null, 2) }],
