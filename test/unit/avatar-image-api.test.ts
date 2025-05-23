@@ -57,6 +57,14 @@ vi.mock('../../src/config/server-config.js', () => {
     apiConfig: {
       avatarBaseUrl: 'https://gravatar.com/avatar',
     },
+    serverConfig: {
+      api: {
+        avatarBaseUrl: 'https://gravatar.com/avatar',
+      },
+      security: {
+        apiKeyEnvVar: 'GRAVATAR_API_KEY',
+      },
+    },
   };
 });
 
