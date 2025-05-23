@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
-import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { GravatarValidationError } from './errors.js';
 import { VERSION } from './version.js';
 
@@ -53,7 +52,6 @@ export function validateHash(hash: string): boolean {
   const hashRegex = /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/;
   return hashRegex.test(hash);
 }
-
 
 /**
  * Generates a SHA256 hash of an email address
@@ -108,28 +106,4 @@ export async function createApiConfiguration(): Promise<Configuration> {
   }
 
   return new Configuration(config);
-}
-
-/**
- * Maps HTTP status codes to error types
- * @param status The HTTP status code
- * @param message The error message
- * @returns The appropriate error type
- */
-export async function mapHttpStatusToError(status: number, message: string): Promise<Error> {
-  // Import error types from errors.js
-  const { GravatarResourceNotFoundError, GravatarRateLimitError, GravatarError } = await import(
-    './errors.js'
-  );
-
-  switch (status) {
-    case 404:
-      return new GravatarResourceNotFoundError(message);
-    case 429:
-      return new GravatarRateLimitError(message, new Date(Date.now() + 60000)); // Assume 1 minute rate limit
-    case 500:
-      return new GravatarError(ErrorCode.InternalError, `Internal Server Error: ${message}`);
-    default:
-      return new GravatarError(ErrorCode.InternalError, `HTTP Error ${status}: ${message}`);
-  }
 }
