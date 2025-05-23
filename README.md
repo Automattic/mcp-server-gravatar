@@ -5,9 +5,9 @@ Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatar
 ## Tools
 
 1. `get_profile_by_id`
-   - Fetch a Gravatar profile using a profile identifier (hash).
+   - Fetch a Gravatar profile using a profile identifier.
    - Required inputs:
-     - `hash` (string): The profile identifier (MD5 or SHA256 hash)
+     - `profileIdentifier` (string): The profile identifier (SHA256 or MD5 hash)
    - Returns: Profile object as JSON with user information
 
 2. `get_profile_by_email`
@@ -17,9 +17,9 @@ Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatar
    - Returns: Profile object as JSON with user information
 
 3. `get_inferred_interests_by_id`
-   - Fetch inferred interests for a Gravatar profile using a profile identifier (hash).
+   - Fetch inferred interests for a Gravatar profile using a profile identifier.
    - Required inputs:
-     - `hash` (string): The profile identifier (MD5 or SHA256 hash)
+     - `profileIdentifier` (string): The profile identifier (SHA256 or MD5 hash)
    - Returns: List of inferred interest names as JSON
 
 4. `get_inferred_interests_by_email`
@@ -29,9 +29,9 @@ Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatar
    - Returns: List of inferred interest names as JSON
 
 5. `get_avatar_by_id`
-   - Get the avatar PNG image for a Gravatar profile using a profile identifier (hash).
+   - Get the avatar PNG image for a Gravatar profile using an avatar identifier.
    - Required inputs:
-     - `hash` (string): The profile identifier (MD5 or SHA256 hash)
+     - `avatarIdentifier` (string): The avatar identifier (SHA256 or MD5 hash)
    - Optional inputs:
      - `size` (number, default: undefined): Preferred size of the avatar (1-2048 pixels)
      - `defaultOption` (string, default: undefined): Default avatar option if no avatar exists
