@@ -15,16 +15,6 @@ export enum DefaultAvatarOption {
 }
 
 /**
- * Avatar rating options
- */
-export enum Rating {
-  G = 'g',
-  PG = 'pg',
-  R = 'r',
-  X = 'x',
-}
-
-/**
  * Base API error response structure
  */
 export interface ApiErrorResponse {
