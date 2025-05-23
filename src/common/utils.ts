@@ -72,23 +72,14 @@ export function getUserAgent(): string {
 }
 
 /**
- * Gets the API key from the environment variables
- * Uses the environment variable name specified in serverConfig
- * @returns The API key or undefined if not set
- */
-export async function getApiKey(): Promise<string | undefined> {
-  const { serverConfig } = await import('../config/server-config.js');
-  return process.env[serverConfig.security.apiKeyEnvVar];
-}
-
-/**
  * Creates a configuration object for API clients
  * Uses the API key from environment variables
  * @returns Configuration object with API key and User-Agent header
  */
 export async function createApiConfiguration(): Promise<Configuration> {
-  // Get API key from environment variable
-  const apiKey = await getApiKey();
+  // Get API key from serverConfig
+  const { serverConfig } = await import('../config/server-config.js');
+  const apiKey = await serverConfig.security.apiKey;
 
   // Create configuration with headers
   const config: {

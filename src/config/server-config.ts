@@ -9,6 +9,15 @@
 import { VERSION } from '../common/version.js';
 
 /**
+ * Gets the API key from the environment variables
+ * Uses the environment variable name specified in securityConfig
+ * @returns The API key or undefined if not set
+ */
+async function getApiKey(): Promise<string | undefined> {
+  return process.env[securityConfig.apiKeyEnvVar];
+}
+
+/**
  * Basic server information
  *
  * - name: The name of the server, used in MCP protocol communications
@@ -48,12 +57,16 @@ export const apiConfig = {
  *
  * - apiKeyEnvVar: The name of the environment variable that contains the API key
  *   Override with GRAVATAR_API_KEY_ENV_VAR environment variable
+ * - apiKey: Getter that returns the API key from environment variables
  *
  * To use an API key, set the environment variable specified by apiKeyEnvVar
  * Example: export GRAVATAR_API_KEY=your_api_key_here
  */
 export const securityConfig = {
   apiKeyEnvVar: process.env.GRAVATAR_API_KEY_ENV_VAR || 'GRAVATAR_API_KEY',
+  get apiKey() {
+    return getApiKey();
+  },
 };
 
 /**
