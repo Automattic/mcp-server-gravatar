@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { createApiClient } from '../apis/api-client.js';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
+import { fetchProfileById } from './profile-utils.js';
 
-// Schema definition (moved from service)
+// Schema definition
 export const getProfileByEmailSchema = z.object({
   email: z.string().refine(validateEmail, {
     message: 'Invalid email format.',
@@ -28,13 +28,6 @@ export async function handler(params: z.infer<typeof getProfileByEmailSchema>) {
   // Generate identifier from email
   const profileIdentifier = generateIdentifierFromEmail(params.email);
 
-  // Use API client to get profile by ID
-  const apiClient = await createApiClient();
-  const profile = await apiClient.profiles.getProfileById({
-    profileIdentifier: profileIdentifier,
-  });
-
-  return {
-    content: [{ type: 'text', text: JSON.stringify(profile, null, 2) }],
-  };
+  // Use shared profile fetching utility
+  return await fetchProfileById(profileIdentifier);
 }

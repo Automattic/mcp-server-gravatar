@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
-import { createApiClient } from '../apis/api-client.js';
 import { GravatarValidationError } from '../common/errors.js';
+import { fetchInterestsById } from './experimental-utils.js';
 
 // Schema definition
 export const getInferredInterestsByEmailSchema = z.object({
@@ -28,15 +28,6 @@ export async function handler(params: z.infer<typeof getInferredInterestsByEmail
   // Generate identifier from email
   const profileIdentifier = generateIdentifierFromEmail(params.email);
 
-  // Use API client to get interests by ID
-  const apiClient = await createApiClient();
-  const interests = await apiClient.experimental.getProfileInferredInterestsById({
-    profileIdentifier: profileIdentifier,
-  });
-
-  // Extract just the name field from each interest
-  const interestNames = interests.map((interest: { name: string }) => interest.name);
-  return {
-    content: [{ type: 'text', text: JSON.stringify(interestNames, null, 2) }],
-  };
+  // Use shared interests fetching utility
+  return await fetchInterestsById(profileIdentifier);
 }

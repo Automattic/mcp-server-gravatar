@@ -3,7 +3,8 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
 import { DefaultAvatarOption } from '../common/types.js';
 import { Rating } from '../generated/gravatar-api/models/Rating.js';
-import { createApiClient } from '../apis/api-client.js';
+import { GravatarValidationError } from '../common/errors.js';
+import { fetchAvatar } from './avatar-utils.js';
 
 // Schema definition
 export const getAvatarByEmailSchema = z.object({
@@ -39,15 +40,21 @@ export const getAvatarByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
+  if (!validateEmail(params.email)) {
+    throw new GravatarValidationError('Invalid email format');
+  }
+
   const avatarIdentifier = generateIdentifierFromEmail(params.email);
-  const apiClient = await createApiClient();
-  const avatarBuffer = await apiClient.avatars.getAvatarById({
+
+  // Use shared avatar fetching utility
+  const avatarBuffer = await fetchAvatar({
     avatarIdentifier,
     size: params.size,
     defaultOption: params.defaultOption,
     forceDefault: params.forceDefault,
     rating: params.rating,
   });
+
   return {
     content: [
       {
