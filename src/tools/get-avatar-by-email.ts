@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
 import { DefaultAvatarOption } from '../common/types.js';
+import { Rating } from '../generated/gravatar-api/models/Rating.js';
 import { createApiClient } from '../apis/api-client.js';
 
 // Schema definition
@@ -20,16 +21,13 @@ export const getAvatarByEmailSchema = z.object({
     if (val === 'false') return false;
     return val;
   }, z.boolean().optional()),
-  rating: z.preprocess(
-    val => {
-      if (val === '' || val === undefined) return undefined;
-      if (typeof val === 'string') {
-        return val.toUpperCase(); // Normalize to uppercase for validation
-      }
-      return val;
-    },
-    z.enum(['G', 'PG', 'R', 'X']).optional(),
-  ),
+  rating: z.preprocess(val => {
+    if (val === '' || val === undefined) return undefined;
+    if (typeof val === 'string') {
+      return val.toUpperCase(); // Normalize to uppercase for validation
+    }
+    return val;
+  }, z.nativeEnum(Rating).optional()),
 });
 
 // Tool definition
