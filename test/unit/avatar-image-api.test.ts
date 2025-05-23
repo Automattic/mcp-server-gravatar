@@ -47,24 +47,16 @@ vi.mock('../../src/common/utils.js', () => {
     validateHash: vi.fn(),
     validateEmail: vi.fn(),
     generateIdentifierFromEmail: vi.fn(),
-    getUserAgent: vi.fn(),
   };
 });
 
-// Mock the config
-vi.mock('../../src/config/server-config.js', () => {
+// Mock the Configuration class
+vi.mock('../../src/generated/gravatar-api/runtime.js', () => {
   return {
-    apiConfig: {
-      avatarBaseUrl: 'https://gravatar.com/avatar',
-    },
-    serverConfig: {
-      api: {
-        avatarBaseUrl: 'https://gravatar.com/avatar',
-      },
-      security: {
-        apiKeyEnvVar: 'GRAVATAR_API_KEY',
-      },
-    },
+    Configuration: vi.fn().mockImplementation(config => ({
+      headers: config?.headers || {},
+      ...config,
+    })),
   };
 });
 
@@ -80,15 +72,22 @@ describe('AvatarImageApi', () => {
     vi.mocked(utils.validateHash).mockReturnValue(true);
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
-    vi.mocked(utils.getUserAgent).mockReturnValue('mcp-server-gravatar/v1.0.0');
 
     // Create a mock fetch function
     mockFetch = createMockFetch({
       responseBuffer: createMockAvatarBuffer(10),
     });
 
-    // Create the API with the mock fetch function
-    api = new AvatarImageApi();
+    // Create a mock configuration
+    const mockConfig = {
+      headers: {
+        'User-Agent': 'mcp-server-gravatar/v1.0.0',
+      },
+      basePath: 'https://gravatar.com/avatar',
+    };
+
+    // Create the API with the mock configuration
+    api = new AvatarImageApi(mockConfig as any);
     // Replace the global fetch with our mock
     global.fetch = mockFetch;
   });

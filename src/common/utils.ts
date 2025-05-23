@@ -1,8 +1,5 @@
 import crypto from 'crypto';
-import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
-import { Configuration } from '../generated/gravatar-api/runtime.js';
 import { GravatarValidationError } from './errors.js';
-import { VERSION } from './version.js';
 
 /**
  * Normalizes an email address by trimming whitespace and converting to lowercase
@@ -61,49 +58,4 @@ export function validateHash(hash: string): boolean {
 export function generateSha256Hash(email: string): string {
   const normalizedEmail = normalizeEmail(email);
   return crypto.createHash('sha256').update(normalizedEmail).digest('hex');
-}
-
-/**
- * Gets the User-Agent string for API requests
- * @returns The User-Agent string
- */
-export function getUserAgent(): string {
-  return `mcp-server-gravatar/v${VERSION} ${getUniversalUserAgent()}`;
-}
-
-/**
- * Gets the API key from the environment variables
- * Uses the environment variable name specified in serverConfig
- * @returns The API key or undefined if not set
- */
-export async function getApiKey(): Promise<string | undefined> {
-  const { serverConfig } = await import('../config/server-config.js');
-  return process.env[serverConfig.security.apiKeyEnvVar];
-}
-
-/**
- * Creates a configuration object for API clients
- * Uses the API key from environment variables
- * @returns Configuration object with API key and User-Agent header
- */
-export async function createApiConfiguration(): Promise<Configuration> {
-  // Get API key from environment variable
-  const apiKey = await getApiKey();
-
-  // Create configuration with headers
-  const config: {
-    headers: { 'User-Agent': string };
-    accessToken?: () => Promise<string>;
-  } = {
-    headers: {
-      'User-Agent': getUserAgent(),
-    },
-  };
-
-  // Add API key if available (as function format expected by generated client)
-  if (apiKey) {
-    config.accessToken = async () => apiKey;
-  }
-
-  return new Configuration(config);
 }

@@ -1,7 +1,7 @@
-import { validateHash, getUserAgent } from '../common/utils.js';
+import { validateHash } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import type { DefaultAvatarOption, Rating } from '../common/types.js';
-import { serverConfig } from '../config/server-config.js';
+import type { Configuration } from '../generated/gravatar-api/runtime.js';
 
 export interface GetAvatarByIdParams {
   avatarIdentifier: string;
@@ -15,6 +15,8 @@ export interface GetAvatarByIdParams {
  * API client for Gravatar avatar operations
  */
 export class AvatarImageApi {
+  constructor(private configuration: Configuration) {}
+
   /**
    * Get a Gravatar image by its identifier
    */
@@ -23,8 +25,11 @@ export class AvatarImageApi {
       throw new GravatarValidationError('Invalid identifier format');
     }
 
+    // Get avatarBaseUrl from configuration basePath or use default
+    const avatarBaseUrl = this.configuration.basePath || 'https://gravatar.com/avatar';
+
     // Build avatar URL
-    let url = `${serverConfig.api.avatarBaseUrl}/${params.avatarIdentifier}`;
+    let url = `${avatarBaseUrl}/${params.avatarIdentifier}`;
     const queryParams = new URLSearchParams();
 
     if (params.size) {
@@ -49,10 +54,13 @@ export class AvatarImageApi {
       url += `?${queryString}`;
     }
 
+    // Get User-Agent from configuration headers
+    const userAgent = this.configuration.headers?.['User-Agent'] || 'mcp-server-gravatar';
+
     // Fetch the image
     const response = await fetch(url, {
       headers: {
-        'User-Agent': getUserAgent(),
+        'User-Agent': userAgent,
       },
     });
 

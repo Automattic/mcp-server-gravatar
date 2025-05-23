@@ -1,14 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   normalizeEmail,
   validateEmail,
   generateIdentifierFromEmail,
   validateHash,
   generateSha256Hash,
-  getUserAgent,
-  createApiConfiguration,
 } from '../../src/common/utils.js';
-import { Configuration } from '../../src/generated/gravatar-api/runtime.js';
 
 describe('Email Utilities', () => {
   it('normalizeEmail should trim and lowercase email', () => {
@@ -87,49 +84,5 @@ describe('Hash Utilities', () => {
 
     // Should normalize the email before hashing
     expect(generateSha256Hash('test@example.com')).toBe(generateSha256Hash(' Test@Example.com '));
-  });
-});
-
-describe('API Configuration', () => {
-  const originalEnv = process.env;
-
-  beforeEach(() => {
-    vi.resetModules();
-    process.env = { ...originalEnv };
-    delete process.env.GRAVATAR_API_KEY;
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
-  it('getUserAgent should return a string containing version', () => {
-    const userAgent = getUserAgent();
-    expect(userAgent).toContain('mcp-server-gravatar');
-    expect(userAgent).toContain('v');
-  });
-
-  it('createApiConfiguration should create a configuration with User-Agent', async () => {
-    const config = await createApiConfiguration();
-    expect(config).toBeInstanceOf(Configuration);
-    expect(config.headers).toBeDefined();
-    if (config.headers) {
-      expect(config.headers['User-Agent']).toBeDefined();
-      expect(config.headers['User-Agent']).toContain('mcp-server-gravatar');
-    }
-  });
-
-  it('createApiConfiguration should include API key when available', async () => {
-    process.env.GRAVATAR_API_KEY = 'test-api-key';
-    const config = await createApiConfiguration();
-    expect(config).toBeInstanceOf(Configuration);
-    // The accessToken is a function in the Configuration class
-    expect(typeof config.accessToken).toBe('function');
-  });
-
-  it('createApiConfiguration should not include API key when not available', async () => {
-    const config = await createApiConfiguration();
-    expect(config).toBeInstanceOf(Configuration);
-    expect(config.accessToken).toBeUndefined();
   });
 });
