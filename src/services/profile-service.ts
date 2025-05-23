@@ -1,5 +1,3 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
   validateEmail,
   validateHash,
@@ -12,21 +10,6 @@ import type { Profile } from '../generated/gravatar-api/models/Profile.js';
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { isApiErrorResponse } from '../common/types.js';
 import { mapHttpStatusToError } from '../common/utils.js';
-
-// Schema for getProfileById
-export const getProfileByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
-    message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
-  }),
-});
-
-// Schema for getProfileByEmail
-export const getProfileByEmailSchema = z.object({
-  email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.',
-  }),
-});
 
 /**
  * Service for interacting with Gravatar profiles
@@ -42,29 +25,21 @@ export class ProfileService implements IProfileService {
    */
   async getProfileById(hash: string): Promise<Profile> {
     try {
-      console.error(`ProfileService.getProfileById called with hash: ${hash}`);
-
       // Validate hash
       if (!validateHash(hash)) {
-        console.error(`Invalid hash format: ${hash}`);
         throw new GravatarValidationError('Invalid hash format');
       }
 
       // Use API client directly
-      console.error(`Calling ProfilesApi.getProfileById for hash: ${hash}`);
       const response = await this.profilesApiClient.getProfileById({ profileIdentifier: hash });
-      console.error(`Received response for hash ${hash}:`, response);
       return response;
     } catch (error: unknown) {
-      console.error(`Error getting profile for hash ${hash}:`, error);
-
       // Handle API errors (moved from adapter)
       if (isApiErrorResponse(error)) {
         const mappedError = await mapHttpStatusToError(
           error.response?.status || 500,
           error.message || 'Failed to fetch profile',
         );
-        console.error(`Mapped error:`, mappedError);
         throw mappedError;
       }
 
@@ -78,25 +53,16 @@ export class ProfileService implements IProfileService {
    * @returns The profile data
    */
   async getProfileByEmail(email: string): Promise<Profile> {
-    try {
-      console.error(`ProfileService.getProfileByEmail called with email: ${email}`);
-
-      // Validate email
-      if (!validateEmail(email)) {
-        console.error(`Invalid email format: ${email}`);
-        throw new GravatarValidationError('Invalid email format');
-      }
-
-      // Generate identifier from email
-      const identifier = generateIdentifierFromEmail(email);
-      console.error(`Generated identifier from email: ${identifier}`);
-
-      // Use getProfileById to fetch the profile
-      return await this.getProfileById(identifier);
-    } catch (error) {
-      console.error(`Error getting profile for email ${email}:`, error);
-      throw error;
+    // Validate email
+    if (!validateEmail(email)) {
+      throw new GravatarValidationError('Invalid email format');
     }
+
+    // Generate identifier from email
+    const identifier = generateIdentifierFromEmail(email);
+
+    // Use getProfileById to fetch the profile
+    return await this.getProfileById(identifier);
   }
 }
 
@@ -108,25 +74,3 @@ export async function createProfileService(): Promise<IProfileService> {
   const config = await createApiConfiguration();
   return new ProfileService(new ProfilesApi(config));
 }
-
-// Tool definitions for MCP
-export const profileTools = [
-  {
-    name: 'getProfileById',
-    description: 'Fetch a Gravatar profile using a profile identifier (hash).',
-    inputSchema: zodToJsonSchema(getProfileByIdSchema),
-    handler: async (params: z.infer<typeof getProfileByIdSchema>) => {
-      const service = await createProfileService();
-      return await service.getProfileById(params.hash);
-    },
-  },
-  {
-    name: 'getProfileByEmail',
-    description: 'Fetch a Gravatar profile using an email address.',
-    inputSchema: zodToJsonSchema(getProfileByEmailSchema),
-    handler: async (params: z.infer<typeof getProfileByEmailSchema>) => {
-      const service = await createProfileService();
-      return await service.getProfileByEmail(params.email);
-    },
-  },
-];

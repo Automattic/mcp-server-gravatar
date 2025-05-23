@@ -9,10 +9,3 @@ export * from './experimental-service.js';
 
 // Export gravatar image service
 export * from './gravatar-image-service.js';
-
-// Export all tools
-import { profileTools } from './profile-service.js';
-import { experimentalTools } from './experimental-service.js';
-import { gravatarImageTools } from './gravatar-image-service.js';
-
-export const allTools = [...profileTools, ...experimentalTools, ...gravatarImageTools];

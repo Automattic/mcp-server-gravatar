@@ -1,6 +1,14 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { createProfileService, getProfileByEmailSchema } from '../services/profile-service.js';
+import { createProfileService } from '../services/profile-service.js';
+import { validateEmail } from '../common/utils.js';
+
+// Schema definition (moved from service)
+export const getProfileByEmailSchema = z.object({
+  email: z.string().refine(validateEmail, {
+    message: 'Invalid email format.',
+  }),
+});
 
 // Tool definition
 export const getProfileByEmailTool = {

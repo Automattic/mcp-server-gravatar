@@ -1,9 +1,14 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import {
-  createExperimentalService,
-  getInferredInterestsByEmailSchema,
-} from '../services/experimental-service.js';
+import { validateEmail } from '../common/utils.js';
+import { createExperimentalService } from '../services/experimental-service.js';
+
+// Schema definition
+export const getInferredInterestsByEmailSchema = z.object({
+  email: z.string().refine(validateEmail, {
+    message: 'Invalid email format.',
+  }),
+});
 
 // Tool definition
 export const getInterestsByEmailTool = {
