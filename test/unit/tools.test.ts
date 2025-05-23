@@ -25,7 +25,8 @@ import {
   handler as getAvatarByEmailHandler,
 } from '../../src/tools/get-avatar-by-email.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
-import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
+import { DefaultAvatarOption } from '../../src/common/types.js';
+import type { Rating } from '../../src/generated/gravatar-api/models/Rating.js';
 
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', async () => {
@@ -357,7 +358,7 @@ describe('Avatar Tool Handlers', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG' as Rating,
       };
 
       const result = await getAvatarByIdHandler(params);
@@ -368,7 +369,7 @@ describe('Avatar Tool Handlers', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       });
 
       // Verify response format
@@ -420,7 +421,7 @@ describe('Avatar Tool Handlers', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG' as Rating,
       };
 
       const result = await getAvatarByEmailHandler(params);
@@ -431,7 +432,7 @@ describe('Avatar Tool Handlers', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       });
 
       // Verify response format

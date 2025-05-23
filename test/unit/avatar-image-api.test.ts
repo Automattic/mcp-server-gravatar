@@ -10,7 +10,7 @@ import {
 } from '../../src/tools/get-avatar-by-email.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
-import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
+import { DefaultAvatarOption } from '../../src/common/types.js';
 import { createMockFetch } from '../helpers/mock-api-clients.js';
 import { createMockAvatarBuffer } from '../helpers/mock-responses.js';
 import { createApiClient } from '../../src/apis/api-client.js';
@@ -152,8 +152,8 @@ describe('AvatarImageApi', () => {
     });
 
     it('should include rating parameter in URL when provided', async () => {
-      await api.getAvatarById({ avatarIdentifier: 'test-hash', rating: Rating.PG });
-      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?r=pg', {
+      await api.getAvatarById({ avatarIdentifier: 'test-hash', rating: 'PG' });
+      expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?r=PG', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
         },
@@ -166,10 +166,10 @@ describe('AvatarImageApi', () => {
         size: 100,
         defaultOption: DefaultAvatarOption.ROBOHASH,
         forceDefault: true,
-        rating: Rating.G,
+        rating: 'G',
       });
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://gravatar.com/avatar/test-hash?s=100&d=robohash&f=y&r=g',
+        'https://gravatar.com/avatar/test-hash?s=100&d=robohash&f=y&r=G',
         {
           headers: {
             'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -314,7 +314,7 @@ describe('Gravatar Image MCP Tools', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       } as any;
 
       await getAvatarByIdHandler(params);
@@ -325,7 +325,7 @@ describe('Gravatar Image MCP Tools', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       });
     });
 
@@ -363,7 +363,7 @@ describe('Gravatar Image MCP Tools', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       } as any;
 
       await getAvatarByEmailHandler(params);
@@ -375,7 +375,7 @@ describe('Gravatar Image MCP Tools', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       });
     });
 

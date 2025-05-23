@@ -1,14 +1,13 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
-import { DefaultAvatarOption, Rating } from '../common/types.js';
+import { DefaultAvatarOption } from '../common/types.js';
 import { createApiClient } from '../apis/api-client.js';
-import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
 export const getAvatarByEmailSchema = z.object({
   email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.',
+    message: 'Invalid email format',
   }),
   size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
   defaultOption: z.preprocess(
@@ -21,7 +20,16 @@ export const getAvatarByEmailSchema = z.object({
     if (val === 'false') return false;
     return val;
   }, z.boolean().optional()),
-  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
+  rating: z.preprocess(
+    val => {
+      if (val === '' || val === undefined) return undefined;
+      if (typeof val === 'string') {
+        return val.toUpperCase(); // Normalize to uppercase for validation
+      }
+      return val;
+    },
+    z.enum(['G', 'PG', 'R', 'X']).optional(),
+  ),
 });
 
 // Tool definition
@@ -33,18 +41,10 @@ export const getAvatarByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
-  // Validate email
-  if (!validateEmail(params.email)) {
-    throw new GravatarValidationError('Invalid email format');
-  }
-
-  // Generate identifier from email
   const avatarIdentifier = generateIdentifierFromEmail(params.email);
-
-  // Use API client to get avatar by ID
   const apiClient = await createApiClient();
   const avatarBuffer = await apiClient.avatars.getAvatarById({
-    avatarIdentifier: avatarIdentifier,
+    avatarIdentifier,
     size: params.size,
     defaultOption: params.defaultOption,
     forceDefault: params.forceDefault,

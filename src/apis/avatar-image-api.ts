@@ -1,6 +1,7 @@
 import { validateHash } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
-import type { DefaultAvatarOption, Rating } from '../common/types.js';
+import type { DefaultAvatarOption } from '../common/types.js';
+import type { Rating } from '../generated/gravatar-api/models/Rating.js';
 import type { Configuration } from '../generated/gravatar-api/runtime.js';
 
 export interface GetAvatarByIdParams {

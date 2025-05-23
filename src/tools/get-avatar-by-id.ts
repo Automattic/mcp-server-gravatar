@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateHash } from '../common/utils.js';
-import { DefaultAvatarOption, Rating } from '../common/types.js';
+import { DefaultAvatarOption } from '../common/types.js';
 import { createApiClient } from '../apis/api-client.js';
 
 // Schema definition
@@ -21,7 +21,16 @@ export const getAvatarByIdSchema = z.object({
     if (val === 'false') return false;
     return val;
   }, z.boolean().optional()),
-  rating: z.preprocess(val => (val === '' ? undefined : val), z.nativeEnum(Rating).optional()),
+  rating: z.preprocess(
+    val => {
+      if (val === '' || val === undefined) return undefined;
+      if (typeof val === 'string') {
+        return val.toUpperCase(); // Normalize to uppercase for validation
+      }
+      return val;
+    },
+    z.enum(['G', 'PG', 'R', 'X']).optional(),
+  ),
 });
 
 // Tool definition

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AvatarImageApi } from '../../src/apis/avatar-image-api.js';
-import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
+import { DefaultAvatarOption } from '../../src/common/types.js';
 import fetch from 'node-fetch';
 
 // Mock the fetch function
@@ -89,12 +89,12 @@ describe('AvatarImageApi Integration', () => {
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
-        rating: Rating.PG,
+        rating: 'PG',
       });
 
       // Verify the mock was called with the correct URL including query parameters
       expect(fetch).toHaveBeenCalledWith(
-        `https://gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=pg`,
+        `https://gravatar.com/avatar/${hash}?s=200&d=identicon&f=y&r=PG`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': expect.any(String),
