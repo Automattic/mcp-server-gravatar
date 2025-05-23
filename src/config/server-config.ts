@@ -7,6 +7,7 @@
  */
 
 import { VERSION } from '../common/version.js';
+import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 
 /**
  * Gets the API key from the environment variables
@@ -15,6 +16,14 @@ import { VERSION } from '../common/version.js';
  */
 async function getApiKey(): Promise<string | undefined> {
   return process.env[securityConfig.apiKeyEnvVar];
+}
+
+/**
+ * Gets the User-Agent string for API requests
+ * @returns The User-Agent string
+ */
+function getUserAgent(): string {
+  return `mcp-server-gravatar/v${VERSION} ${getUniversalUserAgent()}`;
 }
 
 /**
@@ -80,4 +89,7 @@ export const serverConfig = {
   capabilities,
   api: apiConfig,
   security: securityConfig,
+  get userAgent() {
+    return getUserAgent();
+  },
 };

@@ -47,7 +47,6 @@ vi.mock('../../src/common/utils.js', () => {
     validateHash: vi.fn(),
     validateEmail: vi.fn(),
     generateIdentifierFromEmail: vi.fn(),
-    getUserAgent: vi.fn(),
   };
 });
 
@@ -63,6 +62,9 @@ vi.mock('../../src/config/server-config.js', () => {
       },
       security: {
         apiKeyEnvVar: 'GRAVATAR_API_KEY',
+      },
+      get userAgent() {
+        return 'mcp-server-gravatar/v1.0.0';
       },
     },
   };
@@ -80,7 +82,6 @@ describe('AvatarImageApi', () => {
     vi.mocked(utils.validateHash).mockReturnValue(true);
     vi.mocked(utils.validateEmail).mockReturnValue(true);
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
-    vi.mocked(utils.getUserAgent).mockReturnValue('mcp-server-gravatar/v1.0.0');
 
     // Create a mock fetch function
     mockFetch = createMockFetch({

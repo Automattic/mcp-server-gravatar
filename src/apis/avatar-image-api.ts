@@ -1,4 +1,4 @@
-import { validateHash, getUserAgent } from '../common/utils.js';
+import { validateHash } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import type { DefaultAvatarOption, Rating } from '../common/types.js';
 import { serverConfig } from '../config/server-config.js';
@@ -52,7 +52,7 @@ export class AvatarImageApi {
     // Fetch the image
     const response = await fetch(url, {
       headers: {
-        'User-Agent': getUserAgent(),
+        'User-Agent': serverConfig.userAgent,
       },
     });
 

@@ -5,7 +5,6 @@ import {
   generateIdentifierFromEmail,
   validateHash,
   generateSha256Hash,
-  getUserAgent,
   createApiConfiguration,
 } from '../../src/common/utils.js';
 import { Configuration } from '../../src/generated/gravatar-api/runtime.js';
@@ -103,8 +102,9 @@ describe('API Configuration', () => {
     process.env = originalEnv;
   });
 
-  it('getUserAgent should return a string containing version', () => {
-    const userAgent = getUserAgent();
+  it('getUserAgent should return a string containing version', async () => {
+    const { serverConfig } = await import('../../src/config/server-config.js');
+    const userAgent = serverConfig.userAgent;
     expect(userAgent).toContain('mcp-server-gravatar');
     expect(userAgent).toContain('v');
   });

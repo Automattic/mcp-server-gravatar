@@ -1,8 +1,6 @@
 import crypto from 'crypto';
-import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
 import { GravatarValidationError } from './errors.js';
-import { VERSION } from './version.js';
 
 /**
  * Normalizes an email address by trimming whitespace and converting to lowercase
@@ -64,20 +62,12 @@ export function generateSha256Hash(email: string): string {
 }
 
 /**
- * Gets the User-Agent string for API requests
- * @returns The User-Agent string
- */
-export function getUserAgent(): string {
-  return `mcp-server-gravatar/v${VERSION} ${getUniversalUserAgent()}`;
-}
-
-/**
  * Creates a configuration object for API clients
  * Uses the API key from environment variables
  * @returns Configuration object with API key and User-Agent header
  */
 export async function createApiConfiguration(): Promise<Configuration> {
-  // Get API key from serverConfig
+  // Get API key and user agent from serverConfig
   const { serverConfig } = await import('../config/server-config.js');
   const apiKey = await serverConfig.security.apiKey;
 
@@ -87,7 +77,7 @@ export async function createApiConfiguration(): Promise<Configuration> {
     accessToken?: () => Promise<string>;
   } = {
     headers: {
-      'User-Agent': getUserAgent(),
+      'User-Agent': serverConfig.userAgent,
     },
   };
 
