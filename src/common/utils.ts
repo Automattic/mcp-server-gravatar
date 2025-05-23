@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
-import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { GravatarValidationError } from './errors.js';
 import { VERSION } from './version.js';
 
@@ -45,23 +44,13 @@ export function generateIdentifierFromEmail(email: string): string {
 }
 
 /**
- * Validates a hash (MD5 or SHA256)
+ * Validates a hash (SHA256 or MD5)
  * @param hash The hash to validate
  * @returns True if the hash is valid, false otherwise
  */
 export function validateHash(hash: string): boolean {
   const hashRegex = /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/;
   return hashRegex.test(hash);
-}
-
-/**
- * Generates an MD5 hash of an email address
- * @param email The email address to hash
- * @returns The MD5 hash of the email address
- */
-export function generateMd5Hash(email: string): string {
-  const normalizedEmail = normalizeEmail(email);
-  return crypto.createHash('md5').update(normalizedEmail).digest('hex');
 }
 
 /**
@@ -84,12 +73,12 @@ export function getUserAgent(): string {
 
 /**
  * Gets the API key from the environment variables
- * Uses the environment variable name specified in securityConfig
+ * Uses the environment variable name specified in serverConfig
  * @returns The API key or undefined if not set
  */
 export async function getApiKey(): Promise<string | undefined> {
-  const { securityConfig } = await import('../config/server-config.js');
-  return process.env[securityConfig.apiKeyEnvVar];
+  const { serverConfig } = await import('../config/server-config.js');
+  return process.env[serverConfig.security.apiKeyEnvVar];
 }
 
 /**
@@ -104,41 +93,17 @@ export async function createApiConfiguration(): Promise<Configuration> {
   // Create configuration with headers
   const config: {
     headers: { 'User-Agent': string };
-    accessToken?: string;
+    accessToken?: () => Promise<string>;
   } = {
     headers: {
       'User-Agent': getUserAgent(),
     },
   };
 
-  // Add API key if available
+  // Add API key if available (as function format expected by generated client)
   if (apiKey) {
-    config.accessToken = apiKey;
+    config.accessToken = async () => apiKey;
   }
 
   return new Configuration(config);
-}
-
-/**
- * Maps HTTP status codes to error types
- * @param status The HTTP status code
- * @param message The error message
- * @returns The appropriate error type
- */
-export async function mapHttpStatusToError(status: number, message: string): Promise<Error> {
-  // Import error types from errors.js
-  const { GravatarResourceNotFoundError, GravatarRateLimitError, GravatarError } = await import(
-    './errors.js'
-  );
-
-  switch (status) {
-    case 404:
-      return new GravatarResourceNotFoundError(message);
-    case 429:
-      return new GravatarRateLimitError(message, new Date(Date.now() + 60000)); // Assume 1 minute rate limit
-    case 500:
-      return new GravatarError(ErrorCode.InternalError, `Internal Server Error: ${message}`);
-    default:
-      return new GravatarError(ErrorCode.InternalError, `HTTP Error ${status}: ${message}`);
-  }
 }

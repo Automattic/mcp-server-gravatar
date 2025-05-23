@@ -9,6 +9,3 @@ export interface IProfilesApiClient {
 export interface IExperimentalApiClient {
   getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
 }
-
-// Fetch type for AvatarImageApi
-export type FetchFunction = typeof fetch;

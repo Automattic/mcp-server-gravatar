@@ -4,17 +4,10 @@ import {
   validateEmail,
   generateIdentifierFromEmail,
   validateHash,
-  generateMd5Hash,
   generateSha256Hash,
   getUserAgent,
   createApiConfiguration,
-  mapHttpStatusToError,
 } from '../../src/common/utils.js';
-import {
-  GravatarError,
-  GravatarResourceNotFoundError,
-  GravatarRateLimitError,
-} from '../../src/common/errors.js';
 import { Configuration } from '../../src/generated/gravatar-api/runtime.js';
 
 describe('Email Utilities', () => {
@@ -57,42 +50,6 @@ describe('Email Utilities', () => {
   });
 });
 
-describe('Error Mapping', () => {
-  it('mapHttpStatusToError should map 404 to GravatarResourceNotFoundError', async () => {
-    const error = await mapHttpStatusToError(404, 'Not found');
-    expect(error).toBeInstanceOf(GravatarResourceNotFoundError);
-    expect(error.message).toContain('Not found');
-  });
-
-  it('mapHttpStatusToError should map 429 to GravatarRateLimitError with reset date', async () => {
-    const now = Date.now();
-    const error = await mapHttpStatusToError(429, 'Too many requests');
-    expect(error).toBeInstanceOf(GravatarRateLimitError);
-    expect(error.message).toContain('Too many requests');
-
-    // Type assertion for TypeScript
-    const rateLimitError = error as GravatarRateLimitError;
-    expect(rateLimitError).toHaveProperty('resetAt');
-    expect(rateLimitError.resetAt).toBeInstanceOf(Date);
-    // Check that resetAt is approximately 1 minute in the future
-    expect(rateLimitError.resetAt.getTime()).toBeGreaterThan(now);
-    expect(rateLimitError.resetAt.getTime()).toBeLessThanOrEqual(now + 61000); // Allow 1 second buffer
-  });
-
-  it('mapHttpStatusToError should map 500 to GravatarError with Internal Server Error message', async () => {
-    const error = await mapHttpStatusToError(500, 'Server error');
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.message).toContain('Internal Server Error');
-    expect(error.message).toContain('Server error');
-  });
-
-  it('mapHttpStatusToError should map other status codes to GravatarError with HTTP Error message', async () => {
-    const error = await mapHttpStatusToError(400, 'Bad request');
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.message).toContain('HTTP Error 400');
-    expect(error.message).toContain('Bad request');
-  });
-});
 describe('Hash Utilities', () => {
   it('validateHash should accept valid MD5 hash', () => {
     expect(validateHash('00000000000000000000000000000000')).toBe(true);
@@ -117,17 +74,6 @@ describe('Hash Utilities', () => {
     expect(validateHash('0000000000000000000000000000000000000000000000000000000000000000g')).toBe(
       false,
     ); // Invalid character (SHA256)
-  });
-
-  it('generateMd5Hash should create correct hash', () => {
-    // Empty string MD5 hash
-    expect(generateMd5Hash('')).toBe('d41d8cd98f00b204e9800998ecf8427e');
-
-    // Test with a known value
-    expect(generateMd5Hash('test@example.com')).toMatch(/^[a-f0-9]{32}$/);
-
-    // Should normalize the email before hashing
-    expect(generateMd5Hash('test@example.com')).toBe(generateMd5Hash(' Test@Example.com '));
   });
 
   it('generateSha256Hash should create correct hash', () => {

@@ -1,7 +1,7 @@
 import { validateHash, getUserAgent } from '../common/utils.js';
 import { GravatarValidationError } from '../common/errors.js';
 import type { DefaultAvatarOption, Rating } from '../common/types.js';
-import { apiConfig } from '../config/server-config.js';
+import { serverConfig } from '../config/server-config.js';
 
 export interface GetAvatarByIdParams {
   avatarIdentifier: string;
@@ -24,7 +24,7 @@ export class AvatarImageApi {
     }
 
     // Build avatar URL
-    let url = `${apiConfig.avatarBaseUrl}/${params.avatarIdentifier}`;
+    let url = `${serverConfig.api.avatarBaseUrl}/${params.avatarIdentifier}`;
     const queryParams = new URLSearchParams();
 
     if (params.size) {
