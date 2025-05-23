@@ -4,7 +4,6 @@ import {
   validateEmail,
   generateIdentifierFromEmail,
   validateHash,
-  generateMd5Hash,
   generateSha256Hash,
   getUserAgent,
   createApiConfiguration,
@@ -119,16 +118,6 @@ describe('Hash Utilities', () => {
     ); // Invalid character (SHA256)
   });
 
-  it('generateMd5Hash should create correct hash', () => {
-    // Empty string MD5 hash
-    expect(generateMd5Hash('')).toBe('d41d8cd98f00b204e9800998ecf8427e');
-
-    // Test with a known value
-    expect(generateMd5Hash('test@example.com')).toMatch(/^[a-f0-9]{32}$/);
-
-    // Should normalize the email before hashing
-    expect(generateMd5Hash('test@example.com')).toBe(generateMd5Hash(' Test@Example.com '));
-  });
 
   it('generateSha256Hash should create correct hash', () => {
     // Empty string SHA256 hash

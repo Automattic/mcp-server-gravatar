@@ -45,7 +45,7 @@ export function generateIdentifierFromEmail(email: string): string {
 }
 
 /**
- * Validates a hash (MD5 or SHA256)
+ * Validates a hash (SHA256 or MD5)
  * @param hash The hash to validate
  * @returns True if the hash is valid, false otherwise
  */
@@ -54,15 +54,6 @@ export function validateHash(hash: string): boolean {
   return hashRegex.test(hash);
 }
 
-/**
- * Generates an MD5 hash of an email address
- * @param email The email address to hash
- * @returns The MD5 hash of the email address
- */
-export function generateMd5Hash(email: string): string {
-  const normalizedEmail = normalizeEmail(email);
-  return crypto.createHash('md5').update(normalizedEmail).digest('hex');
-}
 
 /**
  * Generates a SHA256 hash of an email address
