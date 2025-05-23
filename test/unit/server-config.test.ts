@@ -218,7 +218,6 @@ describe('Server Configuration', () => {
       expect(serverConfig.client).toHaveProperty('info');
       expect(serverConfig.client).toHaveProperty('name');
       expect(serverConfig.client).toHaveProperty('version');
-      expect(serverConfig.client).toHaveProperty('userAgent');
     });
 
     it('should store and retrieve client information', () => {
@@ -290,14 +289,14 @@ describe('Server Configuration', () => {
     });
 
     it('should enhance User-Agent with client info', () => {
-      // Test without client info
-      expect(serverConfig.client.userAgent).toContain('mcp-server-gravatar');
-      expect(serverConfig.client.userAgent).not.toContain('(client:');
+      // Test without client info (empty strings from beforeEach)
+      expect(serverConfig.userAgent).toContain('mcp-server-gravatar');
+      expect(serverConfig.userAgent).not.toContain('(client:');
 
       // Test with client info
       serverConfig.client.setInfo({ name: 'TestClient', version: '1.0.0' });
-      expect(serverConfig.client.userAgent).toContain('mcp-server-gravatar');
-      expect(serverConfig.client.userAgent).toContain('(client: TestClient/1.0.0)');
+      expect(serverConfig.userAgent).toContain('mcp-server-gravatar');
+      expect(serverConfig.userAgent).toContain('(client: TestClient/1.0.0)');
     });
 
     it('should maintain client info independence from other config', () => {
