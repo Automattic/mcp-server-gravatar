@@ -10,6 +10,11 @@ import { VERSION } from '../common/version.js';
 import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
 
+export enum ApiConfigType {
+  RestApi,
+  AvatarImageApi,
+}
+
 /**
  * Gets the API key from the environment variables
  * Uses the environment variable name specified in securityConfig
@@ -30,21 +35,40 @@ function getUserAgent(): string {
 /**
  * Creates a configuration object for API clients
  * Uses the API key from environment variables
+ * @param apiType The type of API configuration to create
  * @returns Configuration object with API key and User-Agent header
  */
-async function createApiConfiguration(): Promise<Configuration> {
+async function createApiConfiguration(apiType: ApiConfigType): Promise<Configuration> {
   // Get API key from environment variables
   const apiKey = await getApiKey();
+
+  // Determine basePath based on API type
+  let basePath: string | undefined;
+  switch (apiType) {
+    case ApiConfigType.AvatarImageApi:
+      basePath = apiConfig.avatarBaseUrl;
+      break;
+    case ApiConfigType.RestApi:
+    default:
+      basePath = undefined;
+      break;
+  }
 
   // Create configuration with headers
   const config: {
     headers: { 'User-Agent': string };
     accessToken?: () => Promise<string>;
+    basePath?: string;
   } = {
     headers: {
       'User-Agent': getUserAgent(),
     },
   };
+
+  // Add basePath if specified
+  if (basePath) {
+    config.basePath = basePath;
+  }
 
   // Add API key if available (as function format expected by generated client)
   if (apiKey) {

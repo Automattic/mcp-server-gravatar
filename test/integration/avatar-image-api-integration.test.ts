@@ -35,8 +35,16 @@ describe('AvatarImageApi Integration', () => {
     // Reset the fetch mock
     vi.mocked(fetch).mockReset();
 
+    // Create a mock configuration
+    const mockConfig = {
+      headers: {
+        'User-Agent': 'mcp-server-gravatar/v1.0.0',
+      },
+      basePath: 'https://gravatar.com/avatar',
+    };
+
     // Create a new API instance for each test
-    avatarImageApi = new AvatarImageApi();
+    avatarImageApi = new AvatarImageApi(mockConfig as any);
 
     // Replace the global fetch with our mock
     global.fetch = fetch as any;

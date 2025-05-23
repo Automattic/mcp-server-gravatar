@@ -6,10 +6,12 @@ import { AvatarImageApi } from '../../src/apis/avatar-image-api.js';
 
 // Mock the server config
 vi.mock('../../src/config/server-config.js', () => ({
+  ApiConfigType: {
+    RestApi: 0,
+    AvatarImageApi: 1,
+  },
   serverConfig: {
-    createApiConfiguration: vi.fn().mockResolvedValue({
-      basePath: 'https://api.example.com',
-    } as any),
+    createApiConfiguration: vi.fn(),
   },
 }));
 
@@ -43,6 +45,12 @@ describe('API Client', () => {
       const mockExperimentalApi = {};
       const mockAvatarImageApi = {};
 
+      const { serverConfig } = await import('../../src/config/server-config.js');
+      vi.mocked(serverConfig.createApiConfiguration).mockResolvedValue({
+        basePath: 'https://api.example.com',
+        headers: { 'User-Agent': 'test' },
+      } as any);
+
       vi.mocked(ProfilesApi).mockImplementation(() => mockProfilesApi as any);
       vi.mocked(ExperimentalApi).mockImplementation(() => mockExperimentalApi as any);
       vi.mocked(AvatarImageApi).mockImplementation(() => mockAvatarImageApi as any);
@@ -60,23 +68,38 @@ describe('API Client', () => {
       expect(client.avatars).toBe(mockAvatarImageApi);
     });
 
-    it('should configure the API clients correctly', async () => {
+    it('should configure the API clients correctly with parallel configuration creation', async () => {
       // Setup mocks
-      const mockConfig = {
-        basePath: 'https://api.example.com',
+      const mockRestConfig = {
+        basePath: 'https://api.gravatar.com/v3',
+        headers: { 'User-Agent': 'mcp-server-gravatar/v1.0.0' },
       } as any;
 
-      const { serverConfig } = await import('../../src/config/server-config.js');
-      vi.mocked(serverConfig.createApiConfiguration).mockResolvedValue(mockConfig);
+      const mockAvatarConfig = {
+        basePath: 'https://gravatar.com/avatar',
+        headers: { 'User-Agent': 'mcp-server-gravatar/v1.0.0' },
+      } as any;
+
+      const { serverConfig, ApiConfigType } = await import('../../src/config/server-config.js');
+      vi.mocked(serverConfig.createApiConfiguration)
+        .mockResolvedValueOnce(mockRestConfig) // First call (RestApi)
+        .mockResolvedValueOnce(mockAvatarConfig); // Second call (AvatarImageApi)
 
       // Call the function
       await createApiClient();
 
-      // Verify the configuration was used
-      expect(serverConfig.createApiConfiguration).toHaveBeenCalled();
-      expect(ProfilesApi).toHaveBeenCalledWith(mockConfig);
-      expect(ExperimentalApi).toHaveBeenCalledWith(mockConfig);
-      expect(AvatarImageApi).toHaveBeenCalled();
+      // Verify the configuration was used correctly
+      expect(serverConfig.createApiConfiguration).toHaveBeenCalledTimes(2);
+      expect(serverConfig.createApiConfiguration).toHaveBeenNthCalledWith(1, ApiConfigType.RestApi);
+      expect(serverConfig.createApiConfiguration).toHaveBeenNthCalledWith(
+        2,
+        ApiConfigType.AvatarImageApi,
+      );
+
+      // Verify each API gets the correct configuration
+      expect(ProfilesApi).toHaveBeenCalledWith(mockRestConfig);
+      expect(ExperimentalApi).toHaveBeenCalledWith(mockRestConfig);
+      expect(AvatarImageApi).toHaveBeenCalledWith(mockAvatarConfig);
     });
   });
 });
