@@ -1,15 +1,46 @@
 #!/usr/bin/env node
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  InitializeRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import { tools, handlers } from './tools/index.js';
-import { serverInfo, capabilities } from './config/server-config.js';
+import { serverInfo, capabilities, serverConfig } from './config/server-config.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Create MCP server
 const server = new Server(serverInfo, { capabilities });
+
+// Handle MCP initialization
+server.setRequestHandler(InitializeRequestSchema, async request => {
+  // Store client information if provided
+  if (request.params.clientInfo) {
+    serverConfig.client.setInfo({
+      name: request.params.clientInfo.name,
+      version: request.params.clientInfo.version,
+    });
+
+    console.error(
+      `MCP Client connected: ${request.params.clientInfo.name} v${request.params.clientInfo.version}`,
+    );
+  } else {
+    console.error('MCP Client connected (no client info provided)');
+  }
+
+  // Return server capabilities and information
+  return {
+    protocolVersion: request.params.protocolVersion,
+    capabilities: capabilities,
+    serverInfo: {
+      name: serverInfo.name,
+      version: serverInfo.version,
+    },
+  };
+});
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
