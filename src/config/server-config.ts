@@ -25,18 +25,49 @@ async function getApiKey(): Promise<string | undefined> {
 }
 
 /**
+ * Client information interface
+ */
+export interface ClientInfo {
+  name: string;
+  version: string;
+}
+
+/**
+ * Global storage for MCP client information
+ * This is set during the MCP initialization phase
+ */
+let clientInfo: ClientInfo | null = null;
+
+/**
+ * Sets the MCP client information
+ * Called during the MCP initialization phase
+ * @param info The client information from the initialize request
+ */
+function setClientInfo(info: ClientInfo): void {
+  clientInfo = info;
+}
+
+/**
  * Gets the User-Agent string for API requests
- * @returns The User-Agent string
+ * @returns The User-Agent string with client info if available
  */
 function getUserAgent(): string {
-  return `mcp-server-gravatar/v${VERSION} ${getUniversalUserAgent()}`;
+  const serverPart = `mcp-server-gravatar/v${VERSION}`;
+  const systemPart = getUniversalUserAgent();
+
+  // Only include client info if it exists and has meaningful values
+  if (clientInfo && clientInfo.name && clientInfo.version) {
+    return `${serverPart} (client: ${clientInfo.name}/${clientInfo.version}) ${systemPart}`;
+  }
+
+  return `${serverPart} ${systemPart}`;
 }
 
 /**
  * Creates a configuration object for API clients
- * Uses the API key from environment variables
+ * Uses the API key from environment variables and includes client headers
  * @param apiType The type of API configuration to create
- * @returns Configuration object with API key and User-Agent header
+ * @returns Configuration object with API key, User-Agent, and client headers
  */
 async function createApiConfiguration(apiType: ApiConfigType): Promise<Configuration> {
   // Get API key from environment variables
@@ -54,14 +85,16 @@ async function createApiConfiguration(apiType: ApiConfigType): Promise<Configura
       break;
   }
 
-  // Create configuration with headers
+  // Create configuration with headers including client info
   const config: {
-    headers: { 'User-Agent': string };
+    headers: { [key: string]: string };
     accessToken?: () => Promise<string>;
     basePath?: string;
   } = {
     headers: {
       'User-Agent': getUserAgent(),
+      'X-Platform': 'mcp-server-gravatar-stdio',
+      'X-Source': clientInfo?.name || 'unknown-client',
     },
   };
 
@@ -131,6 +164,40 @@ export const securityConfig = {
 };
 
 /**
+ * Client configuration
+ *
+ * Provides access to MCP client information with fallbacks.
+ * Client information is set during the MCP initialization phase.
+ */
+export const clientConfig = {
+  /**
+   * Sets the client information (called during MCP initialization)
+   */
+  setInfo: setClientInfo,
+
+  /**
+   * Gets the stored client information
+   */
+  get info(): ClientInfo | null {
+    return clientInfo;
+  },
+
+  /**
+   * Gets the client name with fallback
+   */
+  get name(): string {
+    return clientInfo?.name || 'unknown-client';
+  },
+
+  /**
+   * Gets the client version with fallback
+   */
+  get version(): string {
+    return clientInfo?.version || 'unknown-version';
+  },
+};
+
+/**
  * Complete server configuration
  *
  * Combines all configuration sections into a single object.
@@ -141,6 +208,7 @@ export const serverConfig = {
   capabilities,
   api: apiConfig,
   security: securityConfig,
+  client: clientConfig,
   get userAgent() {
     return getUserAgent();
   },
