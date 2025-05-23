@@ -3,7 +3,8 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateHash } from '../common/utils.js';
 import { DefaultAvatarOption } from '../common/types.js';
 import { Rating } from '../generated/gravatar-api/models/Rating.js';
-import { createApiClient } from '../apis/api-client.js';
+import { getUserAgent } from '../config/server-config.js';
+import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
 export const getAvatarByIdSchema = z.object({
@@ -38,16 +39,57 @@ export const getAvatarByIdTool = {
   inputSchema: zodToJsonSchema(getAvatarByIdSchema),
 };
 
+// Direct avatar fetching function
+async function fetchAvatar(params: z.infer<typeof getAvatarByIdSchema>): Promise<Buffer> {
+  if (!validateHash(params.avatarIdentifier)) {
+    throw new GravatarValidationError('Invalid identifier format');
+  }
+
+  // Build avatar URL
+  let url = `https://gravatar.com/avatar/${params.avatarIdentifier}`;
+  const queryParams = new URLSearchParams();
+
+  if (params.size) {
+    queryParams.append('s', params.size.toString());
+  }
+
+  if (params.defaultOption) {
+    queryParams.append('d', params.defaultOption);
+  }
+
+  if (params.forceDefault) {
+    queryParams.append('f', 'y');
+  }
+
+  if (params.rating) {
+    queryParams.append('r', params.rating);
+  }
+
+  // Add query string to URL if there are any parameters
+  const queryString = queryParams.toString();
+  if (queryString) {
+    url += `?${queryString}`;
+  }
+
+  // Fetch the image
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  if (!response.ok) {
+    throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
+  }
+
+  // Convert the response to a buffer
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByIdSchema>) {
-  const apiClient = await createApiClient();
-  const avatarBuffer = await apiClient.avatars.getAvatarById({
-    avatarIdentifier: params.avatarIdentifier,
-    size: params.size,
-    defaultOption: params.defaultOption,
-    forceDefault: params.forceDefault,
-    rating: params.rating,
-  });
+  const avatarBuffer = await fetchAvatar(params);
   return {
     content: [
       {

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { ExperimentalApi } from '../generated/gravatar-api/apis/ExperimentalApi.js';
+import { createRestApiConfig } from '../config/server-config.js';
 import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
-import { createApiClient } from '../apis/api-client.js';
 import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
@@ -28,9 +29,10 @@ export async function handler(params: z.infer<typeof getInferredInterestsByEmail
   // Generate identifier from email
   const profileIdentifier = generateIdentifierFromEmail(params.email);
 
-  // Use API client to get interests by ID
-  const apiClient = await createApiClient();
-  const interests = await apiClient.experimental.getProfileInferredInterestsById({
+  // Use direct API client to get interests by ID
+  const config = createRestApiConfig();
+  const experimentalApi = new ExperimentalApi(config);
+  const interests = await experimentalApi.getProfileInferredInterestsById({
     profileIdentifier: profileIdentifier,
   });
 

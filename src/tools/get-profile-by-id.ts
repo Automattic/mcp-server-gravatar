@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { createApiClient } from '../apis/api-client.js';
+import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
+import { createRestApiConfig } from '../config/server-config.js';
 import { validateHash } from '../common/utils.js';
 
 // Schema definition (moved from service)
@@ -20,8 +21,9 @@ export const getProfileByIdTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getProfileByIdSchema>) {
-  const apiClient = await createApiClient();
-  const profile = await apiClient.profiles.getProfileById({
+  const config = createRestApiConfig();
+  const profilesApi = new ProfilesApi(config);
+  const profile = await profilesApi.getProfileById({
     profileIdentifier: params.profileIdentifier,
   });
   return {
