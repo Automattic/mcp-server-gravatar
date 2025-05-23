@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { createProfileService } from '../services/profile-service.js';
+import { createApiClient } from '../apis/api-client.js';
 import { validateHash } from '../common/utils.js';
 
 // Schema definition (moved from service)
@@ -20,8 +20,10 @@ export const getProfileByIdTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getProfileByIdSchema>) {
-  const profileService = await createProfileService();
-  const profile = await profileService.getProfileById(params.hash);
+  const apiClient = await createApiClient();
+  const profile = await apiClient.profiles.getProfileById({
+    profileIdentifier: params.hash,
+  });
   return {
     content: [{ type: 'text', text: JSON.stringify(profile, null, 2) }],
   };

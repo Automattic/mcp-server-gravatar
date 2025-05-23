@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail } from '../common/utils.js';
-import { createExperimentalService } from '../services/experimental-service.js';
+import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
+import { createApiClient } from '../apis/api-client.js';
+import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
 export const getInferredInterestsByEmailSchema = z.object({
@@ -19,8 +20,20 @@ export const getInterestsByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getInferredInterestsByEmailSchema>) {
-  const experimentalService = await createExperimentalService();
-  const interests = await experimentalService.getInferredInterestsByEmail(params.email);
+  // Validate email
+  if (!validateEmail(params.email)) {
+    throw new GravatarValidationError('Invalid email format');
+  }
+
+  // Generate identifier from email
+  const hash = generateIdentifierFromEmail(params.email);
+
+  // Use API client to get interests by ID
+  const apiClient = await createApiClient();
+  const interests = await apiClient.experimental.getProfileInferredInterestsById({
+    profileIdentifier: hash,
+  });
+
   // Extract just the name field from each interest
   const interestNames = interests.map((interest: { name: string }) => interest.name);
   return {

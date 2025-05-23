@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail } from '../common/utils.js';
+import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
 import { DefaultAvatarOption, Rating } from '../common/types.js';
-import { createGravatarImageService } from '../services/gravatar-image-service.js';
+import { createApiClient } from '../apis/api-client.js';
+import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
 export const getAvatarByEmailSchema = z.object({
@@ -32,14 +33,23 @@ export const getAvatarByEmailTool = {
 
 // Tool handler
 export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
-  const service = createGravatarImageService();
-  const avatarBuffer = await service.getAvatarByEmail(
-    params.email,
-    params.size,
-    params.defaultOption,
-    params.forceDefault,
-    params.rating,
-  );
+  // Validate email
+  if (!validateEmail(params.email)) {
+    throw new GravatarValidationError('Invalid email format');
+  }
+
+  // Generate identifier from email
+  const hash = generateIdentifierFromEmail(params.email);
+
+  // Use API client to get avatar by ID
+  const apiClient = await createApiClient();
+  const avatarBuffer = await apiClient.avatars.getAvatarById({
+    hash,
+    size: params.size,
+    defaultOption: params.defaultOption,
+    forceDefault: params.forceDefault,
+    rating: params.rating,
+  });
   return {
     content: [
       {

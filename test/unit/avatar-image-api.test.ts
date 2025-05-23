@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createGravatarImageService } from '../../src/services/gravatar-image-service.js';
+import { AvatarImageApi } from '../../src/apis/avatar-image-api.js';
 import {
   getAvatarByIdTool,
   handler as getAvatarByIdHandler,
@@ -8,22 +8,12 @@ import {
   getAvatarByEmailTool,
   handler as getAvatarByEmailHandler,
 } from '../../src/tools/get-avatar-by-email.js';
-import type { IGravatarImageService } from '../../src/services/interfaces.js';
 import { GravatarValidationError } from '../../src/common/errors.js';
 import * as utils from '../../src/common/utils.js';
 import { DefaultAvatarOption, Rating } from '../../src/common/types.js';
 import { createMockFetch } from '../helpers/mock-api-clients.js';
 import { createMockAvatarBuffer } from '../helpers/mock-responses.js';
-import { createTestGravatarImageService } from '../helpers/test-setup.js';
-
-// Mock the createGravatarImageService function
-vi.mock('../../src/services/gravatar-image-service.js', async () => {
-  const actual = await vi.importActual('../../src/services/gravatar-image-service.js');
-  return {
-    ...actual,
-    createGravatarImageService: vi.fn(),
-  };
-});
+import { createApiClient } from '../../src/apis/api-client.js';
 
 // Mock the tool handlers
 vi.mock('../../src/tools/get-avatar-by-id.js', async () => {
@@ -41,6 +31,15 @@ vi.mock('../../src/tools/get-avatar-by-email.js', async () => {
     handler: vi.fn(),
   };
 });
+
+// Mock the API client
+vi.mock('../../src/apis/api-client.js', () => ({
+  createApiClient: vi.fn().mockResolvedValue({
+    avatars: {
+      getAvatarById: vi.fn().mockResolvedValue(Buffer.from('mock-avatar-data')),
+    },
+  }),
+}));
 
 // Mock the utils functions
 vi.mock('../../src/common/utils.js', () => {
@@ -61,9 +60,9 @@ vi.mock('../../src/config/server-config.js', () => {
   };
 });
 
-describe('GravatarImageService', () => {
+describe('AvatarImageApi', () => {
   let mockFetch: ReturnType<typeof createMockFetch>;
-  let service: IGravatarImageService;
+  let api: AvatarImageApi;
 
   beforeEach(() => {
     // Reset all mocks
@@ -80,8 +79,10 @@ describe('GravatarImageService', () => {
       responseBuffer: createMockAvatarBuffer(10),
     });
 
-    // Create the service with the mock fetch function
-    service = createTestGravatarImageService({ mockFetch });
+    // Create the API with the mock fetch function
+    api = new AvatarImageApi();
+    // Replace the global fetch with our mock
+    global.fetch = mockFetch;
   });
 
   afterEach(() => {
@@ -90,18 +91,22 @@ describe('GravatarImageService', () => {
 
   describe('getAvatarById', () => {
     it('should validate the hash', async () => {
-      await service.getAvatarById('test-hash');
+      await api.getAvatarById({ hash: 'test-hash' });
       expect(utils.validateHash).toHaveBeenCalledWith('test-hash');
     });
 
     it('should throw GravatarValidationError for invalid hash', async () => {
       vi.mocked(utils.validateHash).mockReturnValue(false);
-      await expect(service.getAvatarById('invalid-hash')).rejects.toThrow(GravatarValidationError);
-      await expect(service.getAvatarById('invalid-hash')).rejects.toThrow('Invalid hash format');
+      await expect(api.getAvatarById({ hash: 'invalid-hash' })).rejects.toThrow(
+        GravatarValidationError,
+      );
+      await expect(api.getAvatarById({ hash: 'invalid-hash' })).rejects.toThrow(
+        'Invalid hash format',
+      );
     });
 
     it('should call fetch with correct URL for basic request', async () => {
-      await service.getAvatarById('test-hash');
+      await api.getAvatarById({ hash: 'test-hash' });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -110,7 +115,7 @@ describe('GravatarImageService', () => {
     });
 
     it('should include size parameter in URL when provided', async () => {
-      await service.getAvatarById('test-hash', 200);
+      await api.getAvatarById({ hash: 'test-hash', size: 200 });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?s=200', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -119,7 +124,7 @@ describe('GravatarImageService', () => {
     });
 
     it('should include default option parameter in URL when provided', async () => {
-      await service.getAvatarById('test-hash', undefined, DefaultAvatarOption.IDENTICON);
+      await api.getAvatarById({ hash: 'test-hash', defaultOption: DefaultAvatarOption.IDENTICON });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?d=identicon', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -128,7 +133,7 @@ describe('GravatarImageService', () => {
     });
 
     it('should include force default parameter in URL when true', async () => {
-      await service.getAvatarById('test-hash', undefined, undefined, true);
+      await api.getAvatarById({ hash: 'test-hash', forceDefault: true });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?f=y', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -137,7 +142,7 @@ describe('GravatarImageService', () => {
     });
 
     it('should include rating parameter in URL when provided', async () => {
-      await service.getAvatarById('test-hash', undefined, undefined, undefined, Rating.PG);
+      await api.getAvatarById({ hash: 'test-hash', rating: Rating.PG });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?r=pg', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -146,7 +151,13 @@ describe('GravatarImageService', () => {
     });
 
     it('should include all parameters in URL when provided', async () => {
-      await service.getAvatarById('test-hash', 100, DefaultAvatarOption.ROBOHASH, true, Rating.G);
+      await api.getAvatarById({
+        hash: 'test-hash',
+        size: 100,
+        defaultOption: DefaultAvatarOption.ROBOHASH,
+        forceDefault: true,
+        rating: Rating.G,
+      });
       expect(mockFetch).toHaveBeenCalledWith(
         'https://gravatar.com/avatar/test-hash?s=100&d=robohash&f=y&r=g',
         {
@@ -162,9 +173,9 @@ describe('GravatarImageService', () => {
       mockFetch = createMockFetch({
         responseBuffer: mockBuffer,
       });
-      service = createTestGravatarImageService({ mockFetch });
+      global.fetch = mockFetch;
 
-      const result = await service.getAvatarById('test-hash');
+      const result = await api.getAvatarById({ hash: 'test-hash' });
 
       expect(result).toBeInstanceOf(Buffer);
       expect(result.length).toBe(20);
@@ -176,96 +187,30 @@ describe('GravatarImageService', () => {
       mockFetch = createMockFetch({
         responseError: error,
       });
-      service = createTestGravatarImageService({ mockFetch });
+      global.fetch = mockFetch;
 
-      await expect(service.getAvatarById('test-hash')).rejects.toThrow('Fetch error');
-      await expect(service.getAvatarById('test-hash')).rejects.toThrow(error);
+      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow('Fetch error');
+      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow(error);
     });
 
     it('should handle non-ok responses', async () => {
       mockFetch = createMockFetch({
         responseStatus: 404,
       });
-      service = createTestGravatarImageService({ mockFetch });
+      global.fetch = mockFetch;
 
-      await expect(service.getAvatarById('test-hash')).rejects.toThrow(GravatarValidationError);
-      await expect(service.getAvatarById('test-hash')).rejects.toThrow('Failed to fetch avatar');
-    });
-  });
-
-  describe('getAvatarByEmail', () => {
-    it('should validate the email', async () => {
-      await service.getAvatarByEmail('test@example.com');
-      expect(utils.validateEmail).toHaveBeenCalledWith('test@example.com');
-    });
-
-    it('should throw GravatarValidationError for invalid email', async () => {
-      vi.mocked(utils.validateEmail).mockReturnValue(false);
-      await expect(service.getAvatarByEmail('invalid-email')).rejects.toThrow(
+      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow(
         GravatarValidationError,
       );
-      await expect(service.getAvatarByEmail('invalid-email')).rejects.toThrow(
-        'Invalid email format',
+      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow(
+        'Failed to fetch avatar',
       );
-    });
-
-    it('should generate identifier from email', async () => {
-      await service.getAvatarByEmail('test@example.com');
-      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
-    });
-
-    it('should call getAvatarById with generated hash and all parameters', async () => {
-      // Create a spy on the service's getAvatarById method
-      const getAvatarByIdSpy = vi.spyOn(service, 'getAvatarById');
-
-      await service.getAvatarByEmail(
-        'test@example.com',
-        200,
-        DefaultAvatarOption.MONSTERID,
-        true,
-        Rating.R,
-      );
-
-      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
-      expect(getAvatarByIdSpy).toHaveBeenCalledWith(
-        'email-hash',
-        200,
-        DefaultAvatarOption.MONSTERID,
-        true,
-        Rating.R,
-      );
-    });
-
-    it('should return the avatar data', async () => {
-      const mockBuffer = createMockAvatarBuffer(30);
-      mockFetch = createMockFetch({
-        responseBuffer: mockBuffer,
-      });
-      service = createTestGravatarImageService({ mockFetch });
-
-      const result = await service.getAvatarByEmail('test@example.com');
-
-      expect(result).toBeInstanceOf(Buffer);
-      expect(result.length).toBe(30);
-      expect(result).toEqual(mockBuffer);
-    });
-
-    it('should handle errors from getAvatarById', async () => {
-      // Create a spy on getAvatarById that throws an error
-      const getAvatarByIdSpy = vi.spyOn(service, 'getAvatarById');
-      const testError = new Error('Test error from getAvatarById');
-      getAvatarByIdSpy.mockRejectedValue(testError);
-
-      await expect(service.getAvatarByEmail('test@example.com')).rejects.toThrow(
-        'Test error from getAvatarById',
-      );
-      await expect(service.getAvatarByEmail('test@example.com')).rejects.toThrow(testError);
     });
   });
 });
 
 describe('Gravatar Image MCP Tools', () => {
-  let mockService: IGravatarImageService;
+  let mockApiClient: any;
   let mockBuffer: Buffer;
 
   beforeEach(() => {
@@ -280,25 +225,26 @@ describe('Gravatar Image MCP Tools', () => {
     // Create a mock buffer
     mockBuffer = createMockAvatarBuffer(10);
 
-    // Create a mock service
-    mockService = {
-      getAvatarById: vi.fn().mockResolvedValue(mockBuffer),
-      getAvatarByEmail: vi.fn().mockResolvedValue(mockBuffer),
+    // Create a mock API client
+    mockApiClient = {
+      avatars: {
+        getAvatarById: vi.fn().mockResolvedValue(mockBuffer),
+      },
     };
 
-    // Mock the createGravatarImageService function to return our mock service
-    vi.mocked(createGravatarImageService).mockReturnValue(mockService);
+    // Mock the createApiClient function
+    vi.mocked(createApiClient).mockResolvedValue(mockApiClient);
 
-    // Mock the tool handlers
+    // Mock the tool handlers to use the API client
     vi.mocked(getAvatarByIdHandler).mockImplementation(async (params: any) => {
-      const service = createGravatarImageService();
-      const avatarBuffer = await service.getAvatarById(
-        params.hash,
-        params.size,
-        params.defaultOption,
-        params.forceDefault,
-        params.rating,
-      );
+      const apiClient = await createApiClient();
+      const avatarBuffer = await apiClient.avatars.getAvatarById({
+        hash: params.hash,
+        size: params.size,
+        defaultOption: params.defaultOption,
+        forceDefault: params.forceDefault,
+        rating: params.rating,
+      });
       return {
         content: [
           {
@@ -311,14 +257,19 @@ describe('Gravatar Image MCP Tools', () => {
     });
 
     vi.mocked(getAvatarByEmailHandler).mockImplementation(async (params: any) => {
-      const service = createGravatarImageService();
-      const avatarBuffer = await service.getAvatarByEmail(
-        params.email,
-        params.size,
-        params.defaultOption,
-        params.forceDefault,
-        params.rating,
-      );
+      // Generate hash from email
+      const hash = utils.generateIdentifierFromEmail(params.email);
+
+      // Use API client to get avatar by ID
+      const apiClient = await createApiClient();
+      const avatarBuffer = await apiClient.avatars.getAvatarById({
+        hash,
+        size: params.size,
+        defaultOption: params.defaultOption,
+        forceDefault: params.forceDefault,
+        rating: params.rating,
+      });
+
       return {
         content: [
           {
@@ -344,7 +295,7 @@ describe('Gravatar Image MCP Tools', () => {
       );
     });
 
-    it('should call the service with correct parameters', async () => {
+    it('should call the API client with correct parameters', async () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         hash: 'test-hash',
@@ -356,21 +307,22 @@ describe('Gravatar Image MCP Tools', () => {
 
       await getAvatarByIdHandler(params);
 
-      expect(mockService.getAvatarById).toHaveBeenCalledWith(
-        'test-hash',
-        200,
-        DefaultAvatarOption.IDENTICON,
-        true,
-        Rating.PG,
-      );
+      expect(createApiClient).toHaveBeenCalled();
+      expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
+        hash: 'test-hash',
+        size: 200,
+        defaultOption: DefaultAvatarOption.IDENTICON,
+        forceDefault: true,
+        rating: Rating.PG,
+      });
     });
 
     it('should handle validation errors', async () => {
       // Set up validateHash to return false for invalid hash
       vi.mocked(utils.validateHash).mockReturnValue(false);
 
-      // Set up the mock service to throw an error
-      mockService.getAvatarById = vi.fn().mockImplementation(() => {
+      // Set up the mock API client to throw an error
+      mockApiClient.avatars.getAvatarById = vi.fn().mockImplementation(() => {
         throw new GravatarValidationError('Invalid hash format');
       });
 
@@ -392,7 +344,7 @@ describe('Gravatar Image MCP Tools', () => {
       );
     });
 
-    it('should call the service with correct parameters', async () => {
+    it('should call the API client with correct parameters', async () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
         email: 'test@example.com',
@@ -404,21 +356,23 @@ describe('Gravatar Image MCP Tools', () => {
 
       await getAvatarByEmailHandler(params);
 
-      expect(mockService.getAvatarByEmail).toHaveBeenCalledWith(
-        'test@example.com',
-        200,
-        DefaultAvatarOption.IDENTICON,
-        true,
-        Rating.PG,
-      );
+      expect(createApiClient).toHaveBeenCalled();
+      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
+        hash: 'email-hash',
+        size: 200,
+        defaultOption: DefaultAvatarOption.IDENTICON,
+        forceDefault: true,
+        rating: Rating.PG,
+      });
     });
 
     it('should handle validation errors', async () => {
       // Set up validateEmail to return false for invalid email
       vi.mocked(utils.validateEmail).mockReturnValue(false);
 
-      // Set up the mock service to throw an error
-      mockService.getAvatarByEmail = vi.fn().mockImplementation(() => {
+      // Set up the mock API client to throw an error
+      mockApiClient.avatars.getAvatarById = vi.fn().mockImplementation(() => {
         throw new GravatarValidationError('Invalid email format');
       });
 

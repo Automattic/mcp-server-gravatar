@@ -1,15 +1,7 @@
 import { vi } from 'vitest';
 import type { Profile } from '../../src/generated/gravatar-api/models/Profile';
 import type { Interest } from '../../src/generated/gravatar-api/models/Interest';
-
-// Minimal interfaces for API clients
-export interface IProfilesApiClient {
-  getProfileById(params: { profileIdentifier: string }): Promise<Profile>;
-}
-
-export interface IExperimentalApiClient {
-  getProfileInferredInterestsById(params: { profileIdentifier: string }): Promise<Interest[]>;
-}
+import type { IProfilesApiClient, IExperimentalApiClient } from '../../src/apis/interfaces';
 
 // Mock factories
 export function createMockProfilesApi(options?: {
