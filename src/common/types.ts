@@ -36,14 +36,3 @@ export interface ApiErrorResponse {
     data?: unknown;
   };
 }
-
-/**
- * Type guard to check if an error is an API error response
- */
-export function isApiErrorResponse(error: unknown): error is ApiErrorResponse {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    ('status' in error || ('response' in error && typeof error.response === 'object'))
-  );
-}
