@@ -167,7 +167,7 @@ describe('MCP Server End-to-End', () => {
 
   describe('Gravatar Image Operations', () => {
     it('getAvatarById should return avatar data', async () => {
-      const result = await avatarImageApi.getAvatarById({ hash });
+      const result = await avatarImageApi.getAvatarById({ avatarIdentifier: hash });
 
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(Buffer);
@@ -182,7 +182,7 @@ describe('MCP Server End-to-End', () => {
       const emailHash = utils.generateIdentifierFromEmail(email);
 
       // Call the API with the generated hash
-      const result = await avatarImageApi.getAvatarById({ hash: emailHash });
+      const result = await avatarImageApi.getAvatarById({ avatarIdentifier: emailHash });
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith(email);
       expect(result).toBeDefined();

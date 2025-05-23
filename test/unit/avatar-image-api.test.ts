@@ -91,22 +91,22 @@ describe('AvatarImageApi', () => {
 
   describe('getAvatarById', () => {
     it('should validate the hash', async () => {
-      await api.getAvatarById({ hash: 'test-hash' });
+      await api.getAvatarById({ avatarIdentifier: 'test-hash' });
       expect(utils.validateHash).toHaveBeenCalledWith('test-hash');
     });
 
     it('should throw GravatarValidationError for invalid hash', async () => {
       vi.mocked(utils.validateHash).mockReturnValue(false);
-      await expect(api.getAvatarById({ hash: 'invalid-hash' })).rejects.toThrow(
+      await expect(api.getAvatarById({ avatarIdentifier: 'invalid-hash' })).rejects.toThrow(
         GravatarValidationError,
       );
-      await expect(api.getAvatarById({ hash: 'invalid-hash' })).rejects.toThrow(
-        'Invalid hash format',
+      await expect(api.getAvatarById({ avatarIdentifier: 'invalid-hash' })).rejects.toThrow(
+        'Invalid identifier format',
       );
     });
 
     it('should call fetch with correct URL for basic request', async () => {
-      await api.getAvatarById({ hash: 'test-hash' });
+      await api.getAvatarById({ avatarIdentifier: 'test-hash' });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -115,7 +115,7 @@ describe('AvatarImageApi', () => {
     });
 
     it('should include size parameter in URL when provided', async () => {
-      await api.getAvatarById({ hash: 'test-hash', size: 200 });
+      await api.getAvatarById({ avatarIdentifier: 'test-hash', size: 200 });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?s=200', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -124,7 +124,10 @@ describe('AvatarImageApi', () => {
     });
 
     it('should include default option parameter in URL when provided', async () => {
-      await api.getAvatarById({ hash: 'test-hash', defaultOption: DefaultAvatarOption.IDENTICON });
+      await api.getAvatarById({
+        avatarIdentifier: 'test-hash',
+        defaultOption: DefaultAvatarOption.IDENTICON,
+      });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?d=identicon', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -133,7 +136,7 @@ describe('AvatarImageApi', () => {
     });
 
     it('should include force default parameter in URL when true', async () => {
-      await api.getAvatarById({ hash: 'test-hash', forceDefault: true });
+      await api.getAvatarById({ avatarIdentifier: 'test-hash', forceDefault: true });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?f=y', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -142,7 +145,7 @@ describe('AvatarImageApi', () => {
     });
 
     it('should include rating parameter in URL when provided', async () => {
-      await api.getAvatarById({ hash: 'test-hash', rating: Rating.PG });
+      await api.getAvatarById({ avatarIdentifier: 'test-hash', rating: Rating.PG });
       expect(mockFetch).toHaveBeenCalledWith('https://gravatar.com/avatar/test-hash?r=pg', {
         headers: {
           'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -152,7 +155,7 @@ describe('AvatarImageApi', () => {
 
     it('should include all parameters in URL when provided', async () => {
       await api.getAvatarById({
-        hash: 'test-hash',
+        avatarIdentifier: 'test-hash',
         size: 100,
         defaultOption: DefaultAvatarOption.ROBOHASH,
         forceDefault: true,
@@ -175,7 +178,7 @@ describe('AvatarImageApi', () => {
       });
       global.fetch = mockFetch;
 
-      const result = await api.getAvatarById({ hash: 'test-hash' });
+      const result = await api.getAvatarById({ avatarIdentifier: 'test-hash' });
 
       expect(result).toBeInstanceOf(Buffer);
       expect(result.length).toBe(20);
@@ -189,8 +192,10 @@ describe('AvatarImageApi', () => {
       });
       global.fetch = mockFetch;
 
-      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow('Fetch error');
-      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow(error);
+      await expect(api.getAvatarById({ avatarIdentifier: 'test-hash' })).rejects.toThrow(
+        'Fetch error',
+      );
+      await expect(api.getAvatarById({ avatarIdentifier: 'test-hash' })).rejects.toThrow(error);
     });
 
     it('should handle non-ok responses', async () => {
@@ -199,10 +204,10 @@ describe('AvatarImageApi', () => {
       });
       global.fetch = mockFetch;
 
-      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow(
+      await expect(api.getAvatarById({ avatarIdentifier: 'test-hash' })).rejects.toThrow(
         GravatarValidationError,
       );
-      await expect(api.getAvatarById({ hash: 'test-hash' })).rejects.toThrow(
+      await expect(api.getAvatarById({ avatarIdentifier: 'test-hash' })).rejects.toThrow(
         'Failed to fetch avatar',
       );
     });
@@ -239,7 +244,7 @@ describe('Gravatar Image MCP Tools', () => {
     vi.mocked(getAvatarByIdHandler).mockImplementation(async (params: any) => {
       const apiClient = await createApiClient();
       const avatarBuffer = await apiClient.avatars.getAvatarById({
-        hash: params.hash,
+        avatarIdentifier: params.avatarIdentifier,
         size: params.size,
         defaultOption: params.defaultOption,
         forceDefault: params.forceDefault,
@@ -258,12 +263,12 @@ describe('Gravatar Image MCP Tools', () => {
 
     vi.mocked(getAvatarByEmailHandler).mockImplementation(async (params: any) => {
       // Generate hash from email
-      const hash = utils.generateIdentifierFromEmail(params.email);
+      const avatarIdentifier = utils.generateIdentifierFromEmail(params.email);
 
       // Use API client to get avatar by ID
       const apiClient = await createApiClient();
       const avatarBuffer = await apiClient.avatars.getAvatarById({
-        hash,
+        avatarIdentifier,
         size: params.size,
         defaultOption: params.defaultOption,
         forceDefault: params.forceDefault,
@@ -291,14 +296,14 @@ describe('Gravatar Image MCP Tools', () => {
       const tool = getAvatarByIdTool;
       expect(tool.name).toBe('get_avatar_by_id');
       expect(tool.description).toContain(
-        'Get the avatar PNG image for a Gravatar profile using a profile identifier (hash)',
+        'Get the avatar PNG image for a Gravatar profile using an avatar identifier',
       );
     });
 
     it('should call the API client with correct parameters', async () => {
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
-        hash: 'test-hash',
+        avatarIdentifier: 'test-hash',
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
@@ -309,7 +314,7 @@ describe('Gravatar Image MCP Tools', () => {
 
       expect(createApiClient).toHaveBeenCalled();
       expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
-        hash: 'test-hash',
+        avatarIdentifier: 'test-hash',
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,
@@ -328,7 +333,7 @@ describe('Gravatar Image MCP Tools', () => {
 
       // Use type assertion to tell TypeScript this is the correct type
       const params = {
-        hash: 'invalid-hash',
+        avatarIdentifier: 'invalid-hash',
       } as any;
 
       await expect(getAvatarByIdHandler(params)).rejects.toThrow(GravatarValidationError);
@@ -359,7 +364,7 @@ describe('Gravatar Image MCP Tools', () => {
       expect(createApiClient).toHaveBeenCalled();
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
       expect(mockApiClient.avatars.getAvatarById).toHaveBeenCalledWith({
-        hash: 'email-hash',
+        avatarIdentifier: 'email-hash',
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
         forceDefault: true,

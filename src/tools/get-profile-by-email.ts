@@ -26,12 +26,12 @@ export async function handler(params: z.infer<typeof getProfileByEmailSchema>) {
   }
 
   // Generate identifier from email
-  const hash = generateIdentifierFromEmail(params.email);
+  const profileIdentifier = generateIdentifierFromEmail(params.email);
 
   // Use API client to get profile by ID
   const apiClient = await createApiClient();
   const profile = await apiClient.profiles.getProfileById({
-    profileIdentifier: hash,
+    profileIdentifier: profileIdentifier,
   });
 
   return {

@@ -26,12 +26,12 @@ export async function handler(params: z.infer<typeof getInferredInterestsByEmail
   }
 
   // Generate identifier from email
-  const hash = generateIdentifierFromEmail(params.email);
+  const profileIdentifier = generateIdentifierFromEmail(params.email);
 
   // Use API client to get interests by ID
   const apiClient = await createApiClient();
   const interests = await apiClient.experimental.getProfileInferredInterestsById({
-    profileIdentifier: hash,
+    profileIdentifier: profileIdentifier,
   });
 
   // Extract just the name field from each interest

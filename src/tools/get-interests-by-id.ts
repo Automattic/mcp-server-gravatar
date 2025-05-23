@@ -6,30 +6,30 @@ import { GravatarValidationError } from '../common/errors.js';
 
 // Schema definition
 export const getInferredInterestsByIdSchema = z.object({
-  hash: z.string().refine(validateHash, {
+  profileIdentifier: z.string().refine(validateHash, {
     message:
-      'Invalid hash format. Must be a 32-character (MD5) or 64-character (SHA256) hexadecimal string.',
+      'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
   }),
 });
 
 // Tool definition
 export const getInterestsByIdTool = {
   name: 'get_inferred_interests_by_id',
-  description: 'Fetch inferred interests for a Gravatar profile using a profile identifier (hash).',
+  description: 'Fetch inferred interests for a Gravatar profile using a profile identifier.',
   inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
 };
 
 // Tool handler
 export async function handler(params: z.infer<typeof getInferredInterestsByIdSchema>) {
-  // Validate hash
-  if (!validateHash(params.hash)) {
-    throw new GravatarValidationError('Invalid hash format');
+  // Validate identifier
+  if (!validateHash(params.profileIdentifier)) {
+    throw new GravatarValidationError('Invalid identifier format');
   }
 
   // Use API client to get interests by ID
   const apiClient = await createApiClient();
   const interests = await apiClient.experimental.getProfileInferredInterestsById({
-    profileIdentifier: params.hash,
+    profileIdentifier: params.profileIdentifier,
   });
 
   // Extract just the name field from each interest

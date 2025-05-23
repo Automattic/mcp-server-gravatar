@@ -1,26 +1,4 @@
 /**
- * Input parameters for profile-related operations
- */
-export interface ProfileParams {
-  hash?: string;
-  email?: string;
-}
-
-/**
- * Input parameters for avatar-related operations
- */
-export interface AvatarParams {
-  hash?: string;
-  email?: string;
-  preferredSize?: number;
-  defaultAvatarOption?: DefaultAvatarOption;
-  forceDefault?: boolean;
-  rating?: Rating;
-  initials?: string;
-  name?: string;
-}
-
-/**
  * Default avatar options
  */
 export enum DefaultAvatarOption {
