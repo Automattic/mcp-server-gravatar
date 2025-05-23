@@ -174,27 +174,27 @@ export const clientConfig = {
    * Sets the client information (called during MCP initialization)
    */
   setInfo: setClientInfo,
-  
+
   /**
    * Gets the stored client information
    */
   get info(): ClientInfo | null {
     return clientInfo;
   },
-  
+
   /**
    * Gets the client name with fallback
    */
   get name(): string {
     return clientInfo?.name || 'unknown-client';
   },
-  
+
   /**
    * Gets the client version with fallback
    */
   get version(): string {
     return clientInfo?.version || 'unknown-version';
-  }
+  },
 };
 
 /**
