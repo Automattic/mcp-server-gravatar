@@ -1,16 +1,17 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateHash } from '../common/utils.js';
 import { DefaultAvatarOption } from '../common/types.js';
 import { Rating } from '../generated/gravatar-api/models/Rating.js';
 import { fetchAvatar } from './avatar-utils.js';
 
 // Schema definition
 export const getAvatarByIdSchema = z.object({
-  avatarIdentifier: z.string().refine(validateHash, {
-    message:
+  avatarIdentifier: z
+    .string()
+    .regex(
+      /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/,
       'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
-  }),
+    ),
   size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
   defaultOption: z.preprocess(
     val => (val === '' ? undefined : val),

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateHash } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
+import { validateHash } from '../common/utils.js';
 
 // Schema definition
 export const getProfileByIdSchema = z.object({

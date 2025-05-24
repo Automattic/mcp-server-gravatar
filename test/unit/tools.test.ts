@@ -210,13 +210,8 @@ describe('Interest Tools', () => {
       });
     });
 
-    it('should validate hash format', async () => {
-      vi.mocked(utils.validateHash).mockReturnValue(false);
-
-      await expect(getInterestsByIdHandler({ profileIdentifier: 'invalid-hash' })).rejects.toThrow(
-        GravatarValidationError,
-      );
-    });
+    // Hash format validation is now handled at the schema level before the handler is called
+    // This is tested in validation.test.ts instead
   });
 
   describe('getInterestsByEmail', () => {

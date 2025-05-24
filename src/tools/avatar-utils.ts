@@ -54,7 +54,25 @@ export async function fetchAvatar(params: AvatarParams): Promise<Buffer> {
   });
 
   if (!response.ok) {
-    throw new GravatarValidationError(`Failed to fetch avatar: ${response.statusText}`);
+    // Provide specific error messages for common cases
+    let message: string;
+    switch (response.status) {
+      case 404:
+        message = `No avatar found for identifier: ${params.avatarIdentifier}.`;
+        break;
+      case 400:
+        message = `Invalid avatar request parameters for identifier: ${params.avatarIdentifier}. Check the identifier format and parameters.`;
+        break;
+      case 403:
+        message = `Avatar access denied for identifier: ${params.avatarIdentifier}`;
+        break;
+      case 429:
+        message = `Rate limit exceeded. Please try again later.`;
+        break;
+      default:
+        message = `Failed to fetch avatar (${response.status}): ${response.statusText}`;
+    }
+    throw new GravatarValidationError(message);
   }
 
   // Convert the response to a buffer
