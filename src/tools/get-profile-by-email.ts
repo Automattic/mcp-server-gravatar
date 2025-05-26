@@ -1,6 +1,5 @@
 import { generateIdentifierFromEmail } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Tool definition
 export const getProfileByEmailTool = {
@@ -21,7 +20,15 @@ export const getProfileByEmailTool = {
 // Tool handler
 export async function handler(params: { email: string }) {
   if (!params.email) {
-    throw new McpError(ErrorCode.InvalidParams, 'email is required');
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'Error: email is required',
+        },
+      ],
+      isError: true,
+    };
   }
 
   // Generate identifier from email

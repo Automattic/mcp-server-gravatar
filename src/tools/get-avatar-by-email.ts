@@ -1,6 +1,5 @@
 import { generateIdentifierFromEmail } from '../common/utils.js';
 import { fetchAvatar } from './avatar-utils.js';
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import type { DefaultAvatarOption } from '../common/types.js';
 import type { Rating } from '../generated/gravatar-api/models/Rating.js';
 
@@ -49,7 +48,15 @@ export async function handler(params: {
   rating?: string;
 }) {
   if (!params.email) {
-    throw new McpError(ErrorCode.InvalidParams, 'email is required');
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'Error: email is required',
+        },
+      ],
+      isError: true,
+    };
   }
 
   const avatarIdentifier = generateIdentifierFromEmail(params.email);

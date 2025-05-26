@@ -1,5 +1,4 @@
 import { fetchAvatar } from './avatar-utils.js';
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import type { DefaultAvatarOption } from '../common/types.js';
 import type { Rating } from '../generated/gravatar-api/models/Rating.js';
 
@@ -48,7 +47,15 @@ export async function handler(params: {
   rating?: string;
 }) {
   if (!params.avatarIdentifier) {
-    throw new McpError(ErrorCode.InvalidParams, 'avatarIdentifier is required');
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'Error: avatarIdentifier is required',
+        },
+      ],
+      isError: true,
+    };
   }
 
   // Cast parameters to proper types for fetchAvatar

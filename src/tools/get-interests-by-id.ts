@@ -1,5 +1,4 @@
 import { fetchInterestsById } from './experimental-utils.js';
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Tool definition
 export const getInterestsByIdTool = {
@@ -20,7 +19,15 @@ export const getInterestsByIdTool = {
 // Tool handler
 export async function handler(params: { profileIdentifier: string }) {
   if (!params.profileIdentifier) {
-    throw new McpError(ErrorCode.InvalidParams, 'profileIdentifier is required');
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'Error: profileIdentifier is required',
+        },
+      ],
+      isError: true,
+    };
   }
 
   // Let Gravatar API handle format validation
