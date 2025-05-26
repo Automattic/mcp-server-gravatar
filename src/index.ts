@@ -9,7 +9,6 @@ import {
 
 import { tools, handlers } from './tools/index.js';
 import { serverInfo, capabilities, setClientInfo } from './config/server-config.js';
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Create MCP server
 const server = new Server(serverInfo, { capabilities });
@@ -47,26 +46,45 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async request => {
   try {
     if (!request.params.arguments) {
-      throw new McpError(ErrorCode.InvalidParams, 'Arguments are required');
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Error: Arguments are required',
+          },
+        ],
+        isError: true,
+      };
     }
 
     const toolName = request.params.name;
     const handler = handlers[toolName];
 
     if (!handler) {
-      throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${toolName}`);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error: Unknown tool: ${toolName}`,
+          },
+        ],
+        isError: true,
+      };
     }
 
     // We need to cast the arguments to any to avoid TypeScript errors
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return await handler(request.params.arguments as any);
   } catch (error) {
-    if (error instanceof McpError) throw error;
-
-    throw new McpError(
-      ErrorCode.InternalError,
-      `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+        },
+      ],
+      isError: true,
+    };
   }
 });
 
