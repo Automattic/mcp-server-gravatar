@@ -24,7 +24,6 @@ import {
   getAvatarByEmailTool,
   handler as getAvatarByEmailHandler,
 } from '../../src/tools/get-avatar-by-email.js';
-import { GravatarValidationError } from '../../src/common/errors.js';
 import { DefaultAvatarOption } from '../../src/common/types.js';
 
 // Mock the generated API clients
@@ -285,9 +284,7 @@ describe('Avatar Tools', () => {
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
-      await expect(getAvatarByIdHandler({ avatarIdentifier: validHash })).rejects.toThrow(
-        GravatarValidationError,
-      );
+      await expect(getAvatarByIdHandler({ avatarIdentifier: validHash })).rejects.toThrow(Error);
     });
   });
 

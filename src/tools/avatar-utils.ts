@@ -1,6 +1,4 @@
-import { validateHash } from '../common/utils.js';
 import { getUserAgent } from '../config/server-config.js';
-import { GravatarValidationError } from '../common/errors.js';
 import type { DefaultAvatarOption } from '../common/types.js';
 import type { Rating } from '../generated/gravatar-api/models/Rating.js';
 
@@ -16,10 +14,6 @@ export interface AvatarParams {
  * Fetch avatar image by identifier
  */
 export async function fetchAvatar(params: AvatarParams): Promise<Buffer> {
-  if (!validateHash(params.avatarIdentifier)) {
-    throw new GravatarValidationError('Invalid identifier format');
-  }
-
   // Build avatar URL
   let url = `https://gravatar.com/avatar/${params.avatarIdentifier}`;
   const queryParams = new URLSearchParams();
@@ -72,7 +66,7 @@ export async function fetchAvatar(params: AvatarParams): Promise<Buffer> {
       default:
         message = `Failed to fetch avatar (${response.status}): ${response.statusText}`;
     }
-    throw new GravatarValidationError(message);
+    throw new Error(message);
   }
 
   // Convert the response to a buffer

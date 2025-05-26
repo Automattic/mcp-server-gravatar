@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchProfileById } from '../../src/tools/profile-utils.js';
 import { fetchInterestsById } from '../../src/tools/experimental-utils.js';
 import { fetchAvatar } from '../../src/tools/avatar-utils.js';
-import { GravatarResourceNotFoundError, GravatarValidationError } from '../../src/common/errors.js';
 
 // Mock the API clients to simulate errors
 vi.mock('../../src/generated/gravatar-api/apis/ProfilesApi.js', () => ({
@@ -25,18 +24,6 @@ vi.mock('../../src/config/server-config.js', () => ({
   createRestApiConfig: vi.fn().mockReturnValue({}),
   getUserAgent: vi.fn().mockReturnValue('test-agent'),
 }));
-
-// Mock utils - but we need real validation for hash format tests
-vi.mock('../../src/common/utils.js', async () => {
-  const actual = await vi.importActual('../../src/common/utils.js');
-  return {
-    ...actual,
-    validateHash: (hash: string) => {
-      const hashRegex = /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/;
-      return hashRegex.test(hash);
-    },
-  };
-});
 
 import { ProfilesApi } from '../../src/generated/gravatar-api/apis/ProfilesApi.js';
 import { ExperimentalApi } from '../../src/generated/gravatar-api/apis/ExperimentalApi.js';
@@ -63,7 +50,7 @@ describe('Error Handling', () => {
       vi.mocked(ProfilesApi).mockImplementation(() => mockProfilesApi as any);
 
       const testHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-      await expect(fetchProfileById(testHash)).rejects.toThrow(GravatarResourceNotFoundError);
+      await expect(fetchProfileById(testHash)).rejects.toThrow(Error);
       await expect(fetchProfileById(testHash)).rejects.toThrow(
         `No profile found for identifier: ${testHash}.`,
       );
@@ -171,9 +158,7 @@ describe('Error Handling', () => {
       } as Response);
 
       const testHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-      await expect(fetchAvatar({ avatarIdentifier: testHash })).rejects.toThrow(
-        GravatarValidationError,
-      );
+      await expect(fetchAvatar({ avatarIdentifier: testHash })).rejects.toThrow(Error);
 
       await expect(fetchAvatar({ avatarIdentifier: testHash })).rejects.toThrow(
         'No avatar found for identifier:',

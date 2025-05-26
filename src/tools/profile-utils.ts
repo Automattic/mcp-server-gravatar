@@ -1,6 +1,5 @@
 import { ProfilesApi } from '../generated/gravatar-api/apis/ProfilesApi.js';
 import { createRestApiConfig } from '../config/server-config.js';
-import { mapHttpStatusToError, GravatarResourceNotFoundError } from '../common/errors.js';
 
 /**
  * Fetch profile by identifier using ProfilesApi
@@ -42,21 +41,16 @@ export async function fetchProfileById(profileIdentifier: string) {
           message = `Gravatar API error (${status}): ${statusText}`;
       }
 
-      const gravatarError = await mapHttpStatusToError(status, message);
-      throw gravatarError;
+      throw new Error(message);
     }
 
     // Handle network or other errors
     if (error && typeof error === 'object' && 'message' in error) {
       const errorWithMessage = error as { message: string };
-      throw new GravatarResourceNotFoundError(
-        `Failed to fetch profile: ${errorWithMessage.message}`,
-      );
+      throw new Error(`Failed to fetch profile: ${errorWithMessage.message}`);
     }
 
     // Fallback for unknown errors
-    throw new GravatarResourceNotFoundError(
-      `Failed to fetch profile for identifier: ${profileIdentifier}`,
-    );
+    throw new Error(`Failed to fetch profile for identifier: ${profileIdentifier}`);
   }
 }
