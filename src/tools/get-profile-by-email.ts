@@ -1,28 +1,27 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
-import { GravatarValidationError } from '../common/errors.js';
+import { generateIdentifierFromEmail } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
-
-// Schema definition
-export const getProfileByEmailSchema = z.object({
-  email: z.string().refine(validateEmail, {
-    message: 'Invalid email format.',
-  }),
-});
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Tool definition
 export const getProfileByEmailTool = {
   name: 'get_profile_by_email',
   description: 'Fetch a Gravatar profile using an email address.',
-  inputSchema: zodToJsonSchema(getProfileByEmailSchema),
+  inputSchema: {
+    type: 'object',
+    properties: {
+      email: {
+        type: 'string',
+        description: 'Email address',
+      },
+    },
+    required: ['email'],
+  },
 };
 
 // Tool handler
-export async function handler(params: z.infer<typeof getProfileByEmailSchema>) {
-  // Validate email
-  if (!validateEmail(params.email)) {
-    throw new GravatarValidationError('Invalid email format');
+export async function handler(params: { email: string }) {
+  if (!params.email) {
+    throw new McpError(ErrorCode.InvalidParams, 'email is required');
   }
 
   // Generate identifier from email

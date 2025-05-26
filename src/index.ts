@@ -6,7 +6,6 @@ import {
   ListToolsRequestSchema,
   InitializeRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
 
 import { tools, handlers } from './tools/index.js';
 import { serverInfo, capabilities, setClientInfo } from './config/server-config.js';
@@ -59,15 +58,10 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
     }
 
     // We need to cast the arguments to any to avoid TypeScript errors
-    // The actual validation happens inside each handler with Zod
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return await handler(request.params.arguments as any);
   } catch (error) {
     if (error instanceof McpError) throw error;
-
-    if (error instanceof z.ZodError) {
-      throw new McpError(ErrorCode.InvalidParams, `Invalid input: ${JSON.stringify(error.errors)}`);
-    }
 
     throw new McpError(
       ErrorCode.InternalError,

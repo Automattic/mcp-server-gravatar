@@ -1,25 +1,28 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { fetchInterestsById } from './experimental-utils.js';
-
-// Schema definition
-export const getInferredInterestsByIdSchema = z.object({
-  profileIdentifier: z
-    .string()
-    .regex(
-      /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/,
-      'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
-    ),
-});
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Tool definition
 export const getInterestsByIdTool = {
   name: 'get_inferred_interests_by_id',
   description: 'Fetch inferred interests for a Gravatar profile using a profile identifier.',
-  inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
+  inputSchema: {
+    type: 'object',
+    properties: {
+      profileIdentifier: {
+        type: 'string',
+        description: 'Profile identifier (32 or 64 character hash)',
+      },
+    },
+    required: ['profileIdentifier'],
+  },
 };
 
 // Tool handler
-export async function handler(params: z.infer<typeof getInferredInterestsByIdSchema>) {
+export async function handler(params: { profileIdentifier: string }) {
+  if (!params.profileIdentifier) {
+    throw new McpError(ErrorCode.InvalidParams, 'profileIdentifier is required');
+  }
+
+  // Let Gravatar API handle format validation
   return await fetchInterestsById(params.profileIdentifier);
 }

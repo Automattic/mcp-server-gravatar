@@ -101,18 +101,19 @@ describe('Profile Tools', () => {
 
   describe('getProfileById', () => {
     it('should handle valid profile ID', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockProfile = {
-        hash: 'test-hash',
+        hash: validHash,
         displayName: 'Test User',
         profileUrl: 'https://gravatar.com/testuser',
       };
 
       mockProfilesApi.getProfileById.mockResolvedValue(mockProfile);
 
-      const result = await getProfileByIdHandler({ profileIdentifier: 'test-hash' });
+      const result = await getProfileByIdHandler({ profileIdentifier: validHash });
 
       expect(mockProfilesApi.getProfileById).toHaveBeenCalledWith({
-        profileIdentifier: 'test-hash',
+        profileIdentifier: validHash,
       });
 
       expect(result).toEqual({
@@ -126,9 +127,10 @@ describe('Profile Tools', () => {
     });
 
     it('should handle API errors', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       mockProfilesApi.getProfileById.mockRejectedValue(new Error('API Error'));
 
-      await expect(getProfileByIdHandler({ profileIdentifier: 'test-hash' })).rejects.toThrow(
+      await expect(getProfileByIdHandler({ profileIdentifier: validHash })).rejects.toThrow(
         'API Error',
       );
     });
@@ -160,14 +162,6 @@ describe('Profile Tools', () => {
         ],
       });
     });
-
-    it('should validate email format', async () => {
-      vi.mocked(utils.validateEmail).mockReturnValue(false);
-
-      await expect(getProfileByEmailHandler({ email: 'invalid-email' })).rejects.toThrow(
-        GravatarValidationError,
-      );
-    });
   });
 });
 
@@ -190,14 +184,15 @@ describe('Interest Tools', () => {
 
   describe('getInterestsById', () => {
     it('should handle valid profile ID', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockInterests = [{ name: 'programming' }, { name: 'javascript' }];
 
       mockExperimentalApi.getProfileInferredInterestsById.mockResolvedValue(mockInterests);
 
-      const result = await getInterestsByIdHandler({ profileIdentifier: 'test-hash' });
+      const result = await getInterestsByIdHandler({ profileIdentifier: validHash });
 
       expect(mockExperimentalApi.getProfileInferredInterestsById).toHaveBeenCalledWith({
-        profileIdentifier: 'test-hash',
+        profileIdentifier: validHash,
       });
 
       expect(result).toEqual({
@@ -209,9 +204,6 @@ describe('Interest Tools', () => {
         ],
       });
     });
-
-    // Hash format validation is now handled at the schema level before the handler is called
-    // This is tested in validation.test.ts instead
   });
 
   describe('getInterestsByEmail', () => {
@@ -236,14 +228,6 @@ describe('Interest Tools', () => {
         ],
       });
     });
-
-    it('should validate email format', async () => {
-      vi.mocked(utils.validateEmail).mockReturnValue(false);
-
-      await expect(getInterestsByEmailHandler({ email: 'invalid-email' })).rejects.toThrow(
-        GravatarValidationError,
-      );
-    });
   });
 });
 
@@ -257,6 +241,7 @@ describe('Avatar Tools', () => {
 
   describe('getAvatarById', () => {
     it('should handle valid avatar ID', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockArrayBuffer = new ArrayBuffer(8);
       const mockResponse = {
         ok: true,
@@ -266,13 +251,13 @@ describe('Avatar Tools', () => {
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
       const result = await getAvatarByIdHandler({
-        avatarIdentifier: 'test-hash',
+        avatarIdentifier: validHash,
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
       });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://gravatar.com/avatar/test-hash?s=200&d=identicon',
+        `https://gravatar.com/avatar/${validHash}?s=200&d=identicon`,
         expect.objectContaining({
           headers: expect.objectContaining({
             'User-Agent': 'mcp-server-gravatar/v1.0.0',
@@ -291,15 +276,8 @@ describe('Avatar Tools', () => {
       });
     });
 
-    it('should validate hash format', async () => {
-      vi.mocked(utils.validateHash).mockReturnValue(false);
-
-      await expect(getAvatarByIdHandler({ avatarIdentifier: 'invalid-hash' })).rejects.toThrow(
-        GravatarValidationError,
-      );
-    });
-
     it('should handle fetch errors', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockResponse = {
         ok: false,
         statusText: 'Not Found',
@@ -307,7 +285,7 @@ describe('Avatar Tools', () => {
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
-      await expect(getAvatarByIdHandler({ avatarIdentifier: 'test-hash' })).rejects.toThrow(
+      await expect(getAvatarByIdHandler({ avatarIdentifier: validHash })).rejects.toThrow(
         GravatarValidationError,
       );
     });
@@ -347,14 +325,6 @@ describe('Avatar Tools', () => {
           },
         ],
       });
-    });
-
-    it('should validate email format', async () => {
-      vi.mocked(utils.validateEmail).mockReturnValue(false);
-
-      await expect(getAvatarByEmailHandler({ email: 'invalid-email' })).rejects.toThrow(
-        GravatarValidationError,
-      );
     });
   });
 });
