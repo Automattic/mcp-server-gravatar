@@ -18,18 +18,17 @@ export const getProfileByIdTool = {
 
 // Tool handler
 export async function handler(params: { profileIdentifier: string }) {
-  if (!params.profileIdentifier) {
+  try {
+    return await fetchProfileById(params.profileIdentifier);
+  } catch (error) {
     return {
       content: [
         {
           type: 'text',
-          text: 'Error: profileIdentifier is required',
+          text: `Failed to fetch profile for identifier "${params.profileIdentifier}": ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
       isError: true,
     };
   }
-
-  // Let Gravatar API handle format validation
-  return await fetchProfileById(params.profileIdentifier);
 }

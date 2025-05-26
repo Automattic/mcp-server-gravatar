@@ -129,9 +129,11 @@ describe('Profile Tools', () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       mockProfilesApi.getProfileById.mockRejectedValue(new Error('API Error'));
 
-      await expect(getProfileByIdHandler({ profileIdentifier: validHash })).rejects.toThrow(
-        'API Error',
-      );
+      const result = (await getProfileByIdHandler({ profileIdentifier: validHash })) as any;
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].type).toBe('text');
+      expect(result.content[0].text).toContain('Failed to fetch profile for identifier');
     });
   });
 
@@ -284,7 +286,11 @@ describe('Avatar Tools', () => {
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
-      await expect(getAvatarByIdHandler({ avatarIdentifier: validHash })).rejects.toThrow(Error);
+      const result = (await getAvatarByIdHandler({ avatarIdentifier: validHash })) as any;
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].type).toBe('text');
+      expect(result.content[0].text).toContain('Failed to fetch avatar for identifier');
     });
   });
 

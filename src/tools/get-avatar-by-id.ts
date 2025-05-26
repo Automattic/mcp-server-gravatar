@@ -46,36 +46,35 @@ export async function handler(params: {
   forceDefault?: boolean;
   rating?: string;
 }) {
-  if (!params.avatarIdentifier) {
+  try {
+    // Cast parameters to proper types for fetchAvatar
+    const avatarParams = {
+      avatarIdentifier: params.avatarIdentifier,
+      size: params.size,
+      defaultOption: params.defaultOption as DefaultAvatarOption | undefined,
+      forceDefault: params.forceDefault,
+      rating: params.rating as Rating | undefined,
+    };
+
+    const avatarBuffer = await fetchAvatar(avatarParams);
+    return {
+      content: [
+        {
+          type: 'image',
+          data: avatarBuffer.toString('base64'),
+          mimeType: 'image/png',
+        },
+      ],
+    };
+  } catch (error) {
     return {
       content: [
         {
           type: 'text',
-          text: 'Error: avatarIdentifier is required',
+          text: `Failed to fetch avatar for identifier "${params.avatarIdentifier}": ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
       isError: true,
     };
   }
-
-  // Cast parameters to proper types for fetchAvatar
-  const avatarParams = {
-    avatarIdentifier: params.avatarIdentifier,
-    size: params.size,
-    defaultOption: params.defaultOption as DefaultAvatarOption | undefined,
-    forceDefault: params.forceDefault,
-    rating: params.rating as Rating | undefined,
-  };
-
-  // Let Gravatar API handle format validation
-  const avatarBuffer = await fetchAvatar(avatarParams);
-  return {
-    content: [
-      {
-        type: 'image',
-        data: avatarBuffer.toString('base64'),
-        mimeType: 'image/png',
-      },
-    ],
-  };
 }

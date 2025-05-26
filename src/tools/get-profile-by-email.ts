@@ -19,21 +19,21 @@ export const getProfileByEmailTool = {
 
 // Tool handler
 export async function handler(params: { email: string }) {
-  if (!params.email) {
+  try {
+    // Generate identifier from email
+    const profileIdentifier = generateIdentifierFromEmail(params.email);
+
+    // Use shared profile fetching utility
+    return await fetchProfileById(profileIdentifier);
+  } catch (error) {
     return {
       content: [
         {
           type: 'text',
-          text: 'Error: email is required',
+          text: `Failed to fetch profile for email "${params.email}": ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
       isError: true,
     };
   }
-
-  // Generate identifier from email
-  const profileIdentifier = generateIdentifierFromEmail(params.email);
-
-  // Use shared profile fetching utility
-  return await fetchProfileById(profileIdentifier);
 }
