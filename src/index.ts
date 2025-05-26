@@ -45,18 +45,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async request => {
   try {
-    if (!request.params.arguments) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'Error: Arguments are required',
-          },
-        ],
-        isError: true,
-      };
-    }
-
     const toolName = request.params.name;
     const handler = handlers[toolName];
 
