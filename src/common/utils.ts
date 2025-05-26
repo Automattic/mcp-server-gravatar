@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { GravatarValidationError } from './errors.js';
 
 /**
  * Normalizes an email address by trimming whitespace and converting to lowercase
@@ -25,7 +24,7 @@ export function validateEmail(email: string): boolean {
  * This normalizes the email and creates a SHA256 hash
  * @param email The email address to convert to an identifier
  * @returns The Gravatar identifier (SHA256 hash)
- * @throws GravatarValidationError if the email is invalid
+ * @throws Error if the email is invalid
  */
 export function generateIdentifierFromEmail(email: string): string {
   // Normalize the email first
@@ -33,7 +32,7 @@ export function generateIdentifierFromEmail(email: string): string {
 
   // Validate the normalized email
   if (!validateEmail(normalizedEmail)) {
-    throw new GravatarValidationError('Invalid email format');
+    throw new Error('Invalid email format');
   }
 
   // Hash the normalized email

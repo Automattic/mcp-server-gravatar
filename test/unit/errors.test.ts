@@ -1,141 +1,79 @@
 import { describe, it, expect } from 'vitest';
-import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import {
-  GravatarError,
-  GravatarValidationError,
-  GravatarResourceNotFoundError,
-  GravatarAuthenticationError,
-  GravatarPermissionError,
-  GravatarRateLimitError,
-  isGravatarError,
-} from '../../src/common/errors.js';
+import { isError, getErrorMessage } from '../../src/common/errors.js';
 
-describe('Error Classes', () => {
-  it('GravatarError should be instance of Error', () => {
-    const error = new GravatarError(ErrorCode.InternalError, 'Test error');
-    expect(error).toBeInstanceOf(Error);
-    expect(error.name).toBe('GravatarError');
-    expect(error.message).toBe('MCP error -32603: Test error');
-  });
-
-  describe('mapHttpStatusToError', () => {
-    it('should map status 400 to GravatarValidationError', async () => {
-      const error = await import('../../src/common/errors.js').then(module =>
-        module.mapHttpStatusToError(400, 'Bad request'),
-      );
-      expect(error).toBeInstanceOf(GravatarValidationError);
-      expect(error.message).toContain('Bad request');
+describe('Error Utilities', () => {
+  describe('isError', () => {
+    it('should identify Error objects', () => {
+      expect(isError(new Error('Test error'))).toBe(true);
+      expect(isError(new TypeError('Type error'))).toBe(true);
+      expect(isError(new ReferenceError('Reference error'))).toBe(true);
     });
 
-    it('should map status 401 to GravatarAuthenticationError', async () => {
-      const error = await import('../../src/common/errors.js').then(module =>
-        module.mapHttpStatusToError(401, 'Unauthorized'),
-      );
-      expect(error).toBeInstanceOf(GravatarAuthenticationError);
-      expect(error.message).toContain('Unauthorized');
-    });
-
-    it('should map status 403 to GravatarPermissionError', async () => {
-      const error = await import('../../src/common/errors.js').then(module =>
-        module.mapHttpStatusToError(403, 'Forbidden'),
-      );
-      expect(error).toBeInstanceOf(GravatarPermissionError);
-      expect(error.message).toContain('Forbidden');
-    });
-
-    it('should map status 404 to GravatarResourceNotFoundError', async () => {
-      const error = await import('../../src/common/errors.js').then(module =>
-        module.mapHttpStatusToError(404, 'Not found'),
-      );
-      expect(error).toBeInstanceOf(GravatarResourceNotFoundError);
-      expect(error.message).toContain('Not found');
-    });
-
-    it('should map status 429 to GravatarRateLimitError', async () => {
-      const now = Date.now();
-      const error = await import('../../src/common/errors.js').then(module =>
-        module.mapHttpStatusToError(429, 'Too many requests'),
-      );
-      expect(error).toBeInstanceOf(GravatarRateLimitError);
-      expect(error.message).toContain('Too many requests');
-
-      // Type assertion to tell TypeScript this is a GravatarRateLimitError
-      const rateLimitError = error as GravatarRateLimitError;
-      expect(rateLimitError).toHaveProperty('resetAt');
-      expect(rateLimitError.resetAt).toBeInstanceOf(Date);
-      // Check that resetAt is approximately 1 minute in the future
-      expect(rateLimitError.resetAt.getTime()).toBeGreaterThan(now);
-      expect(rateLimitError.resetAt.getTime()).toBeLessThanOrEqual(now + 61000); // Allow 1 second buffer
-    });
-
-    it('should map other status codes to GravatarError', async () => {
-      const error = await import('../../src/common/errors.js').then(module =>
-        module.mapHttpStatusToError(500, 'Server error'),
-      );
-      expect(error).toBeInstanceOf(GravatarError);
-      expect(error).not.toBeInstanceOf(GravatarValidationError);
-      expect(error).not.toBeInstanceOf(GravatarAuthenticationError);
-      expect(error).not.toBeInstanceOf(GravatarPermissionError);
-      expect(error).not.toBeInstanceOf(GravatarResourceNotFoundError);
-      expect(error).not.toBeInstanceOf(GravatarRateLimitError);
-      expect(error.message).toContain('Server error');
+    it('should reject non-Error objects', () => {
+      expect(isError('string error')).toBe(false);
+      expect(isError(123)).toBe(false);
+      expect(isError({ message: 'fake error' })).toBe(false);
+      expect(isError(null)).toBe(false);
+      expect(isError(undefined)).toBe(false);
     });
   });
 
-  it('GravatarValidationError should be instance of GravatarError', () => {
-    const error = new GravatarValidationError('Invalid input');
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.name).toBe('GravatarValidationError');
-    expect(error.message).toContain('Validation Error');
-    expect(error.message).toContain('Invalid input');
-  });
+  describe('getErrorMessage', () => {
+    it('should extract message from Error objects', () => {
+      const error = new Error('Test error message');
+      expect(getErrorMessage(error)).toBe('Test error message');
+    });
 
-  it('GravatarResourceNotFoundError should be instance of GravatarError', () => {
-    const error = new GravatarResourceNotFoundError('Profile not found');
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.name).toBe('GravatarResourceNotFoundError');
-    expect(error.message).toContain('Resource Not Found');
-    expect(error.message).toContain('Profile not found');
-  });
+    it('should extract message from Error subclasses', () => {
+      const typeError = new TypeError('Type error message');
+      expect(getErrorMessage(typeError)).toBe('Type error message');
+    });
 
-  it('GravatarAuthenticationError should be instance of GravatarError', () => {
-    const error = new GravatarAuthenticationError('Invalid API key');
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.name).toBe('GravatarAuthenticationError');
-    expect(error.message).toContain('Authentication Failed');
-    expect(error.message).toContain('Invalid API key');
-  });
+    it('should convert non-Error values to strings', () => {
+      expect(getErrorMessage('string error')).toBe('string error');
+      expect(getErrorMessage(123)).toBe('123');
+      expect(getErrorMessage(null)).toBe('null');
+      expect(getErrorMessage(undefined)).toBe('undefined');
+    });
 
-  it('GravatarPermissionError should be instance of GravatarError', () => {
-    const error = new GravatarPermissionError('Access denied');
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.name).toBe('GravatarPermissionError');
-    expect(error.message).toContain('Permission Denied');
-    expect(error.message).toContain('Access denied');
-  });
-
-  it('GravatarRateLimitError should include reset date', () => {
-    const resetDate = new Date();
-    const error = new GravatarRateLimitError('Too many requests', resetDate);
-    expect(error).toBeInstanceOf(GravatarError);
-    expect(error.name).toBe('GravatarRateLimitError');
-    expect(error.message).toContain('Rate Limit Exceeded');
-    expect(error.message).toContain('Too many requests');
-    expect(error.resetAt).toBe(resetDate);
+    it('should handle objects by converting to string', () => {
+      const obj = { message: 'fake error' };
+      expect(getErrorMessage(obj)).toBe('[object Object]');
+    });
   });
 });
 
-describe('Error Utilities', () => {
-  it('isGravatarError should identify Gravatar errors', () => {
-    expect(isGravatarError(new GravatarError(ErrorCode.InternalError, 'Test'))).toBe(true);
-    expect(isGravatarError(new GravatarValidationError('Test'))).toBe(true);
-    expect(isGravatarError(new GravatarResourceNotFoundError('Test'))).toBe(true);
-    expect(isGravatarError(new GravatarAuthenticationError('Test'))).toBe(true);
-    expect(isGravatarError(new GravatarPermissionError('Test'))).toBe(true);
-    expect(isGravatarError(new GravatarRateLimitError('Test', new Date()))).toBe(true);
-    expect(isGravatarError(new Error('Test'))).toBe(false);
-    expect(isGravatarError('not an error')).toBe(false);
-    expect(isGravatarError(null)).toBe(false);
-    expect(isGravatarError(undefined)).toBe(false);
+describe('AirBnB-Style Error Handling', () => {
+  it('should document the new error handling approach', () => {
+    // This test serves as documentation for our new error handling approach
+    // We now use AirBnB-style error handling where errors are returned as content
+    // with isError: true rather than throwing custom error classes.
+
+    // Example of the new pattern:
+    const errorResponse = {
+      content: [
+        {
+          type: 'text',
+          text: 'Error: Invalid profile identifier format',
+        },
+      ],
+      isError: true,
+    };
+
+    expect(errorResponse.isError).toBe(true);
+    expect(errorResponse.content[0].type).toBe('text');
+    expect(errorResponse.content[0].text).toContain('Error:');
+  });
+
+  it('should demonstrate standard Error usage in utilities', () => {
+    // Our utility functions now throw standard Error objects
+    // which are caught by the main handler and converted to error content
+
+    const standardError = new Error('Standard error message');
+    expect(standardError).toBeInstanceOf(Error);
+    expect(standardError.message).toBe('Standard error message');
+
+    // The main handler catches these and converts them to:
+    // { content: [{ type: "text", text: "Error: Standard error message" }], isError: true }
   });
 });
