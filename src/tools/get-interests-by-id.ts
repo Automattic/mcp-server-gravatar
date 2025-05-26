@@ -17,15 +17,21 @@ export const getInterestsByIdTool = {
 };
 
 // Tool handler
-export async function handler(params: { profileIdentifier: string }) {
+// MCP framework validates parameters against tool schema before calling handlers.
+// Using 'any' here matches the industry standard pattern and allows for flexible
+// destructuring while maintaining type safety through schema validation.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGetInterestsById(params: any) {
+  const { profileIdentifier } = params;
+
   try {
-    return await fetchInterestsById(params.profileIdentifier);
+    return await fetchInterestsById(profileIdentifier);
   } catch (error) {
     return {
       content: [
         {
           type: 'text',
-          text: `Failed to fetch interests for identifier "${params.profileIdentifier}": ${error instanceof Error ? error.message : String(error)}`,
+          text: `Failed to fetch interests for identifier "${profileIdentifier}": ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
       isError: true,

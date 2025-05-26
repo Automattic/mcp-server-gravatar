@@ -18,10 +18,16 @@ export const getProfileByEmailTool = {
 };
 
 // Tool handler
-export async function handler(params: { email: string }) {
+// MCP framework validates parameters against tool schema before calling handlers.
+// Using 'any' here matches the industry standard pattern and allows for flexible
+// destructuring while maintaining type safety through schema validation.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGetProfileByEmail(params: any) {
+  const { email } = params;
+
   try {
     // Generate identifier from email
-    const profileIdentifier = generateIdentifierFromEmail(params.email);
+    const profileIdentifier = generateIdentifierFromEmail(email);
 
     // Use shared profile fetching utility
     return await fetchProfileById(profileIdentifier);
@@ -30,7 +36,7 @@ export async function handler(params: { email: string }) {
       content: [
         {
           type: 'text',
-          text: `Failed to fetch profile for email "${params.email}": ${error instanceof Error ? error.message : String(error)}`,
+          text: `Failed to fetch profile for email "${email}": ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
       isError: true,

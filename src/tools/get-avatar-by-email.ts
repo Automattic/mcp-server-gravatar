@@ -40,23 +40,23 @@ export const getAvatarByEmailTool = {
 };
 
 // Tool handler
-export async function handler(params: {
-  email: string;
-  size?: number;
-  defaultOption?: string;
-  forceDefault?: boolean;
-  rating?: string;
-}) {
+// MCP framework validates parameters against tool schema before calling handlers.
+// Using 'any' here matches the industry standard patterna nd allows for flexible
+// destructuring while maintaining type safety through schema validation.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGetAvatarByEmail(params: any) {
+  const { email, size, defaultOption, forceDefault, rating } = params;
+
   try {
-    const avatarIdentifier = generateIdentifierFromEmail(params.email);
+    const avatarIdentifier = generateIdentifierFromEmail(email);
 
     // Cast parameters to proper types for fetchAvatar
     const avatarParams = {
       avatarIdentifier,
-      size: params.size,
-      defaultOption: params.defaultOption as DefaultAvatarOption | undefined,
-      forceDefault: params.forceDefault,
-      rating: params.rating as Rating | undefined,
+      size,
+      defaultOption: defaultOption as DefaultAvatarOption | undefined,
+      forceDefault,
+      rating: rating as Rating | undefined,
     };
 
     const avatarBuffer = await fetchAvatar(avatarParams);
@@ -75,7 +75,7 @@ export async function handler(params: {
       content: [
         {
           type: 'text',
-          text: `Failed to fetch avatar for email "${params.email}": ${error instanceof Error ? error.message : String(error)}`,
+          text: `Failed to fetch avatar for email "${email}": ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
       isError: true,

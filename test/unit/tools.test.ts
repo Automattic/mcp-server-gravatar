@@ -1,28 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { tools, handlers } from '../../src/tools/index.js';
-import {
-  getProfileByIdTool,
-  handler as getProfileByIdHandler,
-} from '../../src/tools/get-profile-by-id.js';
+import { tools } from '../../src/tools/index.js';
+import { getProfileByIdTool, handleGetProfileById } from '../../src/tools/get-profile-by-id.js';
 import {
   getProfileByEmailTool,
-  handler as getProfileByEmailHandler,
+  handleGetProfileByEmail,
 } from '../../src/tools/get-profile-by-email.js';
 import {
   getInterestsByIdTool,
-  handler as getInterestsByIdHandler,
+  handleGetInterestsById,
 } from '../../src/tools/get-interests-by-id.js';
 import {
   getInterestsByEmailTool,
-  handler as getInterestsByEmailHandler,
+  handleGetInterestsByEmail,
 } from '../../src/tools/get-interests-by-email.js';
-import {
-  getAvatarByIdTool,
-  handler as getAvatarByIdHandler,
-} from '../../src/tools/get-avatar-by-id.js';
+import { getAvatarByIdTool, handleGetAvatarById } from '../../src/tools/get-avatar-by-id.js';
 import {
   getAvatarByEmailTool,
-  handler as getAvatarByEmailHandler,
+  handleGetAvatarByEmail,
 } from '../../src/tools/get-avatar-by-email.js';
 import { DefaultAvatarOption } from '../../src/common/types.js';
 
@@ -69,16 +63,6 @@ describe('Tools Index', () => {
     expect(tools).toContain(getAvatarByIdTool);
     expect(tools).toContain(getAvatarByEmailTool);
   });
-
-  it('should export handlers map with correct mappings', () => {
-    expect(Object.keys(handlers)).toHaveLength(6);
-    expect(handlers[getProfileByIdTool.name]).toBe(getProfileByIdHandler);
-    expect(handlers[getProfileByEmailTool.name]).toBe(getProfileByEmailHandler);
-    expect(handlers[getInterestsByIdTool.name]).toBe(getInterestsByIdHandler);
-    expect(handlers[getInterestsByEmailTool.name]).toBe(getInterestsByEmailHandler);
-    expect(handlers[getAvatarByIdTool.name]).toBe(getAvatarByIdHandler);
-    expect(handlers[getAvatarByEmailTool.name]).toBe(getAvatarByEmailHandler);
-  });
 });
 
 describe('Profile Tools', () => {
@@ -98,7 +82,7 @@ describe('Profile Tools', () => {
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
   });
 
-  describe('getProfileById', () => {
+  describe('handleGetProfileById', () => {
     it('should handle valid profile ID', async () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockProfile = {
@@ -109,7 +93,7 @@ describe('Profile Tools', () => {
 
       mockProfilesApi.getProfileById.mockResolvedValue(mockProfile);
 
-      const result = await getProfileByIdHandler({ profileIdentifier: validHash });
+      const result = await handleGetProfileById({ profileIdentifier: validHash });
 
       expect(mockProfilesApi.getProfileById).toHaveBeenCalledWith({
         profileIdentifier: validHash,
@@ -129,7 +113,7 @@ describe('Profile Tools', () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       mockProfilesApi.getProfileById.mockRejectedValue(new Error('API Error'));
 
-      const result = (await getProfileByIdHandler({ profileIdentifier: validHash })) as any;
+      const result = (await handleGetProfileById({ profileIdentifier: validHash })) as any;
 
       expect(result.isError).toBe(true);
       expect(result.content[0].type).toBe('text');
@@ -137,7 +121,7 @@ describe('Profile Tools', () => {
     });
   });
 
-  describe('getProfileByEmail', () => {
+  describe('handleGetProfileByEmail', () => {
     it('should handle valid email', async () => {
       const mockProfile = {
         hash: 'email-hash',
@@ -147,7 +131,7 @@ describe('Profile Tools', () => {
 
       mockProfilesApi.getProfileById.mockResolvedValue(mockProfile);
 
-      const result = await getProfileByEmailHandler({ email: 'test@example.com' });
+      const result = await handleGetProfileByEmail({ email: 'test@example.com' });
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
       expect(mockProfilesApi.getProfileById).toHaveBeenCalledWith({
@@ -183,14 +167,14 @@ describe('Interest Tools', () => {
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
   });
 
-  describe('getInterestsById', () => {
+  describe('handleGetInterestsById', () => {
     it('should handle valid profile ID', async () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockInterests = [{ name: 'programming' }, { name: 'javascript' }];
 
       mockExperimentalApi.getProfileInferredInterestsById.mockResolvedValue(mockInterests);
 
-      const result = await getInterestsByIdHandler({ profileIdentifier: validHash });
+      const result = await handleGetInterestsById({ profileIdentifier: validHash });
 
       expect(mockExperimentalApi.getProfileInferredInterestsById).toHaveBeenCalledWith({
         profileIdentifier: validHash,
@@ -207,13 +191,13 @@ describe('Interest Tools', () => {
     });
   });
 
-  describe('getInterestsByEmail', () => {
+  describe('handleGetInterestsByEmail', () => {
     it('should handle valid email', async () => {
       const mockInterests = [{ name: 'typescript' }, { name: 'react' }];
 
       mockExperimentalApi.getProfileInferredInterestsById.mockResolvedValue(mockInterests);
 
-      const result = await getInterestsByEmailHandler({ email: 'test@example.com' });
+      const result = await handleGetInterestsByEmail({ email: 'test@example.com' });
 
       expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
       expect(mockExperimentalApi.getProfileInferredInterestsById).toHaveBeenCalledWith({
@@ -240,7 +224,7 @@ describe('Avatar Tools', () => {
     vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
   });
 
-  describe('getAvatarById', () => {
+  describe('handleGetAvatarById', () => {
     it('should handle valid avatar ID', async () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockArrayBuffer = new ArrayBuffer(8);
@@ -251,7 +235,7 @@ describe('Avatar Tools', () => {
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
-      const result = await getAvatarByIdHandler({
+      const result = await handleGetAvatarById({
         avatarIdentifier: validHash,
         size: 200,
         defaultOption: DefaultAvatarOption.IDENTICON,
@@ -286,7 +270,7 @@ describe('Avatar Tools', () => {
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
-      const result = (await getAvatarByIdHandler({ avatarIdentifier: validHash })) as any;
+      const result = (await handleGetAvatarById({ avatarIdentifier: validHash })) as any;
 
       expect(result.isError).toBe(true);
       expect(result.content[0].type).toBe('text');
@@ -294,7 +278,7 @@ describe('Avatar Tools', () => {
     });
   });
 
-  describe('getAvatarByEmail', () => {
+  describe('handleGetAvatarByEmail', () => {
     it('should handle valid email', async () => {
       const mockArrayBuffer = new ArrayBuffer(8);
       const mockResponse = {
@@ -304,7 +288,7 @@ describe('Avatar Tools', () => {
 
       vi.mocked(fetch).mockResolvedValue(mockResponse as any);
 
-      const result = await getAvatarByEmailHandler({
+      const result = await handleGetAvatarByEmail({
         email: 'test@example.com',
         size: 100,
       });
