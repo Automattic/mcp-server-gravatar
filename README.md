@@ -2,12 +2,41 @@
 
 Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatars, profiles, and inferred interests.
 
+## Identifier Types
+
+The Gravatar MCP server uses different types of identifiers to access profile and avatar data:
+
+### Profile Identifiers
+
+A **Profile Identifier** can be one of the following:
+
+1. **SHA256 Hash** (preferred): An email address that has been normalized (lower-cased and trimmed) and then hashed with SHA256
+2. **MD5 Hash** (deprecated): An email address that has been normalized (lower-cased and trimmed) and then hashed with MD5
+3. **URL Slug**: The username portion from a Gravatar profile URL (e.g., 'username' from gravatar.com/username)
+
+### Avatar Identifiers
+
+An **Avatar Identifier** is an email address that has been normalized (lower-cased and trimmed) and then hashed with either:
+
+1. **SHA256** (preferred)
+2. **MD5** (deprecated)
+
+**Important**: Unlike Profile Identifiers, Avatar Identifiers cannot use URL slugs - only email hashes are supported.
+
+### Email Addresses
+
+When using email-based tools, you can provide any valid email format. The system will automatically:
+
+1. Normalize the email (convert to lowercase and trim whitespace)
+2. Generate the appropriate hash for API requests
+3. Process the email securely without storing it
+
 ## Tools
 
 1. `get_profile_by_id`
    - Retrieve comprehensive Gravatar profile information using a profile identifier. Returns detailed user profile data including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional authenticated data may include languages, interests, links, contact info, and gallery images.
    - Required inputs:
-     - `profileIdentifier` (string): Profile identifier for the Gravatar profile. A Profile Identifier is either an email address that has been normalized (e.g. lower-cased and trimmed) and then hashed with either SHA256 (preferred) or MD5 (deprecated), or Gravatar profile URL slug (e.g., 'username' from gravatar.com/username).
+     - `profileIdentifier` (string): A Profile Identifier (see [Identifier Types](#identifier-types) section)
    - Returns: Profile object as JSON with comprehensive user information
 
 2. `get_profile_by_email`
@@ -19,7 +48,7 @@ Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatar
 3. `get_inferred_interests_by_id`
    - Fetch AI-inferred interests for a Gravatar profile using a profile identifier. Returns machine learning-generated interest data that can help understand user preferences, content recommendations, or audience insights. This is experimental data that may not be available for all profiles.
    - Required inputs:
-     - `profileIdentifier` (string): Profile identifier for the Gravatar profile. A Profile Identifier is either an email address that has been normalized (e.g. lower-cased and trimmed) and then hashed with either SHA256 (preferred) or MD5 (deprecated), or Gravatar profile URL slug (e.g., 'username' from gravatar.com/username).
+     - `profileIdentifier` (string): A Profile Identifier (see [Identifier Types](#identifier-types) section)
    - Returns: List of AI-inferred interest names as JSON
 
 4. `get_inferred_interests_by_email`
@@ -31,7 +60,7 @@ Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatar
 5. `get_avatar_by_id`
    - Retrieve the avatar image for a Gravatar profile using an avatar identifier. Functionally identical to the email variant but uses a direct identifier for lookup. More efficient when you already have the hashed identifier.
    - Required inputs:
-     - `avatarIdentifier` (string): Avatar identifier for the Gravatar profile. An Avatar Identifier is an email address that has been normalized (e.g. lower-cased and trimmed) and then hashed with either SHA256 (preferred) or MD5 (deprecated). Note: Unlike profile identifiers, avatar identifiers cannot use URL slugs - only email hashes are supported.
+     - `avatarIdentifier` (string): An Avatar Identifier (see [Identifier Types](#identifier-types) section)
    - Optional inputs:
      - `size` (number, default: undefined): Desired avatar size in pixels (1-2048). Images are square, so this sets both width and height. Common sizes: 80 (default web), 200 (high-res web), 512 (large displays).
      - `defaultOption` (string, default: undefined): Fallback image style when no avatar exists. Options: '404' (return HTTP 404 error instead of image), 'mp' (mystery person silhouette), 'identicon' (geometric pattern), 'monsterid' (generated monster), 'wavatar' (generated face), 'retro' (8-bit style), 'robohash' (robot), 'blank' (transparent).
