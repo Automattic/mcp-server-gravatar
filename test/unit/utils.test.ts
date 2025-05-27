@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalize, generateIdentifier, validateHash } from '../../src/common/utils.js';
+import { normalize, generateIdentifier } from '../../src/common/utils.js';
 
 describe('String Utilities', () => {
   it('normalize should trim and lowercase string', () => {
@@ -31,32 +31,5 @@ describe('String Utilities', () => {
     expect(generateIdentifier('')).toBe(
       'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
     );
-  });
-});
-
-describe('Hash Utilities', () => {
-  it('validateHash should accept valid MD5 hash', () => {
-    expect(validateHash('00000000000000000000000000000000')).toBe(true);
-    expect(validateHash('d41d8cd98f00b204e9800998ecf8427e')).toBe(true);
-  });
-
-  it('validateHash should accept valid SHA256 hash', () => {
-    expect(validateHash('0000000000000000000000000000000000000000000000000000000000000000')).toBe(
-      true,
-    );
-    expect(validateHash('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')).toBe(
-      true,
-    );
-  });
-
-  it('validateHash should reject invalid hash', () => {
-    expect(validateHash('00000000000000000000000000000000000000000000000000000000000000000')).toBe(
-      false,
-    ); // Too long
-    expect(validateHash('00000000000000000000000000000')).toBe(false); // Too short
-    expect(validateHash('0000000000000000000000000000000g')).toBe(false); // Invalid character (MD5)
-    expect(validateHash('0000000000000000000000000000000000000000000000000000000000000000g')).toBe(
-      false,
-    ); // Invalid character (SHA256)
   });
 });

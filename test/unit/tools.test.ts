@@ -42,7 +42,6 @@ vi.mock('../../src/common/utils.js', async () => {
   const actual = await vi.importActual('../../src/common/utils.js');
   return {
     ...actual,
-    validateHash: vi.fn(),
     generateIdentifier: vi.fn(),
   };
 });
@@ -75,7 +74,6 @@ describe('Profile Tools', () => {
     };
 
     vi.mocked(ProfilesApi).mockImplementation(() => mockProfilesApi);
-    vi.mocked(utils.validateHash).mockReturnValue(true);
     vi.mocked(utils.generateIdentifier).mockReturnValue('email-hash');
   });
 
@@ -159,7 +157,6 @@ describe('Interest Tools', () => {
     };
 
     vi.mocked(ExperimentalApi).mockImplementation(() => mockExperimentalApi);
-    vi.mocked(utils.validateHash).mockReturnValue(true);
     vi.mocked(utils.generateIdentifier).mockReturnValue('email-hash');
   });
 
@@ -215,7 +212,6 @@ describe('Interest Tools', () => {
 describe('Avatar Tools', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(utils.validateHash).mockReturnValue(true);
     vi.mocked(utils.generateIdentifier).mockReturnValue('email-hash');
   });
 

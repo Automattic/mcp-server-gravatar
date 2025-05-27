@@ -20,13 +20,3 @@ export function generateIdentifier(input: string): string {
   const normalizedInput = normalize(input);
   return crypto.createHash('sha256').update(normalizedInput).digest('hex');
 }
-
-/**
- * Validates a hash (SHA256 or MD5)
- * @param hash The hash to validate
- * @returns True if the hash is valid, false otherwise
- */
-export function validateHash(hash: string): boolean {
-  const hashRegex = /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/;
-  return hashRegex.test(hash);
-}
