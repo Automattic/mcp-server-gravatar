@@ -29,3 +29,14 @@ export function generateIdentifier(input: string): string {
   const normalizedInput = normalize(input);
   return crypto.createHash('sha256').update(normalizedInput).digest('hex');
 }
+
+/**
+ * Validates that an email parameter is present and not empty
+ * @param email The email parameter to validate
+ * @throws Error if email is missing, null, undefined, or empty
+ */
+export function validateEmailParameter(email: any): void {
+  if (email == null || email === '' || email === 'undefined') {
+    throw new Error('Email parameter is missing or empty. Please provide a valid email address.');
+  }
+}

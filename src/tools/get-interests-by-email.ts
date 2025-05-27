@@ -1,4 +1,4 @@
-import { generateIdentifier } from '../common/utils.js';
+import { generateIdentifier, validateEmailParameter } from '../common/utils.js';
 import { fetchInterestsById } from './experimental-utils.js';
 
 // Tool definition
@@ -24,10 +24,9 @@ export async function handleGetInterestsByEmail(params: any) {
   const { email } = params;
 
   try {
-    // Generate identifier from email
-    const profileIdentifier = generateIdentifier(email);
+    validateEmailParameter(email);
 
-    // Use shared interests fetching utility
+    const profileIdentifier = generateIdentifier(email);
     return await fetchInterestsById(profileIdentifier);
   } catch (error) {
     return {
