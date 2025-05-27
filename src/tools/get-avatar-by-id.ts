@@ -1,60 +1,71 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateHash } from '../common/utils.js';
-import { DefaultAvatarOption } from '../common/types.js';
-import { Rating } from '../generated/gravatar-api/models/Rating.js';
-import { createApiClient } from '../apis/api-client.js';
-
-// Schema definition
-export const getAvatarByIdSchema = z.object({
-  avatarIdentifier: z.string().refine(validateHash, {
-    message:
-      'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
-  }),
-  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
-  defaultOption: z.preprocess(
-    val => (val === '' ? undefined : val),
-    z.nativeEnum(DefaultAvatarOption).optional(),
-  ),
-  forceDefault: z.preprocess(val => {
-    if (val === '') return undefined;
-    if (val === 'true') return true;
-    if (val === 'false') return false;
-    return val;
-  }, z.boolean().optional()),
-  rating: z.preprocess(val => {
-    if (val === '' || val === undefined) return undefined;
-    if (typeof val === 'string') {
-      return val.toUpperCase(); // Normalize to uppercase for validation
-    }
-    return val;
-  }, z.nativeEnum(Rating).optional()),
-});
+import { assertNonEmpty, handleIdToolError } from '../common/utils.js';
+import { fetchAvatar } from './avatar-utils.js';
 
 // Tool definition
 export const getAvatarByIdTool = {
   name: 'get_avatar_by_id',
   description: 'Get the avatar PNG image for a Gravatar profile using an avatar identifier.',
-  inputSchema: zodToJsonSchema(getAvatarByIdSchema),
+  inputSchema: {
+    type: 'object',
+    properties: {
+      avatarIdentifier: {
+        type: 'string',
+        description: 'Avatar identifier (hash)',
+      },
+      size: {
+        type: 'number',
+        description: 'Size of the avatar image (1-2048)',
+        minimum: 1,
+        maximum: 2048,
+      },
+      defaultOption: {
+        type: 'string',
+        description: 'Default avatar option',
+        enum: ['404', 'mp', 'identicon', 'monsterid', 'wavatar', 'retro', 'robohash', 'blank'],
+      },
+      forceDefault: {
+        type: 'boolean',
+        description: 'Force default avatar',
+      },
+      rating: {
+        type: 'string',
+        description: 'Content rating',
+        enum: ['G', 'PG', 'R', 'X'],
+      },
+    },
+    required: ['avatarIdentifier'],
+  },
 };
 
 // Tool handler
-export async function handler(params: z.infer<typeof getAvatarByIdSchema>) {
-  const apiClient = await createApiClient();
-  const avatarBuffer = await apiClient.avatars.getAvatarById({
-    avatarIdentifier: params.avatarIdentifier,
-    size: params.size,
-    defaultOption: params.defaultOption,
-    forceDefault: params.forceDefault,
-    rating: params.rating,
-  });
-  return {
-    content: [
-      {
-        type: 'image',
-        data: avatarBuffer.toString('base64'),
-        mimeType: 'image/png',
-      },
-    ],
-  };
+// MCP framework validates parameters against tool schema before calling handlers.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGetAvatarById(params: any) {
+  const { avatarIdentifier, size, defaultOption, forceDefault, rating } = params;
+
+  try {
+    assertNonEmpty(avatarIdentifier);
+
+    const avatarParams = {
+      avatarIdentifier,
+      size,
+      defaultOption,
+      forceDefault,
+      rating,
+    };
+
+    const avatarBuffer = await fetchAvatar(avatarParams);
+
+    return {
+      content: [
+        {
+          type: 'image',
+          data: avatarBuffer.toString('base64'),
+          mimeType: 'image/png',
+        },
+      ],
+    };
+  } catch (error) {
+    return handleIdToolError(error, avatarIdentifier, 'fetch avatar');
+  }
 }

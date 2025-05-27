@@ -1,40 +1,32 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateHash } from '../common/utils.js';
-import { createApiClient } from '../apis/api-client.js';
-import { GravatarValidationError } from '../common/errors.js';
-
-// Schema definition
-export const getInferredInterestsByIdSchema = z.object({
-  profileIdentifier: z.string().refine(validateHash, {
-    message:
-      'Invalid identifier format. Must be a 64-character (SHA256) or 32-character (MD5, deprecated) hexadecimal string.',
-  }),
-});
+import { assertNonEmpty, handleIdToolError } from '../common/utils.js';
+import { fetchInterestsById } from './experimental-utils.js';
 
 // Tool definition
 export const getInterestsByIdTool = {
   name: 'get_inferred_interests_by_id',
   description: 'Fetch inferred interests for a Gravatar profile using a profile identifier.',
-  inputSchema: zodToJsonSchema(getInferredInterestsByIdSchema),
+  inputSchema: {
+    type: 'object',
+    properties: {
+      profileIdentifier: {
+        type: 'string',
+        description: 'Profile identifier (hash)',
+      },
+    },
+    required: ['profileIdentifier'],
+  },
 };
 
 // Tool handler
-export async function handler(params: z.infer<typeof getInferredInterestsByIdSchema>) {
-  // Validate identifier
-  if (!validateHash(params.profileIdentifier)) {
-    throw new GravatarValidationError('Invalid identifier format');
+// MCP framework validates parameters against tool schema before calling handlers.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGetInterestsById(params: any) {
+  const { profileIdentifier } = params;
+
+  try {
+    assertNonEmpty(profileIdentifier);
+    return await fetchInterestsById(profileIdentifier);
+  } catch (error) {
+    return handleIdToolError(error, profileIdentifier, 'fetch interests');
   }
-
-  // Use API client to get interests by ID
-  const apiClient = await createApiClient();
-  const interests = await apiClient.experimental.getProfileInferredInterestsById({
-    profileIdentifier: params.profileIdentifier,
-  });
-
-  // Extract just the name field from each interest
-  const interestNames = interests.map((interest: { name: string }) => interest.name);
-  return {
-    content: [{ type: 'text', text: JSON.stringify(interestNames, null, 2) }],
-  };
 }

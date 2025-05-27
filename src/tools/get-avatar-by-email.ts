@@ -1,60 +1,71 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-import { validateEmail, generateIdentifierFromEmail } from '../common/utils.js';
-import { DefaultAvatarOption } from '../common/types.js';
-import { Rating } from '../generated/gravatar-api/models/Rating.js';
-import { createApiClient } from '../apis/api-client.js';
-
-// Schema definition
-export const getAvatarByEmailSchema = z.object({
-  email: z.string().refine(validateEmail, {
-    message: 'Invalid email format',
-  }),
-  size: z.preprocess(val => (val === '' ? undefined : val), z.number().min(1).max(2048).optional()),
-  defaultOption: z.preprocess(
-    val => (val === '' ? undefined : val),
-    z.nativeEnum(DefaultAvatarOption).optional(),
-  ),
-  forceDefault: z.preprocess(val => {
-    if (val === '') return undefined;
-    if (val === 'true') return true;
-    if (val === 'false') return false;
-    return val;
-  }, z.boolean().optional()),
-  rating: z.preprocess(val => {
-    if (val === '' || val === undefined) return undefined;
-    if (typeof val === 'string') {
-      return val.toUpperCase(); // Normalize to uppercase for validation
-    }
-    return val;
-  }, z.nativeEnum(Rating).optional()),
-});
+import { generateIdentifier, handleEmailToolError } from '../common/utils.js';
+import { fetchAvatar } from './avatar-utils.js';
 
 // Tool definition
 export const getAvatarByEmailTool = {
   name: 'get_avatar_by_email',
   description: 'Get the avatar PNG image for a Gravatar profile using an email address.',
-  inputSchema: zodToJsonSchema(getAvatarByEmailSchema),
+  inputSchema: {
+    type: 'object',
+    properties: {
+      email: {
+        type: 'string',
+        description: 'Email address',
+      },
+      size: {
+        type: 'number',
+        description: 'Size of the avatar image (1-2048)',
+        minimum: 1,
+        maximum: 2048,
+      },
+      defaultOption: {
+        type: 'string',
+        description: 'Default avatar option',
+        enum: ['404', 'mp', 'identicon', 'monsterid', 'wavatar', 'retro', 'robohash', 'blank'],
+      },
+      forceDefault: {
+        type: 'boolean',
+        description: 'Force default avatar',
+      },
+      rating: {
+        type: 'string',
+        description: 'Content rating',
+        enum: ['G', 'PG', 'R', 'X'],
+      },
+    },
+    required: ['email'],
+  },
 };
 
 // Tool handler
-export async function handler(params: z.infer<typeof getAvatarByEmailSchema>) {
-  const avatarIdentifier = generateIdentifierFromEmail(params.email);
-  const apiClient = await createApiClient();
-  const avatarBuffer = await apiClient.avatars.getAvatarById({
-    avatarIdentifier,
-    size: params.size,
-    defaultOption: params.defaultOption,
-    forceDefault: params.forceDefault,
-    rating: params.rating,
-  });
-  return {
-    content: [
-      {
-        type: 'image',
-        data: avatarBuffer.toString('base64'),
-        mimeType: 'image/png',
-      },
-    ],
-  };
+// MCP framework validates parameters against tool schema before calling handlers.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGetAvatarByEmail(params: any) {
+  const { email, size, defaultOption, forceDefault, rating } = params;
+
+  try {
+    const avatarIdentifier = generateIdentifier(email);
+
+    const avatarParams = {
+      avatarIdentifier,
+      size,
+      defaultOption,
+      forceDefault,
+      rating,
+    };
+
+    const avatarBuffer = await fetchAvatar(avatarParams);
+
+    return {
+      content: [
+        {
+          type: 'image',
+          data: avatarBuffer.toString('base64'),
+          mimeType: 'image/png',
+        },
+      ],
+    };
+  } catch (error) {
+    return handleEmailToolError(error, email, 'fetch avatar');
+  }
 }

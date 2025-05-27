@@ -6,11 +6,17 @@ import {
   ListToolsRequestSchema,
   InitializeRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
 
-import { tools, handlers } from './tools/index.js';
-import { serverInfo, capabilities, serverConfig } from './config/server-config.js';
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import { tools } from './tools/index.js';
+import { serverInfo, capabilities, setClientInfo } from './config/server-config.js';
+
+// Import handlers directly
+import { handleGetProfileById } from './tools/get-profile-by-id.js';
+import { handleGetProfileByEmail } from './tools/get-profile-by-email.js';
+import { handleGetInterestsById } from './tools/get-interests-by-id.js';
+import { handleGetInterestsByEmail } from './tools/get-interests-by-email.js';
+import { handleGetAvatarById } from './tools/get-avatar-by-id.js';
+import { handleGetAvatarByEmail } from './tools/get-avatar-by-email.js';
 
 // Create MCP server
 const server = new Server(serverInfo, { capabilities });
@@ -19,10 +25,7 @@ const server = new Server(serverInfo, { capabilities });
 server.setRequestHandler(InitializeRequestSchema, async request => {
   // Store client information if provided
   if (request.params.clientInfo) {
-    serverConfig.client.setInfo({
-      name: request.params.clientInfo.name,
-      version: request.params.clientInfo.version,
-    });
+    setClientInfo(request.params.clientInfo.name, request.params.clientInfo.version);
 
     console.error(
       `MCP Client connected: ${request.params.clientInfo.name} v${request.params.clientInfo.version}`,
@@ -47,35 +50,55 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return { tools };
 });
 
-// Handle tool calls
+// Handle tool calls with switch statement
 server.setRequestHandler(CallToolRequestSchema, async request => {
   try {
-    if (!request.params.arguments) {
-      throw new McpError(ErrorCode.InvalidParams, 'Arguments are required');
+    switch (request.params.name) {
+      case 'get_profile_by_id': {
+        return await handleGetProfileById(request.params.arguments);
+      }
+
+      case 'get_profile_by_email': {
+        return await handleGetProfileByEmail(request.params.arguments);
+      }
+
+      case 'get_inferred_interests_by_id': {
+        return await handleGetInterestsById(request.params.arguments);
+      }
+
+      case 'get_inferred_interests_by_email': {
+        return await handleGetInterestsByEmail(request.params.arguments);
+      }
+
+      case 'get_avatar_by_id': {
+        return await handleGetAvatarById(request.params.arguments);
+      }
+
+      case 'get_avatar_by_email': {
+        return await handleGetAvatarByEmail(request.params.arguments);
+      }
+
+      default:
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: Unknown tool: ${request.params.name}`,
+            },
+          ],
+          isError: true,
+        };
     }
-
-    const toolName = request.params.name;
-    const handler = handlers[toolName];
-
-    if (!handler) {
-      throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${toolName}`);
-    }
-
-    // We need to cast the arguments to any to avoid TypeScript errors
-    // The actual validation happens inside each handler with Zod
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return await handler(request.params.arguments as any);
   } catch (error) {
-    if (error instanceof McpError) throw error;
-
-    if (error instanceof z.ZodError) {
-      throw new McpError(ErrorCode.InvalidParams, `Invalid input: ${JSON.stringify(error.errors)}`);
-    }
-
-    throw new McpError(
-      ErrorCode.InternalError,
-      `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+        },
+      ],
+      isError: true,
+    };
   }
 });
 

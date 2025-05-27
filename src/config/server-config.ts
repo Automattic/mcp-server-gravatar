@@ -1,216 +1,149 @@
 /**
- * Server Configuration
- *
- * This file contains all the configuration options for the MCP server.
- * You can customize these options by setting environment variables
- * or by modifying the default values directly in this file.
+ * Simplified Server Configuration
  */
 
 import { VERSION } from '../common/version.js';
 import { getUserAgent as getUniversalUserAgent } from 'universal-user-agent';
 import { Configuration } from '../generated/gravatar-api/runtime.js';
 
-export enum ApiConfigType {
-  RestApi,
-  AvatarImageApi,
+/**
+ * Simple configuration object
+ */
+export const config = {
+  // Server info
+  name: 'gravatar',
+  version: VERSION,
+  description: 'MCP Server for Gravatar API',
+
+  // API configuration
+  get apiKey() {
+    return process.env.GRAVATAR_API_KEY;
+  },
+  restApiBase: 'https://api.gravatar.com/v3',
+  avatarApiBase: 'https://gravatar.com/avatar',
+
+  // Client info (set during initialization)
+  clientName: 'unknown-client',
+  clientVersion: 'unknown-version',
+};
+
+/**
+ * MCP capabilities
+ */
+export const capabilities = {
+  tools: {},
+};
+
+/**
+ * Server info for MCP protocol
+ */
+export const serverInfo = {
+  name: config.name,
+  version: config.version,
+  description: config.description,
+};
+
+/**
+ * Set client information during MCP initialization
+ */
+export function setClientInfo(name: string, version: string): void {
+  config.clientName = name || 'unknown-client';
+  config.clientVersion = version || 'unknown-version';
 }
 
 /**
- * Gets the API key from the environment variables
- * Uses the environment variable name specified in securityConfig
- * @returns The API key or undefined if not set
+ * Get User-Agent string for API requests
  */
-async function getApiKey(): Promise<string | undefined> {
-  return process.env[securityConfig.apiKeyEnvVar];
-}
-
-/**
- * Client information interface
- */
-export interface ClientInfo {
-  name: string;
-  version: string;
-}
-
-/**
- * Global storage for MCP client information
- * This is set during the MCP initialization phase
- */
-let clientInfo: ClientInfo | null = null;
-
-/**
- * Sets the MCP client information
- * Called during the MCP initialization phase
- * @param info The client information from the initialize request
- */
-function setClientInfo(info: ClientInfo): void {
-  clientInfo = info;
-}
-
-/**
- * Gets the User-Agent string for API requests
- * @returns The User-Agent string with client info if available
- */
-function getUserAgent(): string {
-  const serverPart = `mcp-server-gravatar/v${VERSION}`;
+export function getUserAgent(): string {
+  const serverPart = `mcp-server-gravatar/v${config.version}`;
   const systemPart = getUniversalUserAgent();
 
-  // Only include client info if it exists and has meaningful values
-  if (clientInfo && clientInfo.name && clientInfo.version) {
-    return `${serverPart} (client: ${clientInfo.name}/${clientInfo.version}) ${systemPart}`;
+  if (config.clientName !== 'unknown-client' && config.clientName !== '') {
+    return `${serverPart} (client: ${config.clientName}/${config.clientVersion}) ${systemPart}`;
   }
 
   return `${serverPart} ${systemPart}`;
 }
 
 /**
- * Creates a configuration object for API clients
- * Uses the API key from environment variables and includes client headers
- * @param apiType The type of API configuration to create
- * @returns Configuration object with API key, User-Agent, and client headers
+ * Create configuration for REST API clients
  */
-async function createApiConfiguration(apiType: ApiConfigType): Promise<Configuration> {
-  // Get API key from environment variables
-  const apiKey = await getApiKey();
-
-  // Determine basePath based on API type
-  let basePath: string | undefined;
-  switch (apiType) {
-    case ApiConfigType.AvatarImageApi:
-      basePath = apiConfig.avatarBaseUrl;
-      break;
-    case ApiConfigType.RestApi:
-    default:
-      basePath = undefined;
-      break;
-  }
-
-  // Create configuration with headers including client info
-  const config: {
+export function createRestApiConfig(): Configuration {
+  const configObj: {
     headers: { [key: string]: string };
     accessToken?: () => Promise<string>;
-    basePath?: string;
   } = {
     headers: {
       'User-Agent': getUserAgent(),
       'X-Platform': 'mcp-server-gravatar-stdio',
-      'X-Source': clientInfo?.name || 'unknown-client',
+      'X-Source': config.clientName,
     },
   };
 
-  // Add basePath if specified
-  if (basePath) {
-    config.basePath = basePath;
-  }
-
-  // Add API key if available (as function format expected by generated client)
+  // Check for API key at runtime, not module load time
+  const apiKey = config.apiKey;
   if (apiKey) {
-    config.accessToken = async () => apiKey;
+    configObj.accessToken = async () => apiKey;
   }
 
-  return new Configuration(config);
+  return new Configuration(configObj);
 }
 
 /**
- * Basic server information
- *
- * - name: The name of the server, used in MCP protocol communications
- * - version: The version of the server, automatically pulled from package.json
- * - description: A human-readable description of the server's purpose
+ * Create configuration for avatar API (with base path)
  */
-export const serverInfo = {
-  name: 'gravatar',
-  version: VERSION,
-  description: 'MCP Server for Gravatar API',
-};
+export function createAvatarApiConfig(): Configuration {
+  return new Configuration({
+    basePath: config.avatarApiBase,
+    headers: {
+      'User-Agent': getUserAgent(),
+    },
+  });
+}
 
-/**
- * MCP capabilities
- *
- * Defines the capabilities of this MCP server.
- * Currently empty, but can be extended with tool-specific capabilities.
- */
-export const capabilities = {
-  tools: {}, // Tool-specific capabilities
-};
+// Legacy enum for backward compatibility
+export enum ApiConfigType {
+  RestApi = 0,
+  AvatarImageApi = 1,
+}
 
-/**
- * API configuration
- *
- * - avatarBaseUrl: The base URL for Gravatar avatar images
- *
- * Note: The API base URL is handled by the generated API client
- * and doesn't need to be specified here.
- */
-export const apiConfig = {
-  avatarBaseUrl: 'https://gravatar.com/avatar',
-};
-
-/**
- * Security configuration
- *
- * - apiKeyEnvVar: The name of the environment variable that contains the API key
- *   Override with GRAVATAR_API_KEY_ENV_VAR environment variable
- * - apiKey: Getter that returns the API key from environment variables
- *
- * To use an API key, set the environment variable specified by apiKeyEnvVar
- * Example: export GRAVATAR_API_KEY=your_api_key_here
- */
-export const securityConfig = {
-  apiKeyEnvVar: process.env.GRAVATAR_API_KEY_ENV_VAR || 'GRAVATAR_API_KEY',
-  get apiKey() {
-    return getApiKey();
-  },
-};
-
-/**
- * Client configuration
- *
- * Provides access to MCP client information with fallbacks.
- * Client information is set during the MCP initialization phase.
- */
-export const clientConfig = {
-  /**
-   * Sets the client information (called during MCP initialization)
-   */
-  setInfo: setClientInfo,
-
-  /**
-   * Gets the stored client information
-   */
-  get info(): ClientInfo | null {
-    return clientInfo;
-  },
-
-  /**
-   * Gets the client name with fallback
-   */
-  get name(): string {
-    return clientInfo?.name || 'unknown-client';
-  },
-
-  /**
-   * Gets the client version with fallback
-   */
-  get version(): string {
-    return clientInfo?.version || 'unknown-version';
-  },
-};
-
-/**
- * Complete server configuration
- *
- * Combines all configuration sections into a single object.
- * This is exported for convenience when you need the entire configuration.
- */
+// Legacy exports for backward compatibility during transition
 export const serverConfig = {
-  ...serverInfo,
+  name: config.name,
+  version: config.version,
+  description: config.description,
   capabilities,
-  api: apiConfig,
-  security: securityConfig,
-  client: clientConfig,
+  api: {
+    avatarBaseUrl: config.avatarApiBase,
+  },
+  security: {
+    apiKeyEnvVar: process.env.GRAVATAR_API_KEY_ENV_VAR || 'GRAVATAR_API_KEY',
+    get apiKey() {
+      return Promise.resolve(
+        process.env[process.env.GRAVATAR_API_KEY_ENV_VAR || 'GRAVATAR_API_KEY'],
+      );
+    },
+  },
+  client: {
+    setInfo: (info: { name: string; version: string }) => setClientInfo(info.name, info.version),
+    get info() {
+      return config.clientName !== 'unknown-client' && config.clientName !== ''
+        ? { name: config.clientName, version: config.clientVersion }
+        : null;
+    },
+    get name() {
+      return config.clientName === '' ? 'unknown-client' : config.clientName;
+    },
+    get version() {
+      return config.clientVersion === '' ? 'unknown-version' : config.clientVersion;
+    },
+  },
   get userAgent() {
     return getUserAgent();
   },
-  createApiConfiguration,
+  createApiConfiguration: (apiType: ApiConfigType) => {
+    return apiType === ApiConfigType.AvatarImageApi
+      ? createAvatarApiConfig()
+      : createRestApiConfig();
+  },
 };
