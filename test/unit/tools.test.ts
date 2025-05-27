@@ -43,8 +43,7 @@ vi.mock('../../src/common/utils.js', async () => {
   return {
     ...actual,
     validateHash: vi.fn(),
-    validateEmail: vi.fn(),
-    generateIdentifierFromEmail: vi.fn(),
+    generateIdentifier: vi.fn(),
   };
 });
 
@@ -77,8 +76,7 @@ describe('Profile Tools', () => {
 
     vi.mocked(ProfilesApi).mockImplementation(() => mockProfilesApi);
     vi.mocked(utils.validateHash).mockReturnValue(true);
-    vi.mocked(utils.validateEmail).mockReturnValue(true);
-    vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
+    vi.mocked(utils.generateIdentifier).mockReturnValue('email-hash');
   });
 
   describe('handleGetProfileById', () => {
@@ -132,7 +130,7 @@ describe('Profile Tools', () => {
 
       const result = await handleGetProfileByEmail({ email: 'test@example.com' });
 
-      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(utils.generateIdentifier).toHaveBeenCalledWith('test@example.com');
       expect(mockProfilesApi.getProfileById).toHaveBeenCalledWith({
         profileIdentifier: 'email-hash',
       });
@@ -162,8 +160,7 @@ describe('Interest Tools', () => {
 
     vi.mocked(ExperimentalApi).mockImplementation(() => mockExperimentalApi);
     vi.mocked(utils.validateHash).mockReturnValue(true);
-    vi.mocked(utils.validateEmail).mockReturnValue(true);
-    vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
+    vi.mocked(utils.generateIdentifier).mockReturnValue('email-hash');
   });
 
   describe('handleGetInterestsById', () => {
@@ -198,7 +195,7 @@ describe('Interest Tools', () => {
 
       const result = await handleGetInterestsByEmail({ email: 'test@example.com' });
 
-      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(utils.generateIdentifier).toHaveBeenCalledWith('test@example.com');
       expect(mockExperimentalApi.getProfileInferredInterestsById).toHaveBeenCalledWith({
         profileIdentifier: 'email-hash',
       });
@@ -219,8 +216,7 @@ describe('Avatar Tools', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(utils.validateHash).mockReturnValue(true);
-    vi.mocked(utils.validateEmail).mockReturnValue(true);
-    vi.mocked(utils.generateIdentifierFromEmail).mockReturnValue('email-hash');
+    vi.mocked(utils.generateIdentifier).mockReturnValue('email-hash');
   });
 
   describe('handleGetAvatarById', () => {
@@ -292,7 +288,7 @@ describe('Avatar Tools', () => {
         size: 100,
       });
 
-      expect(utils.generateIdentifierFromEmail).toHaveBeenCalledWith('test@example.com');
+      expect(utils.generateIdentifier).toHaveBeenCalledWith('test@example.com');
       expect(fetch).toHaveBeenCalledWith(
         'https://gravatar.com/avatar/email-hash?s=100',
         expect.objectContaining({

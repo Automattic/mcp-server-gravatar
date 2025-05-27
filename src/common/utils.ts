@@ -1,12 +1,12 @@
 import crypto from 'crypto';
 
 /**
- * Normalizes an email address by trimming whitespace and converting to lowercase
- * @param email The email address to normalize
- * @returns The normalized email address
+ * Normalizes a string by trimming whitespace and converting to lowercase
+ * @param input The string to normalize
+ * @returns The normalized string
  */
-export function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+export function normalize(input: string): string {
+  return input.trim().toLowerCase();
 }
 
 /**
@@ -20,23 +20,15 @@ export function validateEmail(email: string): boolean {
 }
 
 /**
- * Generates a Gravatar identifier from an email address
- * This normalizes the email and creates a SHA256 hash
- * @param email The email address to convert to an identifier
+ * Generates a Gravatar identifier from any string
+ * This normalizes the string and creates a SHA256 hash
+ * @param input The string to convert to an identifier
  * @returns The Gravatar identifier (SHA256 hash)
- * @throws Error if the email is invalid
  */
-export function generateIdentifierFromEmail(email: string): string {
-  // Normalize the email first
-  const normalizedEmail = normalizeEmail(email);
-
-  // Validate the normalized email
-  if (!validateEmail(normalizedEmail)) {
-    throw new Error('Invalid email format');
-  }
-
-  // Hash the normalized email
-  return generateSha256Hash(normalizedEmail);
+export function generateIdentifier(input: string): string {
+  // Normalize the input and generate hash
+  const normalizedInput = normalize(input);
+  return crypto.createHash('sha256').update(normalizedInput).digest('hex');
 }
 
 /**
@@ -47,14 +39,4 @@ export function generateIdentifierFromEmail(email: string): string {
 export function validateHash(hash: string): boolean {
   const hashRegex = /^([a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/;
   return hashRegex.test(hash);
-}
-
-/**
- * Generates a SHA256 hash of an email address
- * @param email The email address to hash
- * @returns The SHA256 hash of the email address
- */
-export function generateSha256Hash(email: string): string {
-  const normalizedEmail = normalizeEmail(email);
-  return crypto.createHash('sha256').update(normalizedEmail).digest('hex');
 }

@@ -1,4 +1,4 @@
-import { generateIdentifierFromEmail } from '../common/utils.js';
+import { generateIdentifier } from '../common/utils.js';
 import { fetchAvatar } from './avatar-utils.js';
 
 // Tool definition
@@ -44,8 +44,9 @@ export async function handleGetAvatarByEmail(params: any) {
   const { email, size, defaultOption, forceDefault, rating } = params;
 
   try {
-    const avatarIdentifier = generateIdentifierFromEmail(email);
+    const avatarIdentifier = generateIdentifier(email);
 
+    // Pass parameters directly - no type casting needed since fetchAvatar now accepts strings
     const avatarParams = {
       avatarIdentifier,
       size,

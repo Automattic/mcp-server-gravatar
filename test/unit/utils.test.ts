@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import {
-  normalizeEmail,
+  normalize,
   validateEmail,
-  generateIdentifierFromEmail,
+  generateIdentifier,
   validateHash,
-  generateSha256Hash,
 } from '../../src/common/utils.js';
 
-describe('Email Utilities', () => {
-  it('normalizeEmail should trim and lowercase email', () => {
-    expect(normalizeEmail(' Test@Example.com ')).toBe('test@example.com');
-    expect(normalizeEmail('USER@DOMAIN.COM')).toBe('user@domain.com');
-    expect(normalizeEmail('  user@domain.com  ')).toBe('user@domain.com');
+describe('String Utilities', () => {
+  it('normalize should trim and lowercase string', () => {
+    expect(normalize(' Test@Example.com ')).toBe('test@example.com');
+    expect(normalize('USER@DOMAIN.COM')).toBe('user@domain.com');
+    expect(normalize('  user@domain.com  ')).toBe('user@domain.com');
+    expect(normalize('  SomeString  ')).toBe('somestring');
   });
 
   it('validateEmail should validate email format', () => {
@@ -27,23 +27,28 @@ describe('Email Utilities', () => {
     expect(validateEmail('user@domain')).toBe(false);
   });
 
-  it('generateIdentifierFromEmail should create correct hash', () => {
-    // Use a valid email format to avoid needing to mock validateEmail
-    const email = 'test@example.com';
-    const hash = generateIdentifierFromEmail(email);
+  it('generateIdentifier should create correct hash from any string', () => {
+    const input = 'test@example.com';
+    const hash = generateIdentifier(input);
 
     // Should be a SHA256 hash (64 characters)
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
 
     // Should be deterministic
-    expect(generateIdentifierFromEmail(email)).toBe(hash);
+    expect(generateIdentifier(input)).toBe(hash);
 
-    // Should normalize the email before hashing
-    expect(generateIdentifierFromEmail(' Test@Example.com ')).toBe(hash);
-  });
+    // Should normalize the input before hashing
+    expect(generateIdentifier(' Test@Example.com ')).toBe(hash);
 
-  it('generateIdentifierFromEmail should throw for invalid email', () => {
-    expect(() => generateIdentifierFromEmail('invalid-email')).toThrow('Invalid email format');
+    // Should work with non-email strings
+    const nonEmailHash = generateIdentifier('some-random-string');
+    expect(nonEmailHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(generateIdentifier('some-random-string')).toBe(nonEmailHash);
+
+    // Empty string should produce known SHA256 hash
+    expect(generateIdentifier('')).toBe(
+      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    );
   });
 });
 
@@ -71,18 +76,5 @@ describe('Hash Utilities', () => {
     expect(validateHash('0000000000000000000000000000000000000000000000000000000000000000g')).toBe(
       false,
     ); // Invalid character (SHA256)
-  });
-
-  it('generateSha256Hash should create correct hash', () => {
-    // Empty string SHA256 hash
-    expect(generateSha256Hash('')).toBe(
-      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    );
-
-    // Test with a known value
-    expect(generateSha256Hash('test@example.com')).toMatch(/^[a-f0-9]{64}$/);
-
-    // Should normalize the email before hashing
-    expect(generateSha256Hash('test@example.com')).toBe(generateSha256Hash(' Test@Example.com '));
   });
 });

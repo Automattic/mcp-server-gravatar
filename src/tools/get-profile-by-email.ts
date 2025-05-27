@@ -1,4 +1,4 @@
-import { generateIdentifierFromEmail } from '../common/utils.js';
+import { generateIdentifier } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
 
 // Tool definition
@@ -25,7 +25,7 @@ export async function handleGetProfileByEmail(params: any) {
 
   try {
     // Generate identifier from email
-    const profileIdentifier = generateIdentifierFromEmail(email);
+    const profileIdentifier = generateIdentifier(email);
 
     // Use shared profile fetching utility
     return await fetchProfileById(profileIdentifier);

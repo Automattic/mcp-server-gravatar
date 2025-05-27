@@ -43,6 +43,7 @@ export async function handleGetAvatarById(params: any) {
   const { avatarIdentifier, size, defaultOption, forceDefault, rating } = params;
 
   try {
+    // Pass parameters directly - no type casting needed since fetchAvatar now accepts strings
     const avatarParams = {
       avatarIdentifier,
       size,
