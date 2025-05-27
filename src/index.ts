@@ -7,16 +7,18 @@ import {
   InitializeRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { tools } from './tools/index.js';
 import { serverInfo, capabilities, setClientInfo } from './config/server-config.js';
 
-// Import handlers directly
-import { handleGetProfileById } from './tools/get-profile-by-id.js';
-import { handleGetProfileByEmail } from './tools/get-profile-by-email.js';
-import { handleGetInterestsById } from './tools/get-interests-by-id.js';
-import { handleGetInterestsByEmail } from './tools/get-interests-by-email.js';
-import { handleGetAvatarById } from './tools/get-avatar-by-id.js';
-import { handleGetAvatarByEmail } from './tools/get-avatar-by-email.js';
+// Import tool definitions and handlers directly
+import { getProfileByIdTool, handleGetProfileById } from './tools/get-profile-by-id.js';
+import { getProfileByEmailTool, handleGetProfileByEmail } from './tools/get-profile-by-email.js';
+import { getInterestsByIdTool, handleGetInterestsById } from './tools/get-interests-by-id.js';
+import {
+  getInterestsByEmailTool,
+  handleGetInterestsByEmail,
+} from './tools/get-interests-by-email.js';
+import { getAvatarByIdTool, handleGetAvatarById } from './tools/get-avatar-by-id.js';
+import { getAvatarByEmailTool, handleGetAvatarByEmail } from './tools/get-avatar-by-email.js';
 
 // Create MCP server
 const server = new Server(serverInfo, { capabilities });
@@ -47,7 +49,16 @@ server.setRequestHandler(InitializeRequestSchema, async request => {
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return { tools };
+  return {
+    tools: [
+      getProfileByIdTool,
+      getProfileByEmailTool,
+      getInterestsByIdTool,
+      getInterestsByEmailTool,
+      getAvatarByIdTool,
+      getAvatarByEmailTool,
+    ],
+  };
 });
 
 // Handle tool calls
