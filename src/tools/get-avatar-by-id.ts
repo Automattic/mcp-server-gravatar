@@ -4,32 +4,38 @@ import { fetchAvatar } from './avatar-utils.js';
 // Tool definition
 export const getAvatarByIdTool = {
   name: 'get_avatar_by_id',
-  description: 'Get the avatar PNG image for a Gravatar profile using an avatar identifier.',
+  description:
+    "Retrieve the avatar image for a Gravatar profile using an avatar identifier. Functionally identical to the email variant but uses a direct identifier for lookup. More efficient when you already have the hashed identifier. Example prompt: 'Get the avatar image for this Gravatar ID' or 'Show me a 150px avatar for user ID abc123def456abc123def456abc123def456abc123def456abc123def456abc1.'",
   inputSchema: {
     type: 'object',
     properties: {
       avatarIdentifier: {
         type: 'string',
-        description: 'Avatar identifier (hash)',
+        description:
+          'Avatar identifier for the Gravatar profile. An Avatar Identifier is an email address that has been normalized (e.g. lower-cased and trimmed) and then hashed with either SHA256 (preferred) or MD5 (deprecated). Note: Unlike profile identifiers, avatar identifiers cannot use URL slugs - only email hashes are supported.',
       },
       size: {
         type: 'number',
-        description: 'Size of the avatar image (1-2048)',
+        description:
+          'Desired avatar size in pixels (1-2048). Images are square, so this sets both width and height. Common sizes: 80 (default web), 200 (high-res web), 512 (large displays). Gravatar will scale the image appropriately.',
         minimum: 1,
         maximum: 2048,
       },
       defaultOption: {
         type: 'string',
-        description: 'Default avatar option',
+        description:
+          "Fallback image style when no avatar exists. Options: '404' (return HTTP 404 error instead of image), 'mp' (mystery person silhouette), 'identicon' (geometric pattern), 'monsterid' (generated monster), 'wavatar' (generated face), 'retro' (8-bit style), 'robohash' (robot), 'blank' (transparent). If not specified, Gravatar's default image is returned when no avatar exists.",
         enum: ['404', 'mp', 'identicon', 'monsterid', 'wavatar', 'retro', 'robohash', 'blank'],
       },
       forceDefault: {
         type: 'boolean',
-        description: 'Force default avatar',
+        description:
+          "When true, always returns the default image instead of the user's avatar. Useful for testing default options or ensuring consistent placeholder images.",
       },
       rating: {
         type: 'string',
-        description: 'Content rating',
+        description:
+          "Maximum content rating to display. 'G' (general audiences), 'PG' (parental guidance), 'R' (restricted), 'X' (explicit). If user's avatar exceeds this rating, the default image is shown instead.",
         enum: ['G', 'PG', 'R', 'X'],
       },
     },
