@@ -1,13 +1,11 @@
 import { getUserAgent } from '../config/server-config.js';
-import type { DefaultAvatarOption } from '../common/types.js';
-import type { Rating } from '../generated/gravatar-api/models/Rating.js';
 
 export interface AvatarParams {
   avatarIdentifier: string;
   size?: number;
-  defaultOption?: DefaultAvatarOption;
+  defaultOption?: string;
   forceDefault?: boolean;
-  rating?: Rating;
+  rating?: string;
 }
 
 /**

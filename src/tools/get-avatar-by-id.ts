@@ -1,6 +1,4 @@
 import { fetchAvatar } from './avatar-utils.js';
-import type { DefaultAvatarOption } from '../common/types.js';
-import type { Rating } from '../generated/gravatar-api/models/Rating.js';
 
 // Tool definition
 export const getAvatarByIdTool = {
@@ -40,20 +38,17 @@ export const getAvatarByIdTool = {
 
 // Tool handler
 // MCP framework validates parameters against tool schema before calling handlers.
-// Using 'any' here matches the industry standard pattern and allows for flexible
-// destructuring while maintaining type safety through schema validation.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleGetAvatarById(params: any) {
   const { avatarIdentifier, size, defaultOption, forceDefault, rating } = params;
 
   try {
-    // Cast parameters to proper types for fetchAvatar
     const avatarParams = {
       avatarIdentifier,
       size,
-      defaultOption: defaultOption as DefaultAvatarOption | undefined,
+      defaultOption,
       forceDefault,
-      rating: rating as Rating | undefined,
+      rating,
     };
 
     const avatarBuffer = await fetchAvatar(avatarParams);

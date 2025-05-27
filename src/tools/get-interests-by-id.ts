@@ -18,8 +18,6 @@ export const getInterestsByIdTool = {
 
 // Tool handler
 // MCP framework validates parameters against tool schema before calling handlers.
-// Using 'any' here matches the industry standard pattern and allows for flexible
-// destructuring while maintaining type safety through schema validation.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleGetInterestsById(params: any) {
   const { profileIdentifier } = params;
