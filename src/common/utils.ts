@@ -2,11 +2,20 @@ import crypto from 'crypto';
 
 /**
  * Normalizes a string by trimming whitespace and converting to lowercase
- * @param input The string to normalize
+ * Handles undefined, null, and non-string inputs gracefully
+ * @param input The input to normalize
  * @returns The normalized string
  */
 export function normalize(input: string): string {
-  return input.trim().toLowerCase();
+  // Handle undefined, null, or non-string inputs defensively
+  if (input == null) {
+    return '';
+  }
+
+  // Convert to string if it's not already a string
+  const stringInput = String(input);
+
+  return stringInput.trim().toLowerCase();
 }
 
 /**
