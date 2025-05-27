@@ -1,4 +1,4 @@
-import { generateIdentifier, EmptyStringError } from '../common/utils.js';
+import { generateIdentifier, handleEmailToolError } from '../common/utils.js';
 import { fetchAvatar } from './avatar-utils.js';
 
 // Tool definition
@@ -66,28 +66,6 @@ export async function handleGetAvatarByEmail(params: any) {
       ],
     };
   } catch (error) {
-    // Handle validation errors with context-specific messages
-    if (error instanceof EmptyStringError) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'Failed to fetch avatar: Email parameter is missing or empty. Please provide a valid email address.',
-          },
-        ],
-        isError: true,
-      };
-    }
-
-    // Handle other errors
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Failed to fetch avatar for email "${email}": ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-      isError: true,
-    };
+    return handleEmailToolError(error, email, 'fetch avatar');
   }
 }

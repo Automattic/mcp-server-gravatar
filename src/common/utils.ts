@@ -50,3 +50,34 @@ export function generateIdentifier(input: string): string {
   const normalizedInput = normalize(input);
   return crypto.createHash('sha256').update(normalizedInput).digest('hex');
 }
+
+/**
+ * Handles errors for email-based tools with consistent error formatting
+ * @param error The error that occurred
+ * @param email The email parameter value (for error context)
+ * @param operation The operation being performed (e.g., "fetch profile", "fetch avatar")
+ * @returns Formatted error response object
+ */
+export function handleEmailToolError(error: unknown, email: string, operation: string) {
+  if (error instanceof EmptyStringError) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Failed to ${operation}: Email parameter is missing or empty. Please provide a valid email address.`,
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `Failed to ${operation} for email "${email}": ${error instanceof Error ? error.message : String(error)}`,
+      },
+    ],
+    isError: true,
+  };
+}
