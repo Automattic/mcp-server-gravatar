@@ -5,6 +5,7 @@ import {
   assertNonEmpty,
   EmptyStringError,
   handleEmailToolError,
+  handleIdToolError,
 } from '../../src/common/utils.js';
 
 describe('String Utilities', () => {
@@ -97,61 +98,123 @@ describe('Validation Utilities', () => {
 });
 
 describe('Error Handling Utilities', () => {
-  it('handleEmailToolError should handle EmptyStringError', () => {
-    const error = new EmptyStringError();
-    const result = handleEmailToolError(error, 'test@example.com', 'fetch profile');
+  describe('handleEmailToolError', () => {
+    it('should handle EmptyStringError', () => {
+      const error = new EmptyStringError();
+      const result = handleEmailToolError(error, 'test@example.com', 'fetch profile');
 
-    expect(result).toEqual({
-      content: [
-        {
-          type: 'text',
-          text: 'Failed to fetch profile: Email parameter is missing or empty. Please provide a valid email address.',
-        },
-      ],
-      isError: true,
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Failed to fetch profile: Email parameter is missing or empty. Please provide a valid email address.',
+          },
+        ],
+        isError: true,
+      });
+    });
+
+    it('should handle generic errors', () => {
+      const error = new Error('API connection failed');
+      const result = handleEmailToolError(error, 'test@example.com', 'fetch avatar');
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Failed to fetch avatar for email "test@example.com": API connection failed',
+          },
+        ],
+        isError: true,
+      });
+    });
+
+    it('should handle non-Error objects', () => {
+      const error = 'String error message';
+      const result = handleEmailToolError(error, 'user@domain.com', 'fetch interests');
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Failed to fetch interests for email "user@domain.com": String error message',
+          },
+        ],
+        isError: true,
+      });
+    });
+
+    it('should work with different operations', () => {
+      const error = new EmptyStringError();
+
+      const profileResult = handleEmailToolError(error, '', 'fetch profile');
+      expect(profileResult.content[0].text).toContain('Failed to fetch profile:');
+
+      const avatarResult = handleEmailToolError(error, '', 'fetch avatar');
+      expect(avatarResult.content[0].text).toContain('Failed to fetch avatar:');
+
+      const interestsResult = handleEmailToolError(error, '', 'fetch interests');
+      expect(interestsResult.content[0].text).toContain('Failed to fetch interests:');
     });
   });
 
-  it('handleEmailToolError should handle generic errors', () => {
-    const error = new Error('API connection failed');
-    const result = handleEmailToolError(error, 'test@example.com', 'fetch avatar');
+  describe('handleIdToolError', () => {
+    it('should handle EmptyStringError', () => {
+      const error = new EmptyStringError();
+      const result = handleIdToolError(error, 'abc123', 'fetch profile');
 
-    expect(result).toEqual({
-      content: [
-        {
-          type: 'text',
-          text: 'Failed to fetch avatar for email "test@example.com": API connection failed',
-        },
-      ],
-      isError: true,
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Failed to fetch profile: Identifier parameter is missing or empty. Please provide a valid identifier.',
+          },
+        ],
+        isError: true,
+      });
     });
-  });
 
-  it('handleEmailToolError should handle non-Error objects', () => {
-    const error = 'String error message';
-    const result = handleEmailToolError(error, 'user@domain.com', 'fetch interests');
+    it('should handle generic errors', () => {
+      const error = new Error('Invalid hash format');
+      const result = handleIdToolError(error, 'invalid-hash', 'fetch avatar');
 
-    expect(result).toEqual({
-      content: [
-        {
-          type: 'text',
-          text: 'Failed to fetch interests for email "user@domain.com": String error message',
-        },
-      ],
-      isError: true,
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Failed to fetch avatar for identifier "invalid-hash": Invalid hash format',
+          },
+        ],
+        isError: true,
+      });
     });
-  });
 
-  it('handleEmailToolError should work with different operations', () => {
-    const error = new EmptyStringError();
+    it('should handle non-Error objects', () => {
+      const error = 'Network timeout';
+      const result = handleIdToolError(error, 'def456', 'fetch interests');
 
-    const profileResult = handleEmailToolError(error, '', 'fetch profile');
-    expect(profileResult.content[0].text).toContain('Failed to fetch profile:');
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Failed to fetch interests for identifier "def456": Network timeout',
+          },
+        ],
+        isError: true,
+      });
+    });
 
-    const avatarResult = handleEmailToolError(error, '', 'fetch avatar');
-    expect(avatarResult.content[0].text).toContain('Failed to fetch avatar:');
+    it('should work with different operations', () => {
+      const error = new EmptyStringError();
 
-    const interestsResult = handleEmailToolError(error, '', 'fetch interests');
-    expect(interestsResult.content[0].text).toContain('Failed to fetch interests:');
+      const profileResult = handleIdToolError(error, '', 'fetch profile');
+      expect(profileResult.content[0].text).toContain('Failed to fetch profile:');
+
+      const avatarResult = handleIdToolError(error, '', 'fetch avatar');
+      expect(avatarResult.content[0].text).toContain('Failed to fetch avatar:');
+
+      const interestsResult = handleIdToolError(error, '', 'fetch interests');
+      expect(interestsResult.content[0].text).toContain('Failed to fetch interests:');
+    });
   });
 });

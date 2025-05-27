@@ -1,3 +1,4 @@
+import { assertNonEmpty, handleIdToolError } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
 
 // Tool definition
@@ -9,7 +10,7 @@ export const getProfileByIdTool = {
     properties: {
       profileIdentifier: {
         type: 'string',
-        description: 'Profile identifier (32 or 64 character hash)',
+        description: 'Profile identifier (hash)',
       },
     },
     required: ['profileIdentifier'],
@@ -23,16 +24,9 @@ export async function handleGetProfileById(params: any) {
   const { profileIdentifier } = params;
 
   try {
+    assertNonEmpty(profileIdentifier);
     return await fetchProfileById(profileIdentifier);
   } catch (error) {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Failed to fetch profile for identifier "${profileIdentifier}": ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-      isError: true,
-    };
+    return handleIdToolError(error, profileIdentifier, 'fetch profile');
   }
 }

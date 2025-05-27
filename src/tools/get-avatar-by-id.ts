@@ -1,3 +1,4 @@
+import { assertNonEmpty, handleIdToolError } from '../common/utils.js';
 import { fetchAvatar } from './avatar-utils.js';
 
 // Tool definition
@@ -9,7 +10,7 @@ export const getAvatarByIdTool = {
     properties: {
       avatarIdentifier: {
         type: 'string',
-        description: 'Avatar identifier (32 or 64 character hash)',
+        description: 'Avatar identifier (hash)',
       },
       size: {
         type: 'number',
@@ -43,7 +44,8 @@ export async function handleGetAvatarById(params: any) {
   const { avatarIdentifier, size, defaultOption, forceDefault, rating } = params;
 
   try {
-    // Pass parameters directly - no type casting needed since fetchAvatar now accepts strings
+    assertNonEmpty(avatarIdentifier);
+
     const avatarParams = {
       avatarIdentifier,
       size,
@@ -53,6 +55,7 @@ export async function handleGetAvatarById(params: any) {
     };
 
     const avatarBuffer = await fetchAvatar(avatarParams);
+
     return {
       content: [
         {
@@ -63,14 +66,6 @@ export async function handleGetAvatarById(params: any) {
       ],
     };
   } catch (error) {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Failed to fetch avatar for identifier "${avatarIdentifier}": ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-      isError: true,
-    };
+    return handleIdToolError(error, avatarIdentifier, 'fetch avatar');
   }
 }

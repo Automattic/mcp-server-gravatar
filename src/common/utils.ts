@@ -81,3 +81,34 @@ export function handleEmailToolError(error: unknown, email: string, operation: s
     isError: true,
   };
 }
+
+/**
+ * Handles errors for ID-based tools with consistent error formatting
+ * @param error The error that occurred
+ * @param identifier The identifier parameter value (for error context)
+ * @param operation The operation being performed (e.g., "fetch profile", "fetch avatar")
+ * @returns Formatted error response object
+ */
+export function handleIdToolError(error: unknown, identifier: string, operation: string) {
+  if (error instanceof EmptyStringError) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Failed to ${operation}: Identifier parameter is missing or empty. Please provide a valid identifier.`,
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `Failed to ${operation} for identifier "${identifier}": ${error instanceof Error ? error.message : String(error)}`,
+      },
+    ],
+    isError: true,
+  };
+}
