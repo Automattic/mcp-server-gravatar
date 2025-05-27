@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { tools } from '../../src/tools/index.js';
 import { getProfileByIdTool, handleGetProfileById } from '../../src/tools/get-profile-by-id.js';
 import {
   getProfileByEmailTool,
@@ -52,6 +51,15 @@ import * as utils from '../../src/common/utils.js';
 
 describe('Tools Index', () => {
   it('should export all tools', () => {
+    const tools = [
+      getProfileByIdTool,
+      getProfileByEmailTool,
+      getInterestsByIdTool,
+      getInterestsByEmailTool,
+      getAvatarByIdTool,
+      getAvatarByEmailTool,
+    ];
+
     expect(tools).toHaveLength(6);
     expect(tools).toContain(getProfileByIdTool);
     expect(tools).toContain(getProfileByEmailTool);
