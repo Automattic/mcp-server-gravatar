@@ -50,7 +50,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return { tools };
 });
 
-// Handle tool calls with switch statement
+// Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async request => {
   try {
     switch (request.params.name) {
