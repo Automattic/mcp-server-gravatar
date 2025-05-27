@@ -18,7 +18,6 @@ import {
   getAvatarByEmailTool,
   handleGetAvatarByEmail,
 } from '../../src/tools/get-avatar-by-email.js';
-import { DefaultAvatarOption } from '../../src/common/types.js';
 
 // Mock the generated API clients
 vi.mock('../../src/generated/gravatar-api/apis/ProfilesApi.js', () => ({
@@ -238,7 +237,7 @@ describe('Avatar Tools', () => {
       const result = await handleGetAvatarById({
         avatarIdentifier: validHash,
         size: 200,
-        defaultOption: DefaultAvatarOption.IDENTICON,
+        defaultOption: 'identicon',
       });
 
       expect(fetch).toHaveBeenCalledWith(
