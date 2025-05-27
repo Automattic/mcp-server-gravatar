@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  normalize,
-  validateEmail,
-  generateIdentifier,
-  validateHash,
-} from '../../src/common/utils.js';
+import { normalize, generateIdentifier, validateHash } from '../../src/common/utils.js';
 
 describe('String Utilities', () => {
   it('normalize should trim and lowercase string', () => {
@@ -12,19 +7,6 @@ describe('String Utilities', () => {
     expect(normalize('USER@DOMAIN.COM')).toBe('user@domain.com');
     expect(normalize('  user@domain.com  ')).toBe('user@domain.com');
     expect(normalize('  SomeString  ')).toBe('somestring');
-  });
-
-  it('validateEmail should validate email format', () => {
-    // Valid emails
-    expect(validateEmail('test@example.com')).toBe(true);
-    expect(validateEmail('user.name+tag@example.co.uk')).toBe(true);
-    expect(validateEmail('user-name@domain.com')).toBe(true);
-
-    // Invalid emails
-    expect(validateEmail('invalid-email')).toBe(false);
-    expect(validateEmail('user@')).toBe(false);
-    expect(validateEmail('@domain.com')).toBe(false);
-    expect(validateEmail('user@domain')).toBe(false);
   });
 
   it('generateIdentifier should create correct hash from any string', () => {

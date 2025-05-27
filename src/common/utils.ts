@@ -10,16 +10,6 @@ export function normalize(input: string): string {
 }
 
 /**
- * Validates an email address using a regular expression
- * @param email The email address to validate
- * @returns True if the email address is valid, false otherwise
- */
-export function validateEmail(email: string): boolean {
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return emailRegex.test(email);
-}
-
-/**
  * Generates a Gravatar identifier from any string
  * This normalizes the string and creates a SHA256 hash
  * @param input The string to convert to an identifier
