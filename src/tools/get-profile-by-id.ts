@@ -12,7 +12,7 @@ export const getProfileByIdTool = {
       profileIdentifier: {
         type: 'string',
         description:
-          "Profile identifier for the Gravatar profile. Accepts: 1) SHA256 hash of normalized email address (preferred), 2) MD5 hash of normalized email address (deprecated), or 3) Gravatar profile URL slug (e.g., 'username' from gravatar.com/username). SHA256 is recommended for new implementations.",
+          "Profile identifier for the Gravatar profile. A Profile Identifier is either an email address that has been normalized (e.g. lower-cased and trimmed) and then hashed with either SHA256 (preferred) or MD5 (deprecated), or Gravatar profile URL slug (e.g., 'username' from gravatar.com/username).",
       },
     },
     required: ['profileIdentifier'],

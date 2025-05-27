@@ -12,7 +12,7 @@ export const getAvatarByIdTool = {
       avatarIdentifier: {
         type: 'string',
         description:
-          'Avatar identifier for the Gravatar profile. Accepts: 1) SHA256 hash of normalized email address (preferred), or 2) MD5 hash of normalized email address (deprecated). Note: Unlike profile identifiers, avatar identifiers cannot use URL slugs - only email hashes are supported.',
+          'Avatar identifier for the Gravatar profile. An Avatar Identifier is an email address that has been normalized (e.g. lower-cased and trimmed) and then hashed with either SHA256 (preferred) or MD5 (deprecated). Note: Unlike profile identifiers, avatar identifiers cannot use URL slugs - only email hashes are supported.',
       },
       size: {
         type: 'number',
