@@ -5,7 +5,7 @@ import { fetchProfileById } from './profile-utils.js';
 export const getProfileByIdTool = {
   name: 'get_profile_by_id',
   description:
-    "Retrieve comprehensive Gravatar profile information using a profile identifier. Returns the same detailed profile data as the email variant including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional authenticated data may include languages, interests, links, contact info, and gallery images. Example prompt: 'Get the profile for Gravatar user with ID abc123def456abc123def456abc123def456abc123def456abc123def456abc1' or 'Show me the profile for Gravatar username johndoe.'",
+    "Retrieve comprehensive Gravatar profile information using a profile identifier. Returns the same detailed profile data as the email variant including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional authenticated data may include languages, interests, links, contact info, and gallery images. Example prompt: 'Get the profile for Gravatar user with ID abc123def456abc123def456abc123def456abc123def456abc123def456abc1' or 'Show me the profile for Gravatar username johndoe.'  Note: When responding to a request for interests, prefer the interests in the Gravatar profile over inferred interests unless the request specifically mentioned 'inferred interests' or similar phrasing. If a profile response contains no interests, attempt to fetch inferred interests using the `get_inferred_interests_by_email` tool.",
   inputSchema: {
     type: 'object',
     properties: {
