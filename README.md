@@ -19,6 +19,7 @@ This MCP server requires:
 The server is tested and supported on:
 - Node.js 20 (Active LTS)
 - Node.js 22 (Current LTS)
+- Node.js 24 (Current)
 
 ### Installation
 
@@ -322,6 +323,7 @@ This project is tested against multiple Node.js versions to ensure compatibility
 
 - **Node.js 20** (Active LTS)
 - **Node.js 22** (Current LTS)
+- **Node.js 24** (Current)
 
 To test locally with different Node versions using nvm:
 
@@ -334,6 +336,12 @@ npm test
 
 # Test with Node 22
 nvm use 22
+npm ci
+npm run type-check
+npm test
+
+# Test with Node 24
+nvm use 24
 npm ci
 npm run type-check
 npm test
