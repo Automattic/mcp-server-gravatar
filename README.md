@@ -1,3 +1,5 @@
+![GitHub branch status](https://img.shields.io/github/checks-status/Automattic/mcp-server-gravatar/main?style=plastic)
+
 # MCP Server Gravatar
 
 Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatars, profiles, and inferred interests.
@@ -6,7 +8,7 @@ Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatar
 
 For quick installation in VS Code, click one of the installation buttons below:
 
-[![Install with NPX in VS Code](https://img.shields.io/badge/VS_Code-NPX-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D) [![Install with NPX in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-NPX-2ABF63?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D)
+[![Install with NPX in VS Code](https://img.shields.io/badge/VS_Code-Configure-0098FF?style=plastic&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D) [![Install with NPX in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Configure-2ABF63?style=plastic&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D)
 
 ## Requirements
 
@@ -19,6 +21,7 @@ This MCP server requires:
 The server is tested and supported on:
 - Node.js 20 (Active LTS)
 - Node.js 22 (Current LTS)
+- Node.js 24 (Current)
 
 ### Installation
 
@@ -322,6 +325,7 @@ This project is tested against multiple Node.js versions to ensure compatibility
 
 - **Node.js 20** (Active LTS)
 - **Node.js 22** (Current LTS)
+- **Node.js 24** (Current)
 
 To test locally with different Node versions using nvm:
 
@@ -334,6 +338,12 @@ npm test
 
 # Test with Node 22
 nvm use 22
+npm ci
+npm run type-check
+npm test
+
+# Test with Node 24
+nvm use 24
 npm ci
 npm run type-check
 npm test
