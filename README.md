@@ -2,6 +2,12 @@
 
 Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatars, profiles, and inferred interests.
 
+## Quick Install
+
+For quick installation in VS Code, click one of the installation buttons below:
+
+[![Install with NPX in VS Code](https://img.shields.io/badge/VS_Code-NPX-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D) [![Install with NPX in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-NPX-2ABF63?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D)
+
 ## Requirements
 
 ### Node.js
@@ -18,63 +24,34 @@ The server is tested and supported on:
 
 You can install and run this server using npx (recommended) or by building from source.
 
-## Identifier Types
-
-The Gravatar MCP server uses different types of identifiers to access profile and avatar data:
-
-### Profile Identifiers
-
-A **Profile Identifier** can be one of the following:
-
-1. **SHA256 Hash** (preferred): An email address that has been normalized (lower-cased and trimmed) and then hashed with SHA256
-2. **MD5 Hash** (deprecated): An email address that has been normalized (lower-cased and trimmed) and then hashed with MD5
-3. **URL Slug**: The username portion from a Gravatar profile URL (e.g., 'username' from gravatar.com/username)
-
-### Avatar Identifiers
-
-An **Avatar Identifier** is an email address that has been normalized (lower-cased and trimmed) and then hashed with either:
-
-1. **SHA256** (preferred)
-2. **MD5** (deprecated)
-
-**Important**: Unlike Profile Identifiers, Avatar Identifiers cannot use URL slugs - only email hashes are supported.
-
-### Email Addresses
-
-When using email-based tools, you can provide any valid email format. The system will automatically:
-
-1. Normalize the email (convert to lowercase and trim whitespace)
-2. Generate the appropriate hash for API requests
-3. Process the email securely without storing it
-
 ## Tools
 
 1. `get_profile_by_id`
-   - Retrieve comprehensive Gravatar profile information using a profile identifier. Returns detailed user profile data including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional authenticated data may include languages, interests, links, contact info, and gallery images.
+   - Retrieve comprehensive Gravatar profile information using a profile identifier
    - Required inputs:
      - `profileIdentifier` (string): A Profile Identifier (see [Identifier Types](#identifier-types) section)
    - Returns: Profile object as JSON with comprehensive user information
 
 2. `get_profile_by_email`
-   - Retrieve comprehensive Gravatar profile information using an email address. Returns detailed user profile data including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional authenticated data may include languages, interests, links, contact info, and gallery images.
+   - Retrieve comprehensive Gravatar profile information using an email address
    - Required inputs:
      - `email` (string): The email address associated with the Gravatar profile. Can be any valid email format - the system will automatically normalize and hash the email for lookup.
    - Returns: Profile object as JSON with comprehensive user information
 
 3. `get_inferred_interests_by_id`
-   - Fetch AI-inferred interests for a Gravatar profile using a profile identifier. Returns machine learning-generated interest data that can help understand user preferences, content recommendations, or audience insights. This is experimental data that may not be available for all profiles.
+   - Fetch AI-inferred interests for a Gravatar profile using a profile identifier
    - Required inputs:
      - `profileIdentifier` (string): A Profile Identifier (see [Identifier Types](#identifier-types) section)
    - Returns: List of AI-inferred interest names as JSON
 
 4. `get_inferred_interests_by_email`
-   - Fetch AI-inferred interests for a Gravatar profile using an email address. Returns a list of topics and interests that Gravatar's machine learning algorithms have associated with the profile based on public activity and connections. This experimental feature helps understand user preferences and topics of interest.
+   - Fetch AI-inferred interests for a Gravatar profile using an email address
    - Required inputs:
      - `email` (string): The email address associated with the Gravatar profile. Can be any valid email format - the system will automatically normalize and hash the email for lookup.
    - Returns: List of AI-inferred interest names as JSON
 
 5. `get_avatar_by_id`
-   - Retrieve the avatar image for a Gravatar profile using an avatar identifier. Functionally identical to the email variant but uses a direct identifier for lookup. More efficient when you already have the hashed identifier.
+   - Retrieve the avatar image for a Gravatar profile using an avatar identifier
    - Required inputs:
      - `avatarIdentifier` (string): An Avatar Identifier (see [Identifier Types](#identifier-types) section)
    - Optional inputs:
@@ -85,7 +62,7 @@ When using email-based tools, you can provide any valid email format. The system
    - Returns: Avatar image in PNG format
 
 6. `get_avatar_by_email`
-   - Retrieve the avatar image for a Gravatar profile using an email address. Returns a PNG image that can be displayed directly or processed further. Supports extensive customization options including size, fallback behavior, content rating filters, and default image styles.
+   - Retrieve the avatar image for a Gravatar profile using an email address
    - Required inputs:
      - `email` (string): The email address associated with the Gravatar profile. Can be any valid email format - the system will automatically normalize and hash the email for lookup.
    - Optional inputs:
@@ -117,7 +94,7 @@ When using email-based tools, you can provide any valid email format. The system
 
 ### Gravatar API Key
 
-While the Gravatar API can be used without authentication, using an API key is recommended as it increases the rate limits for your queries. You can generate your own API key by visiting the [Developer Dashboard](https://gravatar.com/developers/).
+Some parts of the Gravatar API can be used without authentication. However, using an API key is recommended as it increases the rate limits for your queries. You can generate your own API key by visiting the [Developer Dashboard](https://gravatar.com/developers/).
 
 Once you have your API key, you can configure it in Claude Desktop or VS Code as shown in the sections below.
 
@@ -145,6 +122,9 @@ Add the following to your `claude_desktop_config.json`:
 ```
 
 #### Without API Key
+> [!NOTE]
+> - Without an API key, strict rate limits will be applied.
+> - A future release of this server may include tools that will only be available with an API key.
 
 ```json
 {
@@ -161,10 +141,6 @@ Add the following to your `claude_desktop_config.json`:
 ```
 
 ### VS Code Configuration
-
-For quick installation, click one of the installation buttons below:
-
-[![Install with NPX in VS Code](https://img.shields.io/badge/VS_Code-NPX-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D) [![Install with NPX in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-NPX-2ABF63?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=gravatar&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22gravatar_api_key%22%2C%22description%22%3A%22Gravatar%20API%20Key%20(optional)%22%2C%22password%22%3Atrue%7D%5D&command=%22npx%22&args=%5B%22-y%22%2C%22github%3AAutomattic%2Fmcp-server-gravatar%22%5D&env=%7B%22GRAVATAR_API_KEY%22%3A%22%24%7Binput%3Agravatar_api_key%7D%22%7D)
 
 For manual installation, add one of the following JSON blocks to your User Settings (JSON) file in VS Code. You can do this by pressing `Cmd + Shift + P` (or `Ctrl + Shift + P` on Windows/Linux) and typing `Preferences: Open Settings (JSON)`.
 
@@ -197,8 +173,9 @@ This configuration prompts for an API key and stores it securely:
 ```
 
 #### Without API Key
-
-If you don't want to use an API key:
+> [!NOTE]
+> - Without an API key, strict rate limits will be applied.
+> - A future release of this server may include tools that will only be available with an API key.
 
 ```json
 {
@@ -228,19 +205,68 @@ cd mcp-server-gravatar
 
 # Install dependencies
 npm install
-
-# Generate Gravatar API client from OpenAPI spec
-npm run generate-client
-
-# Build the project
-npm run build
-
-# Run the server (without API key)
-npm start
-
-# Or run with an API key (recommended)
-GRAVATAR_API_KEY=your-api-key-here npm start
 ```
+
+The update your MCP Client configuration:
+
+```json
+{
+  "mcpServers": {
+    "gravatar": {
+      "command": "npx",
+      "args": [
+        "/path/to/mcp-server-gravatar"
+      ],
+      "env": {
+        "GRAVATAR_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+Or witout an API Key:
+```json
+{
+  "mcpServers": {
+    "gravatar": {
+      "command": "npx",
+      "args": [
+        "/path/to/mcp-server-gravatar"
+      ]
+    }
+  }
+}
+```
+
+## Identifier Types
+
+The Gravatar MCP server uses different types of identifiers to access profile and avatar data:
+
+### Profile Identifiers
+
+A **Profile Identifier** can be one of the following:
+
+1. **SHA256 Hash** (preferred): An email address that has been normalized (lower-cased and trimmed) and then hashed with SHA256
+2. **MD5 Hash** (deprecated): An email address that has been normalized (lower-cased and trimmed) and then hashed with MD5
+3. **URL Slug**: The username portion from a Gravatar profile URL (e.g., 'username' from gravatar.com/username)
+
+### Avatar Identifiers
+
+An **Avatar Identifier** is an email address that has been normalized (lower-cased and trimmed) and then hashed with either:
+
+1. **SHA256** (preferred)
+2. **MD5** (deprecated)
+
+**Important**: Unlike Profile Identifiers, Avatar Identifiers cannot use URL slugs - only email hashes are supported.
+
+### Email Addresses
+
+When using email-based tools, you can provide any valid email format. The system will automatically:
+
+1. Normalize the email (convert to lowercase and trim whitespace)
+2. Generate the appropriate hash for API requests
+3. Process the email securely without storing it
 
 ## Development
 
