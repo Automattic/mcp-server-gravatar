@@ -1,6 +1,6 @@
 {
   "name": "mcp-server-gravatar",
-  "version": "0.1.0-alpha",
+  "version": "0.1.0-beta",
   "description": "Gravatar's official MCP Server",
   "type": "module",
   "main": "dist/index.js",
