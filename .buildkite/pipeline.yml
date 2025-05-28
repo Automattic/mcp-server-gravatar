@@ -4,14 +4,14 @@
 
 steps:
   # Phase 1: Code Quality & Tests (Parallel)
-  - label: '✨ Code Quality (Node {{matrix.node}})'
+  - label: "✨ Code Quality (Node {{matrix.node}})"
     key: quality
     matrix:
       setup:
         node: ['20', '22']
     plugins:
       - $NVM_PLUGIN:
-          version: '{{matrix.node}}'
+          version: "{{matrix.node}}"
     command: |
       echo "--- 📦 Installing dependencies (Node {{matrix.node}})"
       npm ci
@@ -23,16 +23,16 @@ steps:
       npm run type-check
     notify:
       - github_commit_status:
-          context: 'Code Quality (Node {{matrix.node}})'
+          context: "Code Quality (Node {{matrix.node}})"
 
-  - label: '🧪 Tests (Node {{matrix.node}})'
+  - label: "🧪 Tests (Node {{matrix.node}})"
     key: tests
     matrix:
       setup:
         node: ['20', '22']
     plugins:
       - $NVM_PLUGIN:
-          version: '{{matrix.node}}'
+          version: "{{matrix.node}}"
     command: |
       echo "--- 📦 Installing dependencies (Node {{matrix.node}})"
       npm ci
@@ -40,10 +40,10 @@ steps:
       npm test
     notify:
       - github_commit_status:
-          context: 'Tests (Node {{matrix.node}})'
+          context: "Tests (Node {{matrix.node}})"
 
   # Phase 2: Build & Run (After quality and tests pass)
-  - label: '🔍 Build & Run (Node {{matrix.node}})'
+  - label: "🔍 Build & Run (Node {{matrix.node}})"
     key: server
     matrix:
       setup:
@@ -53,11 +53,11 @@ steps:
       - tests
     plugins:
       - $NVM_PLUGIN:
-          version: '{{matrix.node}}'
+          version: "{{matrix.node}}"
     command: |
       echo "--- 📦 Installing dependencies (Node {{matrix.node}})"
       npm ci
       .buildkite/commands/test-run-server.sh
     notify:
       - github_commit_status:
-          context: 'Build & Run (Node {{matrix.node}})'
+          context: "Build & Run (Node {{matrix.node}})"
