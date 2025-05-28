@@ -1,3 +1,5 @@
+![GitHub branch status](https://img.shields.io/github/checks-status/Automattic/mcp-server-gravatar/main?style=plastic)
+
 # MCP Server Gravatar
 
 Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatars, profiles, and inferred interests.
