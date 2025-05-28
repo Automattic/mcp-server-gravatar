@@ -2,6 +2,22 @@
 
 Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatars, profiles, and inferred interests.
 
+## Requirements
+
+### Node.js
+
+This MCP server requires:
+- **Node.js**: 20.0.0 or higher
+- **npm**: 10.0.0 or higher
+
+The server is tested and supported on:
+- Node.js 20 (Active LTS)
+- Node.js 22 (Current LTS)
+
+### Installation
+
+You can install and run this server using npx (recommended) or by building from source.
+
 ## Identifier Types
 
 The Gravatar MCP server uses different types of identifiers to access profile and avatar data:
@@ -272,6 +288,29 @@ Run tests in watch mode:
 
 ```bash
 npm run test:watch
+```
+
+#### Multi-Node Testing
+
+This project is tested against multiple Node.js versions to ensure compatibility. The CI pipeline automatically tests on:
+
+- **Node.js 20** (Active LTS)
+- **Node.js 22** (Current LTS)
+
+To test locally with different Node versions using nvm:
+
+```bash
+# Test with Node 20
+nvm use 20
+npm ci
+npm run type-check
+npm test
+
+# Test with Node 22
+nvm use 22
+npm ci
+npm run type-check
+npm test
 ```
 
 ### Other Useful Commands
