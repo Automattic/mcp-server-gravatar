@@ -17,6 +17,9 @@ README.md
 # GitHub
 .github/
 
+# Buildkite pipeline (requires double quotes for variable interpolation)
+.buildkite/pipeline.yml
+
 # Misc
 .DS_Store
 .env

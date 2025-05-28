@@ -1,59 +1,72 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 ---
-# Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buidkite-agent pipeline upload`
+# Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buildkite-agent pipeline upload`
 
 steps:
-  - group: '✨ Code Quality Checks'
-    key: quality-checks
-    steps:
-      - label: '🕵️ Linting & Formatting'
-        key: quality-check
-        plugins: [$NVM_PLUGIN]
-        command: |
-          echo "--- 📦 Installing dependencies"
-          npm ci
-          echo "--- 🕵️ Running linting checks"
-          npm run lint
-          echo "--- 🕵️ Running formatting checks"
-          npm run format:check
-        notify:
-          - github_commit_status:
-              context: Linting & Formatting
-
-      - label: '🔍 Type Checking'
-        key: type-check
-        plugins: [$NVM_PLUGIN]
-        command: |
-          echo "--- 📦 Installing dependencies"
-          npm ci
-          echo "--- 🔍 Running TypeScript type checking"
-          npx tsc --noEmit
-        notify:
-          - github_commit_status:
-              context: Type Checking
-
-  - label: '🧪 Tests'
-    key: tests
-    plugins: [$NVM_PLUGIN]
+  # Phase 1: Code Quality & Tests (Parallel)
+  - label: "✨ Code Quality (Node {{matrix.node}})"
+    key: quality
+    matrix:
+      setup:
+        node:
+         - '20'
+         - '22'
+         - '24'
+    plugins:
+      - $NVM_PLUGIN:
+          version: "{{matrix.node}}"
     command: |
-      echo "--- 📦 Installing dependencies"
+      echo "--- 📦 Installing dependencies (Node {{matrix.node}})"
+      npm ci
+      echo "--- 🕵️ Running linting checks"
+      npm run lint
+      echo "--- 🕵️ Running formatting checks"
+      npm run format:check
+      echo "--- 🔍 Running TypeScript type checking"
+      npm run type-check
+    notify:
+      - github_commit_status:
+          context: "Code Quality"
+
+  - label: "🧪 Tests (Node {{matrix.node}})"
+    key: tests
+    matrix:
+      setup:
+        node:
+         - '20'
+         - '22'
+         - '24'
+    plugins:
+      - $NVM_PLUGIN:
+          version: "{{matrix.node}}"
+    command: |
+      echo "--- 📦 Installing dependencies (Node {{matrix.node}})"
       npm ci
       echo "--- 🧪 Running all tests"
       npm test
     notify:
       - github_commit_status:
-          context: Tests
+          context: "Tests"
 
-  - label: '🔍 MCP Server Build & Run'
-    key: server-launch-test
+  # Phase 2: Build & Run (After quality and tests pass)
+  - label: "🔍 Build & Run (Node {{matrix.node}})"
+    key: server
+    matrix:
+      setup:
+        node:
+         - '20'
+         - '22'
+         - '24'
     depends_on:
+      - quality
       - tests
-      - quality-checks
-    plugins: [$NVM_PLUGIN]
+    plugins:
+      - $NVM_PLUGIN:
+          version: "{{matrix.node}}"
     command: |
-      echo "--- 📦 Installing dependencies"
+      echo "--- 📦 Installing dependencies (Node {{matrix.node}})"
       npm ci
       .buildkite/commands/test-run-server.sh
     notify:
       - github_commit_status:
-          context: Build & Run
+          context: "Build & Run"
