@@ -41,8 +41,7 @@
   "scripts": {
     "build": "tsc && chmod +x build/*.js",
     "clean": "rm -rf build/",
-    "prepare": "npm run build",
-    "prepack": "npm run clean && npm run build",
+    "prepare": "npm run clean && npm run build",
     "start": "node build/index.js",
     "dev": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
