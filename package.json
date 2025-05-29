@@ -1,5 +1,5 @@
 {
-  "name": "mcp-server-gravatar",
+  "name": "@automattic/mcp-server-gravatar",
   "version": "0.1.0-beta",
   "description": "Gravatar's official MCP Server",
   "type": "module",
@@ -22,6 +22,8 @@
   "homepage": "https://github.com/Automattic/mcp-server-gravatar",
   "bugs": {
     "url": "https://github.com/Automattic/mcp-server-gravatar/issues"
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
