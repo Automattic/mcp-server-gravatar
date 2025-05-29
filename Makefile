@@ -91,7 +91,7 @@ inspector:
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	rm -rf build/
+	npm run clean
 	rm -rf coverage/
 	rm -rf node_modules/
 	@echo "Clean completed."
