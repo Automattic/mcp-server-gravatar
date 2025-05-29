@@ -92,5 +92,5 @@ inspector:
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	rm -rf dist
+	rm -rf build/
 	@echo "Clean completed."
