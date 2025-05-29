@@ -12,6 +12,7 @@
     "avatar",
     "profile"
   ],
+  "author": "Andrew Montgomery <andrew.montgomery@automattic.com>",
   "type": "module",
   "main": "build/index.js",
   "bin": {
@@ -54,7 +55,6 @@
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit"
   },
-  "author": "Automattic",
   "license": "MPL-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
