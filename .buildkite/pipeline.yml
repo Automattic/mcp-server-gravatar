@@ -70,3 +70,23 @@ steps:
     notify:
       - github_commit_status:
           context: "Build & Run"
+
+  # Phase 3: Publish to NPM (Only on semantic version tags)
+  - label: "📦 Publish to NPM"
+    key: "publish"
+    depends_on:
+      - "quality"
+      - "tests"
+      - "server"
+    if: build.tag =~ /^v\d+\.\d+/
+    plugins:
+      - $NVM_PLUGIN:
+          version: "20"
+    command: |
+      echo "--- 📦 Installing dependencies"
+      npm ci
+      echo "--- 🚀 Publishing to NPM (build happens automatically via prepare script)"
+      npm publish
+    notify:
+      - github_commit_status:
+          context: "NPM Publish"
