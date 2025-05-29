@@ -81,7 +81,6 @@ quality-check: lint format-check
 dev:
 	@echo "Starting TypeScript compiler in watch mode..."
 	npm run dev
-	@echo "To run the server, use: npm start"
 
 # Build and run MCP inspector
 inspector:
