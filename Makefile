@@ -92,4 +92,6 @@ inspector:
 clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf build/
+	rm -rf coverage/
+	rm -rf node_modules/
 	@echo "Clean completed."
