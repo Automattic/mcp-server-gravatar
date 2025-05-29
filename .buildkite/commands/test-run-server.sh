@@ -6,7 +6,7 @@ npm run build
 
 # Run the server with a timeout to prevent hanging in CI
 set +e
-SERVER_OUTPUT=$(timeout 10s node dist/index.js 2>&1)
+SERVER_OUTPUT=$(timeout 10s node build/index.js 2>&1)
 SERVER_EXIT_CODE=$?
 set -e
 
