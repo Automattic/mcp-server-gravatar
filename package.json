@@ -3,12 +3,12 @@
   "version": "0.1.0-beta",
   "description": "Gravatar's official MCP Server",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "bin": {
-    "mcp-server-gravatar": "dist/index.js"
+    "mcp-server-gravatar": "build/index.js"
   },
   "files": [
-    "dist"
+    "build"
   ],
   "engines": {
     "node": ">=20.0.0",
@@ -26,9 +26,9 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc && chmod +x dist/*.js",
+    "build": "tsc && chmod +x build/*.js",
     "prepare": "npm run build",
-    "start": "node dist/index.js",
+    "start": "node build/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
