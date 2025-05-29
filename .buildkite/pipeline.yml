@@ -79,6 +79,8 @@ steps:
       - "tests"
       - "server"
     if: build.tag =~ /^v\d+\.\d+/
+    env:
+      NPM_TOKEN: $NPM_TOKEN
     plugins:
       - $NVM_PLUGIN:
           version: "20"
