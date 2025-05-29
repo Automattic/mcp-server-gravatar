@@ -1,33 +1,49 @@
 {
-  "name": "mcp-server-gravatar",
+  "name": "@automattic/mcp-server-gravatar",
   "version": "0.1.0-beta",
   "description": "Gravatar's official MCP Server",
+  "keywords": [
+    "gravatar",
+    "mcp",
+    "mcp-server",
+    "modelcontextprotocol",
+    "server",
+    "ai",
+    "avatar",
+    "profile"
+  ],
+  "homepage": "https://github.com/Automattic/mcp-server-gravatar",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/mcp-server-gravatar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Automattic/mcp-server-gravatar/issues"
+  },
+  "license": "MPL-2.0",
+  "author": "Andrew Montgomery <andrew.montgomery@automattic.com>",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "bin": {
-    "mcp-server-gravatar": "dist/index.js"
+    "mcp-server-gravatar": "build/index.js"
   },
   "files": [
-    "dist"
+    "build"
   ],
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
   },
   "engineStrict": true,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Automattic/mcp-server-gravatar.git"
-  },
-  "homepage": "https://github.com/Automattic/mcp-server-gravatar",
-  "bugs": {
-    "url": "https://github.com/Automattic/mcp-server-gravatar/issues"
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
-    "build": "tsc && chmod +x dist/*.js",
+    "build": "tsc && chmod +x build/*.js",
     "prepare": "npm run build",
-    "start": "node dist/index.js",
+    "start": "node build/index.js",
     "dev": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
     "test:integration": "vitest run test/integration",
@@ -41,14 +57,6 @@
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "gravatar",
-    "mcp",
-    "server",
-    "ai"
-  ],
-  "author": "Automattic",
-  "license": "MPL-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
     "node-fetch": "^3.3.2",

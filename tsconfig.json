@@ -5,7 +5,7 @@
     "moduleResolution": "Node16",
     "lib": ["ES2020", "DOM"],
     "declaration": true,
-    "outDir": "dist",
+    "outDir": "build",
     "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
@@ -15,5 +15,5 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test"]
+  "exclude": ["node_modules", "build", "test"]
 }

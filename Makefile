@@ -3,7 +3,7 @@
 # Constants
 OPENAPI_GENERATOR_VERSION = 7.13.0
 
-.PHONY: download-spec generate-client test lint lint-fix format format-check quality-check clean dev build inspect help
+.PHONY: download-spec generate-client test test-coverage lint lint-fix format format-check quality-check clean dev build inspector help
 
 # Default target shows help
 help:
@@ -12,13 +12,14 @@ help:
 	@echo "  generate-client   - Generate Gravatar API client from OpenAPI spec"
 	@echo "  build             - Build the TypeScript project"
 	@echo "  test              - Run tests"
+	@echo "  test-coverage     - Run tests with coverage"
 	@echo "  lint              - Run linting"
 	@echo "  lint-fix          - Run linting with auto-fix"
 	@echo "  format            - Format code with Prettier"
 	@echo "  format-check      - Check code formatting"
 	@echo "  quality-check     - Run linting and format checking"
 	@echo "  dev               - Start TypeScript compiler in watch mode"
-	@echo "  inspector         - Run MCP inspector to validate tools"
+	@echo "  inspector         - Build and run MCP inspector to validate tools"
 	@echo "  clean             - Clean build artifacts"
 
 # Download OpenAPI spec
@@ -44,6 +45,12 @@ test:
 	@echo "Running tests..."
 	npm test
 	@echo "Tests completed."
+
+# Run tests with coverage
+test-coverage:
+	@echo "Running tests with coverage..."
+	npm run test:coverage
+	@echo "Test coverage completed."
 
 # Linting and formatting
 lint:
@@ -74,19 +81,17 @@ quality-check: lint format-check
 dev:
 	@echo "Starting TypeScript compiler in watch mode..."
 	npm run dev
-	@echo "To run the server, use: npm start"
 
-# Run MCP inspector
+# Build and run MCP inspector
 inspector:
-	@echo "Running MCP inspector..."
-	@echo "First, building the project..."
-	npm run build
-	@echo "Now running the inspector..."
-	npx @modelcontextprotocol/inspector node ./dist/index.js
+	@echo "Building and running MCP inspector..."
+	npm run build && npm run inspector
 	@echo "Inspection completed."
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	rm -rf dist
+	rm -rf build/
+	rm -rf coverage/
+	rm -rf node_modules/
 	@echo "Clean completed."
