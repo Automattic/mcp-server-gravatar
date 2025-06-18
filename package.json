@@ -54,7 +54,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
-    "preversion": "npm run clean && npm run build && npm run test"
+    "preversion": "npm run clean && npm run build && npm run test",
+    "postversion": "git push && git push --tags"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
