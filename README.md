@@ -1,4 +1,8 @@
-[![GitHub branch status](https://img.shields.io/github/checks-status/Automattic/mcp-server-gravatar/main?style=plastic)](https://github.com/Automattic/mcp-server-gravatar/actions) [![Node.js CI Tested](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/Automattic/mcp-server-gravatar/main/.buildkite/pipeline.yml&query=$.steps[1].matrix.setup.node[*]&label=node%20ci%20tested&style=plastic&logo=node.js&logoColor=white&color=blue)](https://nodejs.org/) [![Node Current](https://img.shields.io/node/v/%40automattic%2Fmcp-server-gravatar?style=plastic&logo=node.js&logoColor=white&label=node%20current&color=orange)](https://nodejs.org/) [![Node LTS](https://img.shields.io/node/v-lts/%40automattic%2Fmcp-server-gravatar?style=plastic&logo=node.js&logoColor=white&label=node%20lts&color=green)](https://nodejs.org/)
+![NPM Type Definitions](https://img.shields.io/npm/types/%40automattic%2Fmcp-server-gravatar?style=plastic) [![Node](https://img.shields.io/node/v/%40automattic%2Fmcp-server-gravatar?style=plastic&logo=node.js&logoColor=white&label=node&color=orange)](https://nodejs.org/) [![Node-LTS](https://img.shields.io/node/v-lts/%40automattic%2Fmcp-server-gravatar?style=plastic&logo=node.js&logoColor=white&label=node-lts&color=green)](https://nodejs.org/)
+
+[![GitHub branch status](https://img.shields.io/github/checks-status/Automattic/mcp-server-gravatar/main?style=plastic)](https://github.com/Automattic/mcp-server-gravatar/actions) [![Node.js CI Tested](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/Automattic/mcp-server-gravatar/main/.buildkite/pipeline.yml&query=$.steps[1].matrix.setup.node[*]&label=node%20ci%20tested&style=plastic&logo=node.js&logoColor=white&color=blue)](https://nodejs.org/)
+
+
 
 # MCP Server Gravatar
 
