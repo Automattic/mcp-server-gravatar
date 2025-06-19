@@ -6,7 +6,7 @@
 
 # MCP Server Gravatar
 
-Gravatar's official MCP Server, enabling Claude to interact with Gravatar avatars, profiles, and inferred interests.
+Gravatar's official MCP Server, enabling access to avatars, profiles, and inferred interests.
 
 ## Quick Install
 
