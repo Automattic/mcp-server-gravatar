@@ -60,9 +60,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
     "node-fetch": "^3.3.2",
-    "universal-user-agent": "^7.0.3",
-    "zod": "^3.25.26",
-    "zod-to-json-schema": "^3.22.3"
+    "universal-user-agent": "^7.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
@@ -75,7 +73,6 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
     "vitest": "^3.1.4"
