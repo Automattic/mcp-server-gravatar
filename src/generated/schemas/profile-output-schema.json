@@ -281,13 +281,5 @@
         "2021-10-01T12:00:00Z"
       ]
     }
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Gravatar Profile Response",
-  "$metadata": {
-    "generatedAt": "2025-06-25T19:36:01.789Z",
-    "openApiVersion": "3.0.0",
-    "sourceFile": "openapi.json",
-    "description": "Generated from OpenAPI Profile schema for MCP tool output validation"
   }
 }

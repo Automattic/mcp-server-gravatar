@@ -31,14 +31,6 @@ try {
   const profileSchema = openApiSpec.components.schemas.Profile;
   const profileOutputSchema = {
     ...profileSchema,
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    title: 'Gravatar Profile Response',
-    $metadata: {
-      generatedAt: new Date().toISOString(),
-      openApiVersion: openApiSpec.info.version,
-      sourceFile: 'openapi.json',
-      description: 'Generated from OpenAPI Profile schema for MCP tool output validation',
-    },
   };
 
   // Extract Interest schema and create wrapper for interests array response
@@ -53,15 +45,6 @@ try {
       },
     },
     required: ['interests'],
-    description: 'Interests array response structure',
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    title: 'Gravatar Interests Response',
-    $metadata: {
-      generatedAt: new Date().toISOString(),
-      openApiVersion: openApiSpec.info.version,
-      sourceFile: 'openapi.json',
-      description: 'Generated wrapper schema for Interest array responses in MCP tools',
-    },
   };
 
   // Create schemas directory
