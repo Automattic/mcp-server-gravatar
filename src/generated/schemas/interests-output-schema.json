@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "properties": {
+    "interests": {
+      "type": "array",
+      "description": "A list of interests",
+      "items": {
+        "type": "object",
+        "description": "An interest the user has added to their profile.",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier for the interest.",
+            "examples": [
+              1
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the interest as originally defined (most often in English).",
+            "examples": [
+              "photography"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "interests"
+  ],
+  "description": "Interests array response structure",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Gravatar Interests Response",
+  "$metadata": {
+    "generatedAt": "2025-06-25T19:36:01.790Z",
+    "openApiVersion": "3.0.0",
+    "sourceFile": "openapi.json",
+    "description": "Generated wrapper schema for Interest array responses in MCP tools"
+  }
+}
