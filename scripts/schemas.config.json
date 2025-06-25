@@ -1,0 +1,16 @@
+{
+  "schemas": [
+    {
+      "modelName": "Profile",
+      "outputFileName": "profile-output-schema"
+    },
+    {
+      "modelName": "Interest",
+      "outputFileName": "interests-output-schema",
+      "wrapInArray": {
+        "propertyName": "interests",
+        "description": "A list of interests"
+      }
+    }
+  ]
+}

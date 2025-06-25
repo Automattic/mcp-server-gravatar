@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import fs from 'fs';
 import path from 'path';
+import configData from './schemas.config.json' with { type: 'json' };
 
 /**
  * Extract MCP output schemas from OpenAPI specification
@@ -17,22 +18,8 @@ interface SchemaConfig {
   };
 }
 
-// Configuration for schemas to extract
-const schemaConfigs: SchemaConfig[] = [
-  {
-    modelName: 'Profile',
-    outputFileName: 'profile-output-schema',
-    // No wrapInArray - use schema directly
-  },
-  {
-    modelName: 'Interest',
-    outputFileName: 'interests-output-schema',
-    wrapInArray: {
-      propertyName: 'interests',
-      description: 'A list of interests',
-    },
-  },
-];
+// Load configuration from external file
+const schemaConfigs: SchemaConfig[] = configData.schemas;
 
 console.log('🔄 Extracting MCP output schemas from OpenAPI specification...');
 
