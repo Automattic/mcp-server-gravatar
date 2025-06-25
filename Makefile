@@ -33,6 +33,9 @@ generate-client:
 	@echo "Generating Gravatar API client from local OpenAPI spec..."
 	@npx @openapitools/openapi-generator-cli generate
 	@echo "API client generated."
+	@echo "Extracting MCP output schemas..."
+	@npx tsx scripts/extract-schemas.ts
+	@echo "MCP schemas generated."
 
 # Build the project
 build:
