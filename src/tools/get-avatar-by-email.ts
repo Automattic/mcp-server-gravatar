@@ -6,7 +6,7 @@ export const getAvatarByEmailTool = {
   name: 'get_avatar_by_email',
   title: 'Get Avatar Image by Email',
   description:
-    "Retrieve the avatar image for a Gravatar profile using an email address. Returns a PNG image that can be displayed directly or processed further. Supports extensive customization options including size, fallback behavior, content rating filters, and default image styles. Example prompt: 'Show me the avatar for sarah@example.com' or 'Get me a 200px avatar image for this email address with a geometric pattern fallback.'",
+    "Retrieve the avatar image for a Gravatar profile using an email address. The email is automatically normalized and hashed before querying the Gravatar API. <examples>'Get the avatar image for user@example.com' or 'Show me a 200px avatar for john.doe@company.com.'</examples>",
   inputSchema: {
     type: 'object',
     properties: {

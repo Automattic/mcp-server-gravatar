@@ -6,7 +6,7 @@ export const getAvatarByIdTool = {
   name: 'get_avatar_by_id',
   title: 'Get Avatar Image by ID',
   description:
-    "Retrieve the avatar image for a Gravatar profile using an avatar identifier. Functionally identical to the email variant but uses a direct identifier for lookup. More efficient when you already have the hashed identifier. Example prompt: 'Get the avatar image for this Gravatar ID' or 'Show me a 150px avatar for user ID abc123def456abc123def456abc123def456abc123def456abc123def456abc1.'",
+    "Retrieve the avatar image for a Gravatar profile using an avatar identifier. More efficient when you already have the hashed identifier. <examples>'Get the avatar image for this Gravatar ID' or 'Show me a 150px avatar for user ID abc123...'</examples>",
   inputSchema: {
     type: 'object',
     properties: {

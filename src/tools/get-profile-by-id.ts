@@ -1,12 +1,13 @@
 import { assertNonEmpty, handleIdToolError } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
+import profileOutputSchema from '../generated/schemas/profile-output-schema.json' with { type: 'json' };
 
 // Tool definition
 export const getProfileByIdTool = {
   name: 'get_profile_by_id',
   title: 'Get Gravatar Profile by ID',
   description:
-    "Retrieve comprehensive Gravatar profile information using a profile identifier. Returns the same succinct, detailed profile data as the email variant including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional authenticated data may include languages, interests, links, contact info, and gallery images.   The response must include all of the data contained in the response, and it must only contain that data.  The response must not include any summaries, editorial, or opinions about the data in the profile, unless requested explicitly. Example prompt: 'Get the profile for Gravatar user with ID abc123def456abc123def456abc123def456abc123def456abc123def456abc1' or 'Show me the profile for Gravatar username johndoe.'  Note: When responding to a request for interests, prefer the interests in the Gravatar profile over inferred interests unless the request specifically mentioned 'inferred interests' or similar phrasing. If a profile response contains no interests, attempt to fetch inferred interests using the `get_inferred_interests_by_email` tool.",
+    "Retrieve comprehensive Gravatar profile information using a profile identifier. Returns detailed profile data including personal information, social accounts, and avatar details. <examples>'Get the profile for Gravatar user with ID abc123...' or 'Show me the profile for username johndoe.'</examples>",
   inputSchema: {
     type: 'object',
     properties: {
@@ -18,6 +19,7 @@ export const getProfileByIdTool = {
     },
     required: ['profileIdentifier'],
   },
+  outputSchema: profileOutputSchema,
   annotations: {
     readOnlyHint: true,
     openWorldHint: true,
