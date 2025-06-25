@@ -42,6 +42,11 @@ export const getAvatarByIdTool = {
     },
     required: ['avatarIdentifier'],
   },
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+    idempotentHint: true,
+  },
 };
 
 // Tool handler

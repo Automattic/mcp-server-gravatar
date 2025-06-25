@@ -18,6 +18,11 @@ export const getProfileByIdTool = {
     },
     required: ['profileIdentifier'],
   },
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+    idempotentHint: true,
+  },
 };
 
 // Tool handler

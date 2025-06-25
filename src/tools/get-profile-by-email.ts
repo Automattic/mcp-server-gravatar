@@ -18,6 +18,11 @@ export const getProfileByEmailTool = {
     },
     required: ['email'],
   },
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+    idempotentHint: true,
+  },
 };
 
 // Tool handler

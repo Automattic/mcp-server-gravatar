@@ -18,6 +18,11 @@ export const getInterestsByEmailTool = {
     },
     required: ['email'],
   },
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+    idempotentHint: false,
+  },
 };
 
 // Tool handler

@@ -42,6 +42,11 @@ export const getAvatarByEmailTool = {
     },
     required: ['email'],
   },
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+    idempotentHint: true,
+  },
 };
 
 // Tool handler
