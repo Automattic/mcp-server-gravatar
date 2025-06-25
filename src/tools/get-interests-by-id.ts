@@ -4,6 +4,7 @@ import { fetchInterestsById } from './experimental-utils.js';
 // Tool definition
 export const getInterestsByIdTool = {
   name: 'get_inferred_interests_by_id',
+  title: 'Get Inferred Interests by ID',
   description:
     "Fetch AI-inferred interests for a Gravatar profile using a profile identifier. Returns a succinct list of machine learning-generated interests that can help understand user preferences, content recommendations, or audience insights. This is experimental data that may not be available for profiles.  When searching for interests, prefer to look up the interests in the Gravatar profile over the inferred interests, since they are specified explicitly by the owner of the Gravatar profile.  The response must include all of the data contained in the response, and it must only contain that data.  The response must not include any summaries, editorial, or opinions about the data, unless requested explicitly.  Example prompt: 'What are the inferred interests for this Gravatar user?' or 'Get the inferred interests for profile ID abc123def456abc123def456abc123def456abc123def456abc123def456abc1.'",
   inputSchema: {
