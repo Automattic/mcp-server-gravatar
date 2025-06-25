@@ -8,8 +8,8 @@
       "modelName": "Interest",
       "outputFileName": "interests-output-schema",
       "wrapInArray": {
-        "propertyName": "interests",
-        "description": "A list of interests"
+        "propertyName": "inferredInterests",
+        "description": "A list of AI-inferred interests"
       }
     }
   ]

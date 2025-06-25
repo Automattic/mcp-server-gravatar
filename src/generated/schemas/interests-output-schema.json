@@ -1,9 +1,9 @@
 {
   "type": "object",
   "properties": {
-    "interests": {
+    "inferredInterests": {
       "type": "array",
-      "description": "A list of interests",
+      "description": "A list of AI-inferred interests",
       "items": {
         "type": "object",
         "description": "An interest the user has added to their profile.",
@@ -31,6 +31,6 @@
     }
   },
   "required": [
-    "interests"
+    "inferredInterests"
   ]
 }

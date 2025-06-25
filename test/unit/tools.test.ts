@@ -109,6 +109,7 @@ describe('Profile Tools', () => {
             text: JSON.stringify(mockProfile, null, 2),
           },
         ],
+        structuredContent: mockProfile,
       });
     });
 
@@ -148,6 +149,7 @@ describe('Profile Tools', () => {
             text: JSON.stringify(mockProfile, null, 2),
           },
         ],
+        structuredContent: mockProfile,
       });
     });
   });
@@ -181,13 +183,16 @@ describe('Interest Tools', () => {
         profileIdentifier: validHash,
       });
 
+      const expectedStructuredResponse = { inferredInterests: mockInterests };
+
       expect(result).toEqual({
         content: [
           {
             type: 'text',
-            text: JSON.stringify(['programming', 'javascript'], null, 2),
+            text: JSON.stringify(expectedStructuredResponse, null, 2),
           },
         ],
+        structuredContent: expectedStructuredResponse,
       });
     });
   });
@@ -205,13 +210,16 @@ describe('Interest Tools', () => {
         profileIdentifier: 'email-hash',
       });
 
+      const expectedStructuredResponse = { inferredInterests: mockInterests };
+
       expect(result).toEqual({
         content: [
           {
             type: 'text',
-            text: JSON.stringify(['typescript', 'react'], null, 2),
+            text: JSON.stringify(expectedStructuredResponse, null, 2),
           },
         ],
+        structuredContent: expectedStructuredResponse,
       });
     });
   });

@@ -12,8 +12,11 @@ export async function fetchProfileById(profileIdentifier: string) {
     const profile = await profilesApi.getProfileById({
       profileIdentifier,
     });
+
+    // Return both unstructured content (backwards compatibility) and structured content
     return {
       content: [{ type: 'text', text: JSON.stringify(profile, null, 2) }],
+      structuredContent: profile,
     };
   } catch (error: unknown) {
     // Handle HTTP errors from the API
