@@ -7,6 +7,33 @@ import path from 'path';
  * This script generates JSON Schema files for use in MCP tool definitions
  */
 
+interface SchemaConfig {
+  modelName: string; // OpenAPI schema name (e.g., "Profile", "Interest")
+  outputFileName: string; // Output file name (e.g., "profile-output-schema")
+  wrapInArray?: {
+    // Optional array wrapper
+    propertyName: string; // Property name for the array (e.g., "interests")
+    description?: string; // Description for the array property
+  };
+}
+
+// Configuration for schemas to extract
+const schemaConfigs: SchemaConfig[] = [
+  {
+    modelName: 'Profile',
+    outputFileName: 'profile-output-schema',
+    // No wrapInArray - use schema directly
+  },
+  {
+    modelName: 'Interest',
+    outputFileName: 'interests-output-schema',
+    wrapInArray: {
+      propertyName: 'interests',
+      description: 'A list of interests',
+    },
+  },
+];
+
 console.log('🔄 Extracting MCP output schemas from OpenAPI specification...');
 
 try {
@@ -19,58 +46,68 @@ try {
   const openApiSpec = JSON.parse(fs.readFileSync(openApiPath, 'utf8'));
   console.log(`📖 Read OpenAPI spec version: ${openApiSpec.info.version}`);
 
-  // Validate required schemas exist
-  if (!openApiSpec.components?.schemas?.Profile) {
-    throw new Error('Profile schema not found in OpenAPI spec');
+  // Validate all required schemas exist
+  for (const config of schemaConfigs) {
+    if (!openApiSpec.components?.schemas?.[config.modelName]) {
+      throw new Error(`${config.modelName} schema not found in OpenAPI spec`);
+    }
   }
-  if (!openApiSpec.components?.schemas?.Interest) {
-    throw new Error('Interest schema not found in OpenAPI spec');
-  }
-
-  // Extract Profile schema
-  const profileSchema = openApiSpec.components.schemas.Profile;
-  const profileOutputSchema = {
-    ...profileSchema,
-  };
-
-  // Extract Interest schema and create wrapper for interests array response
-  const interestSchema = openApiSpec.components.schemas.Interest;
-  const interestsOutputSchema = {
-    type: 'object',
-    properties: {
-      interests: {
-        type: 'array',
-        description: 'A list of interests',
-        items: interestSchema,
-      },
-    },
-    required: ['interests'],
-  };
 
   // Create schemas directory
   const schemasDir = path.join(process.cwd(), 'src', 'generated', 'schemas');
   fs.mkdirSync(schemasDir, { recursive: true });
   console.log(`📁 Created schemas directory: ${schemasDir}`);
 
-  // Write Profile schema file
-  const profileSchemaPath = path.join(schemasDir, 'profile-output-schema.json');
-  fs.writeFileSync(profileSchemaPath, JSON.stringify(profileOutputSchema, null, 2));
-  console.log(`✅ Generated: profile-output-schema.json`);
+  const generatedSchemas: Array<{ name: string; requiredFields: number; totalFields: number }> = [];
 
-  // Write Interests schema file
-  const interestsSchemaPath = path.join(schemasDir, 'interests-output-schema.json');
-  fs.writeFileSync(interestsSchemaPath, JSON.stringify(interestsOutputSchema, null, 2));
-  console.log(`✅ Generated: interests-output-schema.json`);
+  // Process each schema configuration
+  for (const config of schemaConfigs) {
+    const sourceSchema = openApiSpec.components.schemas[config.modelName];
+
+    let outputSchema;
+
+    if (config.wrapInArray) {
+      // Create array wrapper schema
+      outputSchema = {
+        type: 'object',
+        properties: {
+          [config.wrapInArray.propertyName]: {
+            type: 'array',
+            description:
+              config.wrapInArray.description || `A list of ${config.modelName.toLowerCase()}s`,
+            items: sourceSchema,
+          },
+        },
+        required: [config.wrapInArray.propertyName],
+      };
+    } else {
+      // Use schema directly
+      outputSchema = {
+        ...sourceSchema,
+      };
+    }
+
+    // Write schema file
+    const schemaPath = path.join(schemasDir, `${config.outputFileName}.json`);
+    fs.writeFileSync(schemaPath, JSON.stringify(outputSchema, null, 2));
+    console.log(`✅ Generated: ${config.outputFileName}.json`);
+
+    // Track for summary
+    generatedSchemas.push({
+      name: config.modelName,
+      requiredFields: sourceSchema.required?.length || 0,
+      totalFields: Object.keys(sourceSchema.properties || {}).length,
+    });
+  }
 
   // Summary
   console.log('\n🎉 Schema extraction completed successfully!');
-  console.log(`📊 Generated schemas:`);
-  console.log(
-    `   - Profile schema: ${profileSchema.required?.length || 0} required fields, ${Object.keys(profileSchema.properties || {}).length} total fields`,
-  );
-  console.log(
-    `   - Interest schema: ${interestSchema.required?.length || 0} required fields, ${Object.keys(interestSchema.properties || {}).length} total fields`,
-  );
+  console.log(`📊 Generated ${generatedSchemas.length} schemas:`);
+  for (const schema of generatedSchemas) {
+    console.log(
+      `   - ${schema.name} schema: ${schema.requiredFields} required fields, ${schema.totalFields} total fields`,
+    );
+  }
 } catch (error) {
   console.error(
     '❌ Schema extraction failed:',
