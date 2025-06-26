@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import server from '../../src/index.js';
-import { serverConfig } from '../../src/config/server-config.js';
+import { config, setClientInfo } from '../../src/config/server-config.js';
 
 describe('MCP Server Initialization', () => {
   beforeEach(() => {
     // Reset client info before each test
-    serverConfig.client.setInfo({ name: '', version: '' });
+    setClientInfo('', '');
 
     // Mock console.error to avoid noise in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -51,12 +51,8 @@ describe('MCP Server Initialization', () => {
     expect(typeof response.serverInfo.version).toBe('string');
 
     // Verify client info was stored
-    expect(serverConfig.client.name).toBe('TestClient');
-    expect(serverConfig.client.version).toBe('1.2.3');
-    expect(serverConfig.client.info).toEqual({
-      name: 'TestClient',
-      version: '1.2.3',
-    });
+    expect(config.clientName).toBe('TestClient');
+    expect(config.clientVersion).toBe('1.2.3');
 
     // Verify console log was called
     expect(console.error).toHaveBeenCalledWith('MCP Client connected: TestClient v1.2.3');
@@ -97,8 +93,8 @@ describe('MCP Server Initialization', () => {
     expect(response.serverInfo.name).toBe('gravatar');
 
     // Verify client info fallbacks are used for empty strings
-    expect(serverConfig.client.name).toBe('unknown-client');
-    expect(serverConfig.client.version).toBe('unknown-version');
+    expect(config.clientName).toBe('unknown-client');
+    expect(config.clientVersion).toBe('unknown-version');
 
     // Verify console log was called with empty client info
     expect(console.error).toHaveBeenCalledWith('MCP Client connected:  v');
@@ -127,8 +123,8 @@ describe('MCP Server Initialization', () => {
     expect(response.protocolVersion).toBe('2024-10-01');
 
     // Client info should be stored
-    expect(serverConfig.client.name).toBe('AnotherClient');
-    expect(serverConfig.client.version).toBe('2.0.0');
+    expect(config.clientName).toBe('AnotherClient');
+    expect(config.clientVersion).toBe('2.0.0');
   });
 
   it('should handle initialization with special characters in client info', async () => {
@@ -151,8 +147,8 @@ describe('MCP Server Initialization', () => {
     await initializeHandler(initializeRequest);
 
     // Verify special characters are preserved
-    expect(serverConfig.client.name).toBe('Test-Client_v2');
-    expect(serverConfig.client.version).toBe('1.0.0-beta.1');
+    expect(config.clientName).toBe('Test-Client_v2');
+    expect(config.clientVersion).toBe('1.0.0-beta.1');
 
     expect(console.error).toHaveBeenCalledWith(
       'MCP Client connected: Test-Client_v2 v1.0.0-beta.1',
@@ -177,8 +173,8 @@ describe('MCP Server Initialization', () => {
     const initializeHandler = handlers.get('initialize');
 
     await initializeHandler(firstRequest);
-    expect(serverConfig.client.name).toBe('FirstClient');
-    expect(serverConfig.client.version).toBe('1.0.0');
+    expect(config.clientName).toBe('FirstClient');
+    expect(config.clientVersion).toBe('1.0.0');
 
     // Second initialization (client update)
     const secondRequest = {
@@ -194,8 +190,8 @@ describe('MCP Server Initialization', () => {
     };
 
     await initializeHandler(secondRequest);
-    expect(serverConfig.client.name).toBe('UpdatedClient');
-    expect(serverConfig.client.version).toBe('2.0.0');
+    expect(config.clientName).toBe('UpdatedClient');
+    expect(config.clientVersion).toBe('2.0.0');
 
     // Should have logged both connections
     expect(console.error).toHaveBeenCalledWith('MCP Client connected: FirstClient v1.0.0');
