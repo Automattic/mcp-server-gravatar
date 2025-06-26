@@ -34,13 +34,6 @@ describe('Error Handling', () => {
   });
 
   describe('Profile Error Handling', () => {
-    it('should catch invalid hash format before API call', async () => {
-      // This test is no longer needed since validation now happens at the schema level
-      // The 63-character hash will be rejected by Zod before reaching fetchProfileById
-      // This is tested in the validation.test.ts file instead
-      expect(true).toBe(true); // Placeholder to keep test structure
-    });
-
     it('should provide descriptive error for 404 profile not found', async () => {
       const mockProfilesApi = {
         getProfileById: vi.fn().mockRejectedValue({
