@@ -6,7 +6,7 @@
 
 # MCP Server Gravatar
 
-Gravatar's official MCP Server, enabling access to avatars, profiles, and inferred interests.
+Gravatar's official MCP Server, enabling access to avatars, profiles, and inferred interests with full MCP Tools specification 2025-06-18 compliance, structured content support, and automated schema validation.
 
 ## Quick Install
 
@@ -96,6 +96,51 @@ You can install and run this server using npx (recommended) or by building from 
 - `PG`: May contain rude gestures, provocatively dressed individuals, the lesser swear words, or mild violence
 - `R`: May contain harsh profanity, intense violence, nudity, or hard drug use
 - `X`: May contain sexual imagery or extremely disturbing violence
+
+## Features
+
+### MCP Specification Compliance
+
+This server implements the **MCP Tools specification 2025-06-18** with full support for:
+
+- **Structured Content**: All tools return both `content` (JSON string for backwards compatibility) and `structuredContent` (typed objects for modern clients)
+- **Output Schema Validation**: Profile and interest tools include JSON schemas for automatic response validation
+- **Enhanced Tool Definitions**: Human-readable titles, XML-formatted descriptions with examples and hints
+- **Behavioral Annotations**: Tools include `readOnlyHint`, `openWorldHint`, and `idempotentHint` properties
+
+### Response Format
+
+Tools return responses in dual format for maximum compatibility:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"hash\": \"abc123\", \"displayName\": \"John Doe\"}"
+    }
+  ],
+  "structuredContent": {
+    "hash": "abc123",
+    "displayName": "John Doe"
+  }
+}
+```
+
+### Interest Tools Enhancement
+
+Interest tools return data with the semantic property name `inferredInterests` to clearly distinguish AI-inferred interests from regular profile interests:
+
+```json
+{
+  "structuredContent": {
+    "inferredInterests": [
+      {"name": "programming"},
+      {"name": "javascript"}
+    ]
+  }
+}
+```
 
 ## Setup
 
@@ -353,19 +398,59 @@ npm run type-check
 npm test
 ```
 
+### Generation System
+
+This project uses a **Make-driven architecture** for all code generation with proper file-based dependencies:
+
+```bash
+# Generate everything (API client + MCP schemas)
+make generate-all
+# OR
+npm run generate-all
+
+# Generate just the OpenAPI client
+make generate-client
+# OR  
+npm run generate-client
+
+# Generate just the MCP schemas (requires client)
+make generate-schemas
+# OR
+npm run generate-schemas
+```
+
+**Key Benefits:**
+- **File-based dependencies**: Only regenerates when source files change
+- **Efficient rebuilds**: Make tracks dependencies automatically
+- **Clear separation**: Each target has a single responsibility
+- **Consistent tooling**: All generation through Make
+
+The schema generation is configured via `scripts/schemas.config.json` and supports:
+- **Configurable schema extraction** from OpenAPI models
+- **Array wrapping** for responses that need structured containers
+- **Clean output schemas** that match MCP specification exactly
+- **Automatic dependency tracking** via Make
+
+Generated schemas are used for:
+- **Output validation** in MCP tool responses
+- **Type safety** for structured content
+- **Better LLM integration** with validated data structures
+
 ### Other Useful Commands
 
 The project includes a Makefile with several useful commands:
 
 - `make download-spec`: Download the Gravatar OpenAPI spec
-- `make generate-client`: Generate the Gravatar API client from the OpenAPI spec
+- `make generate-client`: Generate Gravatar API client from OpenAPI spec
+- `make generate-schemas`: Generate MCP output schemas from API client
+- `make generate-all`: Generate API client and MCP schemas
 - `make build`: Build the TypeScript project
 - `make lint`: Run linting
 - `make lint-fix`: Run linting with auto-fix
 - `make format`: Format code with Prettier
 - `make format-check`: Check code formatting
 - `make quality-check`: Run linting and format checking
-- `make clean`: Clean build artifacts
+- `make clean`: Clean build artifacts and dependencies
 
 Run `make help` to see all available commands.
 
