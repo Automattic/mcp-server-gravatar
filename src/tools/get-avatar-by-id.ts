@@ -66,14 +66,14 @@ export async function handleGetAvatarById(params: any) {
       rating,
     };
 
-    const avatarBuffer = await fetchAvatar(avatarParams);
+    const avatarResult = await fetchAvatar(avatarParams);
 
     return {
       content: [
         {
           type: 'image',
-          data: avatarBuffer.toString('base64'),
-          mimeType: 'image/png',
+          data: avatarResult.buffer.toString('base64'),
+          mimeType: avatarResult.mimeType,
         },
       ],
     };
