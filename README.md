@@ -422,15 +422,6 @@ GRAVATAR_API_KEY=your_api_key_here npm start
 
 When configuring the server in Claude Desktop or VS Code, you can set these environment variables in the configuration as shown in the Setup section above.
 
-## Troubleshooting
-
-If you encounter errors, verify that:
-
-1. You have the latest version of the MCP server
-2. Your API key is correctly configured (if using one)
-3. You have internet connectivity to access the Gravatar API
-4. The email or hash you're using is valid
-
 ## License
 
 This MCP server is licensed under the Mozilla Public License Version 2.0 (MPL-2.0). This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MPL-2.0. For more details, please see the [LICENSE](LICENSE) file in the project repository.
