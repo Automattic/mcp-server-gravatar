@@ -6,7 +6,7 @@
 
 # MCP Server Gravatar
 
-Gravatar's official MCP Server, enabling access to avatars, profiles, and inferred interests with full MCP Tools specification 2025-06-18 compliance, structured content support, and automated schema validation.
+Gravatar's official MCP Server, enabling access to avatars, profiles, and inferred interests.
 
 ## Quick Install
 
@@ -96,51 +96,6 @@ You can install and run this server using npx (recommended) or by building from 
 - `PG`: May contain rude gestures, provocatively dressed individuals, the lesser swear words, or mild violence
 - `R`: May contain harsh profanity, intense violence, nudity, or hard drug use
 - `X`: May contain sexual imagery or extremely disturbing violence
-
-## Features
-
-### MCP Specification Compliance
-
-This server implements the **MCP Tools specification 2025-06-18** with full support for:
-
-- **Structured Content**: All tools return both `content` (JSON string for backwards compatibility) and `structuredContent` (typed objects for modern clients)
-- **Output Schema Validation**: Profile and interest tools include JSON schemas for automatic response validation
-- **Enhanced Tool Definitions**: Human-readable titles, XML-formatted descriptions with examples and hints
-- **Behavioral Annotations**: Tools include `readOnlyHint`, `openWorldHint`, and `idempotentHint` properties
-
-### Response Format
-
-Tools return responses in dual format for maximum compatibility:
-
-```json
-{
-  "content": [
-    {
-      "type": "text",
-      "text": "{\"hash\": \"abc123\", \"displayName\": \"John Doe\"}"
-    }
-  ],
-  "structuredContent": {
-    "hash": "abc123",
-    "displayName": "John Doe"
-  }
-}
-```
-
-### Interest Tools Enhancement
-
-Interest tools return data with the semantic property name `inferredInterests` to clearly distinguish AI-inferred interests from regular profile interests:
-
-```json
-{
-  "structuredContent": {
-    "inferredInterests": [
-      {"name": "programming"},
-      {"name": "javascript"}
-    ]
-  }
-}
-```
 
 ## Setup
 
@@ -419,22 +374,11 @@ make generate-schemas
 npm run generate-schemas
 ```
 
-**Key Benefits:**
-- **File-based dependencies**: Only regenerates when source files change
-- **Efficient rebuilds**: Make tracks dependencies automatically
-- **Clear separation**: Each target has a single responsibility
-- **Consistent tooling**: All generation through Make
-
 The schema generation is configured via `scripts/schemas.config.json` and supports:
 - **Configurable schema extraction** from OpenAPI models
 - **Array wrapping** for responses that need structured containers
 - **Clean output schemas** that match MCP specification exactly
 - **Automatic dependency tracking** via Make
-
-Generated schemas are used for:
-- **Output validation** in MCP tool responses
-- **Type safety** for structured content
-- **Better LLM integration** with validated data structures
 
 ### Other Useful Commands
 
