@@ -3,13 +3,15 @@
 # Constants
 OPENAPI_GENERATOR_VERSION = 7.13.0
 
-.PHONY: download-spec generate-client test test-coverage lint lint-fix format format-check quality-check clean dev build inspector help
+.PHONY: download-spec generate-client generate-schemas generate-all test test-coverage lint lint-fix format format-check quality-check clean dev build inspector help
 
 # Default target shows help
 help:
 	@echo "Available targets:"
 	@echo "  download-spec     - Download Gravatar OpenAPI spec"
 	@echo "  generate-client   - Generate Gravatar API client from OpenAPI spec"
+	@echo "  generate-schemas  - Generate MCP output schemas from API client"
+	@echo "  generate-all      - Generate API client and MCP schemas"
 	@echo "  build             - Build the TypeScript project"
 	@echo "  test              - Run tests"
 	@echo "  test-coverage     - Run tests with coverage"
@@ -28,11 +30,31 @@ download-spec:
 	@curl -s https://api.gravatar.com/v3/openapi -o openapi.json
 	@echo "OpenAPI spec downloaded to openapi.json"
 
-# Generate OpenAPI client
-generate-client:
-	@echo "Generating Gravatar API client from local OpenAPI spec..."
+# File-based targets with proper dependencies
+
+# Generate OpenAPI client (depends on spec and config)
+src/generated/gravatar-api/index.ts: openapi.json openapitools.json
+	@echo "Generating Gravatar API client from OpenAPI spec..."
 	@npx @openapitools/openapi-generator-cli generate
 	@echo "API client generated."
+
+# Generate MCP schemas (depends on client and schema config)
+src/generated/schemas/profile-output-schema.json src/generated/schemas/interests-output-schema.json: src/generated/gravatar-api/index.ts scripts/extract-schemas.ts scripts/schemas.config.json
+	@echo "Extracting MCP output schemas..."
+	@npx tsx scripts/extract-schemas.ts
+	@echo "MCP schemas generated."
+
+# Logical targets for convenience
+
+# Generate OpenAPI client
+generate-client: src/generated/gravatar-api/index.ts
+
+# Generate MCP schemas
+generate-schemas: src/generated/schemas/profile-output-schema.json src/generated/schemas/interests-output-schema.json
+
+# Generate everything
+generate-all: generate-schemas
+	@echo "All generation completed."
 
 # Build the project
 build:

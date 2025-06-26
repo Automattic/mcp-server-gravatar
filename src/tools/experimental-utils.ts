@@ -13,10 +13,13 @@ export async function fetchInterestsById(profileIdentifier: string) {
       profileIdentifier,
     });
 
-    // Extract just the name field from each interest
-    const interestNames = interests.map((interest: { name: string }) => interest.name);
+    // Prepare the structured response that matches our output schema
+    const structuredResponse = { inferredInterests: interests };
+
+    // Return both unstructured content (backwards compatibility) and structured content
     return {
-      content: [{ type: 'text', text: JSON.stringify(interestNames, null, 2) }],
+      content: [{ type: 'text', text: JSON.stringify(structuredResponse, null, 2) }],
+      structuredContent: structuredResponse,
     };
   } catch (error: unknown) {
     // Handle HTTP errors from the API

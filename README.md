@@ -353,19 +353,48 @@ npm run type-check
 npm test
 ```
 
+### Generation System
+
+This project uses a **Make-driven architecture** for all code generation with proper file-based dependencies:
+
+```bash
+# Generate everything (API client + MCP schemas)
+make generate-all
+# OR
+npm run generate-all
+
+# Generate just the OpenAPI client
+make generate-client
+# OR  
+npm run generate-client
+
+# Generate just the MCP schemas (requires client)
+make generate-schemas
+# OR
+npm run generate-schemas
+```
+
+The schema generation is configured via `scripts/schemas.config.json` and supports:
+- **Configurable schema extraction** from OpenAPI models
+- **Array wrapping** for responses that need structured containers
+- **Clean output schemas** that match MCP specification exactly
+- **Automatic dependency tracking** via Make
+
 ### Other Useful Commands
 
 The project includes a Makefile with several useful commands:
 
 - `make download-spec`: Download the Gravatar OpenAPI spec
-- `make generate-client`: Generate the Gravatar API client from the OpenAPI spec
+- `make generate-client`: Generate Gravatar API client from OpenAPI spec
+- `make generate-schemas`: Generate MCP output schemas from API client
+- `make generate-all`: Generate API client and MCP schemas
 - `make build`: Build the TypeScript project
 - `make lint`: Run linting
 - `make lint-fix`: Run linting with auto-fix
 - `make format`: Format code with Prettier
 - `make format-check`: Check code formatting
 - `make quality-check`: Run linting and format checking
-- `make clean`: Clean build artifacts
+- `make clean`: Clean build artifacts and dependencies
 
 Run `make help` to see all available commands.
 
@@ -392,15 +421,6 @@ GRAVATAR_API_KEY=your_api_key_here npm start
 ```
 
 When configuring the server in Claude Desktop or VS Code, you can set these environment variables in the configuration as shown in the Setup section above.
-
-## Troubleshooting
-
-If you encounter errors, verify that:
-
-1. You have the latest version of the MCP server
-2. Your API key is correctly configured (if using one)
-3. You have internet connectivity to access the Gravatar API
-4. The email or hash you're using is valid
 
 ## License
 

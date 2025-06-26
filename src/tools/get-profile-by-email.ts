@@ -1,11 +1,13 @@
 import { generateIdentifier, handleEmailToolError } from '../common/utils.js';
 import { fetchProfileById } from './profile-utils.js';
+import profileOutputSchema from '../generated/schemas/profile-output-schema.json' with { type: 'json' };
 
 // Tool definition
 export const getProfileByEmailTool = {
   name: 'get_profile_by_email',
+  title: 'Get Gravatar Profile by Email',
   description:
-    "Retrieve comprehensive Gravatar profile information using an email address. Returns succinct, detailed user profile data including display name, location, job title, company, bio/description, pronouns, pronunciation, verified social accounts, avatar details, and profile URLs. Additional data like languages, interests, links, contact info, and gallery images may be available with authenticated requests.  The response must include all of the data contained in the response, and it must only contain that data.  The response must not include any summaries, editorial, or opinions about the data in the profile, unless requested explicitly. Example prompt: 'Can you show me the Gravatar profile information for john.doe@example.com?' or 'Show me the interests for john.doe@example.com.'  Note: When responding to a request for interests, prefer the interests in the Gravatar profile over inferred interests unless the request specifically mentioned 'inferred interests' or similar phrasing. If a profile response contains no interests, attempt to fetch inferred interests using the `get_inferred_interests_by_id` tool.",
+    "Retrieve comprehensive Gravatar profile information using an email address. Returns detailed profile data including personal information, social accounts, and avatar details. <examples>'Show me the Gravatar profile for john.doe@example.com' or 'Get profile info for user@company.com.'</examples>",
   inputSchema: {
     type: 'object',
     properties: {
@@ -16,6 +18,12 @@ export const getProfileByEmailTool = {
       },
     },
     required: ['email'],
+  },
+  outputSchema: profileOutputSchema,
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+    idempotentHint: true,
   },
 };
 
