@@ -8,10 +8,30 @@ export interface AvatarParams {
   rating?: string;
 }
 
+export interface AvatarResult {
+  buffer: Buffer;
+  mimeType: string;
+}
+
+/**
+ * Detect MIME type from HTTP response headers
+ */
+function detectMimeType(response: Response): string {
+  const contentType = response.headers.get('content-type');
+
+  // Validate it's an image MIME type
+  if (contentType && contentType.startsWith('image/')) {
+    return contentType;
+  }
+
+  // Fallback to PNG for safety, since Gravatar defaults to returning PNG images
+  return 'image/png';
+}
+
 /**
  * Fetch avatar image by identifier
  */
-export async function fetchAvatar(params: AvatarParams): Promise<Buffer> {
+export async function fetchAvatar(params: AvatarParams): Promise<AvatarResult> {
   // Build avatar URL
   let url = `https://gravatar.com/avatar/${params.avatarIdentifier}`;
   const queryParams = new URLSearchParams();
@@ -67,7 +87,15 @@ export async function fetchAvatar(params: AvatarParams): Promise<Buffer> {
     throw new Error(message);
   }
 
+  // Detect MIME type from response headers
+  const mimeType = detectMimeType(response);
+
   // Convert the response to a buffer
   const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+  const buffer = Buffer.from(arrayBuffer);
+
+  return {
+    buffer,
+    mimeType,
+  };
 }
