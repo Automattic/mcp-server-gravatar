@@ -232,11 +232,14 @@ describe('Avatar Tools', () => {
   });
 
   describe('handleGetAvatarById', () => {
-    it('should handle valid avatar ID', async () => {
+    it('should handle valid avatar ID with PNG content-type', async () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockArrayBuffer = new ArrayBuffer(8);
       const mockResponse = {
         ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue('image/png'),
+        },
         arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
       };
 
@@ -268,6 +271,145 @@ describe('Avatar Tools', () => {
       });
     });
 
+    it('should handle valid avatar ID with JPEG content-type', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockResponse = {
+        ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue('image/jpeg'),
+        },
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      const result = await handleGetAvatarById({
+        avatarIdentifier: validHash,
+      });
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'image',
+            data: Buffer.from(mockArrayBuffer).toString('base64'),
+            mimeType: 'image/jpeg',
+          },
+        ],
+      });
+    });
+
+    it('should handle valid avatar ID with GIF content-type', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockResponse = {
+        ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue('image/gif'),
+        },
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      const result = await handleGetAvatarById({
+        avatarIdentifier: validHash,
+      });
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'image',
+            data: Buffer.from(mockArrayBuffer).toString('base64'),
+            mimeType: 'image/gif',
+          },
+        ],
+      });
+    });
+
+    it('should handle valid email with WebP content-type', async () => {
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockResponse = {
+        ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue('image/webp'),
+        },
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      const result = await handleGetAvatarByEmail({
+        email: 'test@example.com',
+      });
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'image',
+            data: Buffer.from(mockArrayBuffer).toString('base64'),
+            mimeType: 'image/webp',
+          },
+        ],
+      });
+    });
+
+    it('should fallback to image/png when content-type header is missing', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockResponse = {
+        ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue(null), // No content-type header
+        },
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      const result = await handleGetAvatarById({
+        avatarIdentifier: validHash,
+      });
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'image',
+            data: Buffer.from(mockArrayBuffer).toString('base64'),
+            mimeType: 'image/png', // Should fallback to PNG
+          },
+        ],
+      });
+    });
+
+    it('should fallback to image/png when content-type is not an image', async () => {
+      const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockResponse = {
+        ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue('text/html'), // Invalid content-type for image
+        },
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      const result = await handleGetAvatarById({
+        avatarIdentifier: validHash,
+      });
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'image',
+            data: Buffer.from(mockArrayBuffer).toString('base64'),
+            mimeType: 'image/png', // Should fallback to PNG
+          },
+        ],
+      });
+    });
+
     it('should handle fetch errors', async () => {
       const validHash = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
       const mockResponse = {
@@ -286,10 +428,13 @@ describe('Avatar Tools', () => {
   });
 
   describe('handleGetAvatarByEmail', () => {
-    it('should handle valid email', async () => {
+    it('should handle valid email with PNG content-type', async () => {
       const mockArrayBuffer = new ArrayBuffer(8);
       const mockResponse = {
         ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue('image/png'),
+        },
         arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
       };
 
@@ -316,6 +461,33 @@ describe('Avatar Tools', () => {
             type: 'image',
             data: Buffer.from(mockArrayBuffer).toString('base64'),
             mimeType: 'image/png',
+          },
+        ],
+      });
+    });
+
+    it('should fallback to image/png when content-type header is missing', async () => {
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockResponse = {
+        ok: true,
+        headers: {
+          get: vi.fn().mockReturnValue(null), // No content-type header
+        },
+        arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+      };
+
+      vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+
+      const result = await handleGetAvatarByEmail({
+        email: 'test@example.com',
+      });
+
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'image',
+            data: Buffer.from(mockArrayBuffer).toString('base64'),
+            mimeType: 'image/png', // Should fallback to PNG
           },
         ],
       });
