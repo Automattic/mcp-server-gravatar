@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import configData from './schemas.config.json' with { type: 'json' };
 
 /**
@@ -62,9 +63,75 @@ function validateSchemas(openApiSpec: OpenApiSpec, configs: SchemaConfig[]): voi
 }
 
 /**
+ * Convert a single lower_snake_case property name to lowerCamelCase.
+ *
+ * This mirrors the casing convention used by the OpenAPI client generator
+ * (openapi-generator-cli), whose ...FromJSON functions expose camelCase keys
+ * (e.g. display_name -> displayName, verified_accounts -> verifiedAccounts).
+ * Already-camelCase or single-word keys are returned unchanged.
+ */
+export function camelizeKey(key: string): string {
+  return key.replace(/_([a-z0-9])/g, (_match, char: string) => char.toUpperCase());
+}
+
+/**
+ * Recursively convert all property names in a JSON Schema from snake_case to
+ * camelCase so the generated output schema matches the runtime objects produced
+ * by the OpenAPI client (see camelizeKey). The transform walks the full JSON
+ * Schema shape:
+ *   - object `properties` keys are renamed and their subschemas recursed into
+ *   - entries in `required` arrays are renamed
+ *   - array `items` subschemas are recursed into
+ *   - nested inline object subschemas are recursed into
+ *
+ * `$ref` values are left untouched: they reference component schema names, not
+ * data property keys. The input is not mutated; a new schema object is returned.
+ */
+export function camelizeSchema<T>(schema: T): T {
+  if (Array.isArray(schema)) {
+    return schema.map(entry => camelizeSchema(entry)) as unknown as T;
+  }
+
+  if (schema === null || typeof schema !== 'object') {
+    return schema;
+  }
+
+  const source = schema as Record<string, unknown>;
+  const result: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(source)) {
+    if (key === 'properties' && value && typeof value === 'object' && !Array.isArray(value)) {
+      // Rename each property key, recursing into its subschema.
+      const renamed: Record<string, unknown> = {};
+      for (const [propName, propSchema] of Object.entries(value as Record<string, unknown>)) {
+        renamed[camelizeKey(propName)] = camelizeSchema(propSchema);
+      }
+      result[key] = renamed;
+    } else if (key === 'required' && Array.isArray(value)) {
+      // Rename each required field name.
+      result[key] = (value as unknown[]).map(entry =>
+        typeof entry === 'string' ? camelizeKey(entry) : entry,
+      );
+    } else if (value && typeof value === 'object') {
+      // Recurse into nested subschemas (items, inline objects, arrays, etc.).
+      // `$ref` is a string and falls through to the else branch untouched.
+      result[key] = camelizeSchema(value);
+    } else {
+      result[key] = value;
+    }
+  }
+
+  return result as unknown as T;
+}
+
+/**
  * Generate output schema from source schema and configuration
  */
 function generateSchema(sourceSchema: JsonSchema, config: SchemaConfig): JsonSchema {
+  // Match the OpenAPI client generator's camelCase key convention so the
+  // generated output schema validates the camelCase objects returned at runtime.
+  const camelizedSource = camelizeSchema(sourceSchema);
+
   if (config.wrapInArray) {
     // Create array wrapper schema
     return {
@@ -74,7 +141,7 @@ function generateSchema(sourceSchema: JsonSchema, config: SchemaConfig): JsonSch
           type: 'array',
           description:
             config.wrapInArray.description || `A list of ${config.modelName.toLowerCase()}s`,
-          items: sourceSchema,
+          items: camelizedSource,
         },
       },
       required: [config.wrapInArray.propertyName],
@@ -82,7 +149,7 @@ function generateSchema(sourceSchema: JsonSchema, config: SchemaConfig): JsonSch
   } else {
     // Use schema directly
     return {
-      ...sourceSchema,
+      ...camelizedSource,
     };
   }
 }
@@ -164,5 +231,7 @@ async function main(): Promise<void> {
   }
 }
 
-// Run the script
-main();
+// Run the script only when executed directly, not when imported (e.g. by tests).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

@@ -3,15 +3,15 @@
   "description": "A user's profile information.",
   "required": [
     "hash",
-    "display_name",
-    "profile_url",
-    "avatar_url",
-    "avatar_alt_text",
+    "displayName",
+    "profileUrl",
+    "avatarUrl",
+    "avatarAltText",
     "location",
     "description",
-    "job_title",
+    "jobTitle",
     "company",
-    "verified_accounts",
+    "verifiedAccounts",
     "pronunciation",
     "pronouns"
   ],
@@ -23,14 +23,14 @@
         "31c5543c1734d25c7206f5fd591525d0295bec6fe84ff82f946a34fe970a1e66"
       ]
     },
-    "display_name": {
+    "displayName": {
       "type": "string",
       "description": "The user's display name. This is the name that is displayed on their profile.",
       "examples": [
         "Alex Morgan"
       ]
     },
-    "profile_url": {
+    "profileUrl": {
       "type": "string",
       "description": "The full URL for the user's profile.",
       "format": "uri",
@@ -38,7 +38,7 @@
         "https://gravatar.com/example"
       ]
     },
-    "avatar_url": {
+    "avatarUrl": {
       "type": "string",
       "format": "uri",
       "description": "The URL for the user's avatar image if it has been set.",
@@ -46,7 +46,7 @@
         "https://0.gravatar.com/avatar/33252cd1f33526af53580fcb1736172f06e6716f32afdd1be19ec3096d15dea5"
       ]
     },
-    "avatar_alt_text": {
+    "avatarAltText": {
       "type": "string",
       "description": "The alt text for the user's avatar image if it has been set.",
       "examples": [
@@ -67,7 +67,7 @@
         "I like playing hide and seek."
       ]
     },
-    "job_title": {
+    "jobTitle": {
       "type": "string",
       "description": "The user's job title.",
       "examples": [
@@ -81,7 +81,7 @@
         "ACME Corp"
       ]
     },
-    "verified_accounts": {
+    "verifiedAccounts": {
       "type": "array",
       "description": "A list of verified accounts the user has added to their profile. This is limited to a max of 4 in unauthenticated requests.",
       "items": {
@@ -116,35 +116,35 @@
         "$ref": "#/components/schemas/Language"
       }
     },
-    "first_name": {
+    "firstName": {
       "type": "string",
       "description": "User's first name. This is only provided in authenticated API requests.",
       "examples": [
         "Alex"
       ]
     },
-    "last_name": {
+    "lastName": {
       "type": "string",
       "description": "User's last name. This is only provided in authenticated API requests.",
       "examples": [
         "Morgan"
       ]
     },
-    "is_organization": {
+    "isOrganization": {
       "type": "boolean",
       "description": "Whether user is an organization. This is only provided in authenticated API requests.",
       "examples": [
         false
       ]
     },
-    "header_image": {
+    "headerImage": {
       "type": "string",
       "description": "The header image used in the main profile card.",
       "examples": [
         "url('https://gravatar.com/userimage/209234789/cdebd0ed415kfa2g562ba5c34b1570c2') no-repeat 50% 1% / 100%"
       ]
     },
-    "background_color": {
+    "backgroundColor": {
       "type": "string",
       "description": "The profile background color.",
       "examples": [
@@ -170,7 +170,7 @@
       "type": "object",
       "required": [
         "links",
-        "crypto_wallets"
+        "cryptoWallets"
       ],
       "description": "The user's public payment information. This is only provided in authenticated API requests.",
       "properties": {
@@ -181,7 +181,7 @@
             "$ref": "#/components/schemas/Link"
           }
         },
-        "crypto_wallets": {
+        "cryptoWallets": {
           "type": "array",
           "description": "A list of crypto currencies the user accepts.",
           "items": {
@@ -190,25 +190,25 @@
         }
       }
     },
-    "contact_info": {
+    "contactInfo": {
       "type": "object",
       "description": "The user's contact information. This is only available if the user has chosen to make it public. This is only provided in authenticated API requests.",
       "properties": {
-        "home_phone": {
+        "homePhone": {
           "type": "string",
           "description": "The user's home phone number.",
           "examples": [
             "+1-555-555-0100"
           ]
         },
-        "work_phone": {
+        "workPhone": {
           "type": "string",
           "description": "The user's work phone number.",
           "examples": [
             "+1-555-555-0101"
           ]
         },
-        "cell_phone": {
+        "cellPhone": {
           "type": "string",
           "description": "The user's cell phone number.",
           "examples": [
@@ -223,7 +223,7 @@
             "alex@example.com"
           ]
         },
-        "contact_form": {
+        "contactForm": {
           "type": "string",
           "description": "The URL to the user's contact form.",
           "format": "uri",
@@ -248,14 +248,14 @@
         "$ref": "#/components/schemas/GalleryImage"
       }
     },
-    "number_verified_accounts": {
+    "numberVerifiedAccounts": {
       "type": "integer",
       "description": "The number of verified accounts the user has added to their profile. This count includes verified accounts the user is hiding from their profile. This is only provided in authenticated API requests.",
       "examples": [
         3
       ]
     },
-    "last_profile_edit": {
+    "lastProfileEdit": {
       "type": [
         "string",
         "null"
@@ -268,7 +268,7 @@
         "2021-10-01T12:00:00Z"
       ]
     },
-    "registration_date": {
+    "registrationDate": {
       "type": [
         "string",
         "null"
